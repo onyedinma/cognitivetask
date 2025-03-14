@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cognitive Task - Shape Counting</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div id="fullscreen-prompt" class="screen">
+            <p>Press the button below to switch to full screen mode.</p>
+            <button onclick="enterFullscreen()">Continue</button>
+        </div>
+
+        <div id="student-id" class="screen hidden">
+            <p>Enter the participant's student ID:</p>
+            <input type="text" id="studentIdInput">
+            <button onclick="submitStudentId()">Continue</button>
+        </div>
+
+        <div id="counter-balance" class="screen hidden">
+            <p>Select the counter-balance scheme for this session:</p>
+            <div class="button-group">
+                <button onclick="selectScheme(1)">1</button>
+                <button onclick="selectScheme(2)">2</button>
+                <button onclick="selectScheme(3)">3</button>
+                <button onclick="selectScheme(4)">4</button>
+            </div>
+        </div>
+
+        <div id="welcome" class="screen hidden">
+            <h1>Welcome!</h1>
+            <p>Please wait for instructions from the researcher.</p>
+            <button onclick="showInstructions()">continue</button>
+        </div>
+
+        <div id="instructions" class="screen hidden">
+            <h2>Now you will play a Shape Counting game.</h2>
+            <p>You will see a series of shapes (squares, triangles, and circles) one at a time. Your job is to keep a MENTAL count for each type of shape. You can keep count out loud or in your head, but please DO NOT use your fingers or a pencil/pen and paper to count.</p>
+            <p>After you see each shape series, you will be asked how many of each type of shape you saw.</p>
+            <p>Click 'continue' to see an example.</p>
+            <button onclick="startGame()">continue</button>
+        </div>
+
+        <!-- Add this after the instructions div -->
+        <div id="game-area" class="screen hidden shape">
+        </div>
+    <!-- Add after game-area div -->
+    <div id="answer-form" class="screen hidden">
+        <div class="question">
+            <p>How many squares did you count?</p>
+            <div class="radio-group">
+                <input type="radio" name="squares" value="0" id="sq0"><label for="sq0">0</label>
+                <input type="radio" name="squares" value="1" id="sq1"><label for="sq1">1</label>
+                <input type="radio" name="squares" value="2" id="sq2"><label for="sq2">2</label>
+                <input type="radio" name="squares" value="3" id="sq3"><label for="sq3">3</label>
+                <input type="radio" name="squares" value="4" id="sq4"><label for="sq4">4</label>
+                <input type="radio" name="squares" value="5" id="sq5"><label for="sq5">5</label>
+                <input type="radio" name="squares" value="6" id="sq6"><label for="sq6">6</label>
+                <input type="radio" name="squares" value="7" id="sq7"><label for="sq7">7</label>
+            </div>
+        </div>
+        
+        <div class="question">
+            <p>How many triangles did you count?</p>
+            <div class="radio-group">
+                <input type="radio" name="triangles" value="0" id="tr0"><label for="tr0">0</label>
+                <input type="radio" name="triangles" value="1" id="tr1"><label for="tr1">1</label>
+                <input type="radio" name="triangles" value="2" id="tr2"><label for="tr2">2</label>
+                <input type="radio" name="triangles" value="3" id="tr3"><label for="tr3">3</label>
+                <input type="radio" name="triangles" value="4" id="tr4"><label for="tr4">4</label>
+                <input type="radio" name="triangles" value="5" id="tr5"><label for="tr5">5</label>
+                <input type="radio" name="triangles" value="6" id="tr6"><label for="tr6">6</label>
+                <input type="radio" name="triangles" value="7" id="tr7"><label for="tr7">7</label>
+            </div>
+        </div>
+        
+        <div class="question">
+            <p>How many circles did you count?</p>
+            <div class="radio-group">
+                <input type="radio" name="circles" value="0" id="ci0"><label for="ci0">0</label>
+                <input type="radio" name="circles" value="1" id="ci1"><label for="ci1">1</label>
+                <input type="radio" name="circles" value="2" id="ci2"><label for="ci2">2</label>
+                <input type="radio" name="circles" value="3" id="ci3"><label for="ci3">3</label>
+                <input type="radio" name="circles" value="4" id="ci4"><label for="ci4">4</label>
+                <input type="radio" name="circles" value="5" id="ci5"><label for="ci5">5</label>
+                <input type="radio" name="circles" value="6" id="ci6"><label for="ci6">6</label>
+                <input type="radio" name="circles" value="7" id="ci7"><label for="ci7">7</label>
+            </div>
+        </div>
+        
+        <button onclick="submitAnswers()">continue</button>
+    </div>
+
+    <div id="results" class="screen hidden">
+        <h2>The correct number of each shape was:</h2>
+        <p>Squares: <span id="correct-squares"></span></p>
+        <p>Triangles: <span id="correct-triangles"></span></p>
+        <p>Circles: <span id="correct-circles"></span></p>
+        
+        <h3>Your answers:</h3>
+        <p class="user-answer">Squares: <span id="user-squares"></span></p>
+        <p class="user-answer">Triangles: <span id="user-triangles"></span></p>
+        <p class="user-answer">Circles: <span id="user-circles"></span></p>
+        
+        <button onclick="nextRound()">continue</button>
+    </div>
+    <!-- Add after results div -->
+    <!-- Add after results div -->
+    <!-- Update the practice-complete-prompt div -->
+    <div id="practice-complete-prompt" class="screen hidden">
+        <p>Would you like to practice the Shape Counting game again?</p>
+        <div class="button-group">
+            <button onclick="startRealGame()">No, I am ready to continue</button>
+            <button onclick="startPracticeAgain()">Yes, practice again</button>
+        </div>
+    </div>
+
+    <div id="real-game-instructions" class="screen hidden">
+        <h2>Great job!</h2>
+        <p>You are now finished practicing the Shape Counting game.</p>
+        <p>Next, you will play the actual game.</p>
+        <ul>
+            <li>The series will be longer in the real game than in the practice round.</li>
+            <li>Remember to keep a running count of each type of shape you see.</li>
+        </ul>
+        <p>You will play 5 rounds of the game. From now on you will not receive feedback after each round.</p>
+        <p>Click the button below to begin.</p>
+        <button onclick="startRealGameRound()">Start</button>
+    </div>
+    <!-- Add before the closing div.container -->
+    <div id="round-start" class="screen hidden">
+        <h2>You are about to start round <span id="round-number"></span>.</h2>
+        <p>Click start when you are ready!</p>
+        <button onclick="beginRound()">Start</button>
+    </div>
+
+    <div id="game-complete" class="screen hidden">
+        <h2>Great work!</h2>
+        <p>You are now finished playing this game.</p>
+        <p>Click 'finish' to continue.</p>
+        <button onclick="finishGame()">Finish</button>
+    </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
