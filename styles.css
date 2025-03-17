@@ -15,16 +15,9 @@ body {
     height: 100%;
 }
 
-/* Update container to be flexible */
+/* Remove container styles - direct screen display */
 .container {
-    width: auto;
-    min-width: 320px;
-    max-width: none;
-    height: auto;
-    min-height: 0;
-    padding: 0;
-    background: white;
-    box-shadow: none;
+    display: contents; /* This makes the container essentially transparent in the layout */
 }
 
 .screen {
@@ -32,9 +25,9 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 100%;
-    max-width: 600px;
-    padding: 10px;
+    width: 60%;
+    max-width: 800px;
+    padding: 30px;
     box-sizing: border-box;
     opacity: 1;
     transition: opacity 0.3s ease;
@@ -43,20 +36,19 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin: 0 auto;
-    max-height: calc(90vh - 40px);
     background: white;
     border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    padding: 30px;
-    box-sizing: border-box;
-    margin: 20px;
+    border: 2px solid #333;
+    box-shadow: none;
+    margin: 0; /* Remove margin */
+    max-height: 90vh; /* Limit maximum height */
 }
 
 .hidden {
     opacity: 0;
     pointer-events: none;
     position: absolute;
+    z-index: -1;
 }
 
 /* Game area - complete redesign */
@@ -76,6 +68,7 @@ body {
     border-radius: 0;
     box-shadow: none;
     transform: none; /* Override the .screen transform */
+    border: none; /* Remove border from game area */
 }
 
 /* Shape styling */
@@ -84,39 +77,64 @@ body {
     transform: none; /* Remove the transform that might be causing issues */
     transition: all 0.3s ease;
     margin: 0 auto; /* Center horizontally */
+    min-width: 250px; /* Ensure minimum width */
+    min-height: 250px; /* Ensure minimum height */
 }
 
 /* Individual shape styles */
 .circle {
-    width: 200px;
-    height: 200px;
+    width: 250px;
+    height: 250px;
     background: #e8e8cf;
-    border: 4px solid #333;
+    border: 5px solid #333;
     border-radius: 50%;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: none;
 }
 
 .square {
-    width: 200px;
-    height: 200px;
+    width: 250px;
+    height: 250px;
     background: #4a90e2;
-    border: 4px solid #333;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 5px solid #333;
+    box-shadow: none;
 }
 
 .triangle {
-    width: 0;
-    height: 0;
-    border-left: 115px solid transparent;
-    border-right: 115px solid transparent;
-    border-bottom: 200px solid #ff6b6b; /* Bright red color */
-    margin: 0 auto; /* Center the triangle */
-    display: block; /* Ensure proper display */
+    position: relative;
+    width: 250px;
+    height: 250px;
+    margin: 0 auto;
+    display: block;
+    background-color: transparent;
 }
 
-/* Remove the pseudo-element for the black outline */
+/* Create the triangle using a single element with borders */
+.triangle::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-left: 125px solid transparent;
+    border-right: 125px solid transparent;
+    border-bottom: 216px solid #ff6b6b;
+}
+
+/* Create the outline using a slightly larger triangle behind it */
 .triangle::after {
-    display: none;
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-left: 130px solid transparent;
+    border-right: 130px solid transparent;
+    border-bottom: 225px solid #333;
+    z-index: -1;
 }
 
 .blank {
@@ -150,15 +168,11 @@ input[type="text"] {
 /* Questions styling */
 .question {
     background-color: #f8f9fa;
-    padding: 15px;
-    border-radius: 12px;
-    margin: 10px 0;
+    padding: 12px;
+    border-radius: 10px;
+    margin: 8px 0;
     width: 100%;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
 }
 
 .question p {
@@ -168,8 +182,9 @@ input[type="text"] {
 
 /* Results display */
 #results {
-    max-width: 400px;
-    min-height: 350px;
+    max-width: 500px;
+    min-height: auto;
+    padding: 25px;
 }
 
 /* Typography */
@@ -180,19 +195,164 @@ h1, h2 {
 }
 
 h1 {
-    font-size: 24px;
+    font-size: 26px;
     margin-bottom: 15px;
 }
 
 h2 {
-    font-size: 20px;
-    margin-bottom: 10px;
+    font-size: 22px;
+    margin-bottom: 12px;
 }
 
 p {
     font-size: 16px;
     margin: 8px 0;
-    text-align: center;
+    line-height: 1.4;
+}
+
+/* Highlight class for important text */
+.highlight {
+    font-weight: bold;
+    color: #4a90e2;
+    font-size: 110%;
+    text-decoration: underline;
+}
+
+/* Instructions screen specific styles */
+#instructions {
+    max-width: 600px;
+    min-height: auto;
+    padding: 25px;
+}
+
+#instructions p {
+    margin-bottom: 15px;
+}
+
+#instructions h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+/* Example screen styles */
+#example {
+    max-width: 600px;
+    min-height: auto;
+    text-align: left;
+    padding: 25px;
+}
+
+#example h2 {
+    font-size: 20px;
+    margin: 15px 0;
+    text-align: left;
+}
+
+.example-shapes {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.example-shape {
+    width: 70px;
+    height: 70px;
+}
+
+.example-shape.circle {
+    width: 70px;
+    height: 70px;
+    background: #e8e8cf;
+    border: 3px solid #333;
+    border-radius: 50%;
+    box-shadow: none;
+}
+
+.example-shape.square {
+    width: 70px;
+    height: 70px;
+    background: #4a90e2;
+    border: 3px solid #333;
+    box-shadow: none;
+}
+
+.example-shape.triangle {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    background: transparent;
+    display: block;
+}
+
+.example-shape.triangle::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-left: 35px solid transparent;
+    border-right: 35px solid transparent;
+    border-bottom: 60px solid #ff6b6b;
+}
+
+.example-shape.triangle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-left: 38px solid transparent;
+    border-right: 38px solid transparent;
+    border-bottom: 65px solid #333;
+    z-index: -1;
+}
+
+.example-counts {
+    margin: 15px 0;
+    text-align: left;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.example-counts p {
+    margin: 10px 0;
+    text-align: left;
+    font-size: 16px;
+}
+
+/* Real game instructions */
+#real-game-instructions {
+    max-width: 600px;
+    min-height: auto;
+    padding: 25px;
+}
+
+#real-game-instructions h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+#real-game-instructions p {
+    margin-bottom: 10px;
+}
+
+#real-game-instructions ul {
+    text-align: left;
+    margin: 15px 0;
+    padding-left: 25px;
+}
+
+#real-game-instructions li {
+    font-size: 16px;
+    margin-bottom: 8px;
+    line-height: 1.4;
 }
 
 /* Buttons */
@@ -242,6 +402,18 @@ button:hover {
 }
 
 /* Responsive adjustments */
+@media (max-width: 1200px) {
+    .screen {
+        width: 80%;
+    }
+}
+
+@media (max-width: 768px) {
+    .screen {
+        width: 90%;
+    }
+}
+
 @media (max-width: 600px) {
     .container {
         padding: 20px;
@@ -268,42 +440,131 @@ button:hover {
 
 /* Additional responsive adjustments */
 @media (max-height: 700px) {
-    .container {
-        padding: 15px;
-    }
-    
     .screen {
         padding: 20px;
-        margin: 10px;
     }
     
-    .question {
-        padding: 10px;
-    }
-    
-    h1 { font-size: 20px; }
+    h1 { font-size: 22px; }
     h2 { font-size: 18px; }
     p { font-size: 14px; }
     
+    #instructions p, #real-game-instructions p, #real-game-instructions li {
+        font-size: 14px;
+        margin: 6px 0;
+    }
+    
+    #real-game-instructions li {
+        margin-bottom: 6px;
+    }
+    
+    .example-counts p {
+        font-size: 14px;
+        margin: 6px 0;
+    }
+    
     .shape {
-        width: 100px;
-        height: 100px;
+        width: 180px;
+        height: 180px;
+        min-width: 180px;
+        min-height: 180px;
     }
     
     .circle, .square {
-        width: 100px;
-        height: 100px;
+        width: 180px;
+        height: 180px;
+        border-width: 4px;
     }
     
-    .triangle {
-        border-left: 57px solid transparent;
-        border-right: 57px solid transparent;
-        border-bottom: 100px solid #ff6b6b;
+    .triangle::before {
+        border-left: 90px solid transparent;
+        border-right: 90px solid transparent;
+        border-bottom: 156px solid #ff6b6b;
     }
     
-    #instructions, #answer-form, #real-game-instructions {
-        max-height: 80vh;
-        overflow-y: auto;
+    .triangle::after {
+        border-left: 94px solid transparent;
+        border-right: 94px solid transparent;
+        border-bottom: 163px solid #333;
+    }
+    
+    .example-shape {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .example-shape.circle, .example-shape.square {
+        width: 60px;
+        height: 60px;
+        border-width: 2px;
+    }
+    
+    .example-shape.triangle::before {
+        border-left: 30px solid transparent;
+        border-right: 30px solid transparent;
+        border-bottom: 52px solid #ff6b6b;
+    }
+    
+    .example-shape.triangle::after {
+        border-left: 32px solid transparent;
+        border-right: 32px solid transparent;
+        border-bottom: 55px solid #333;
+    }
+}
+
+/* Ensure consistent shape display in all screen modes */
+@media not all and (display-mode: fullscreen) {
+    .shape, .circle, .square, .triangle {
+        transform: scale(1);
+    }
+}
+
+/* Very small screens */
+@media (max-height: 500px) {
+    .shape {
+        width: 150px;
+        height: 150px;
+        min-width: 150px;
+        min-height: 150px;
+    }
+    
+    .circle, .square {
+        width: 150px;
+        height: 150px;
+        border-width: 3px;
+    }
+    
+    .triangle::before {
+        border-left: 75px solid transparent;
+        border-right: 75px solid transparent;
+        border-bottom: 130px solid #ff6b6b;
+    }
+    
+    .triangle::after {
+        border-left: 78px solid transparent;
+        border-right: 78px solid transparent;
+        border-bottom: 135px solid #333;
+    }
+    
+    .example-shape {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .example-shape.circle, .example-shape.square {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .example-shape.triangle::before {
+        border-left: 25px solid transparent;
+        border-right: 25px solid transparent;
+        border-bottom: 43px solid #ff6b6b;
+    }
+    
+    .example-shape.triangle::after {
+        border-left: 27px solid transparent;
+        border-right: 27px solid transparent;
+        border-bottom: 46px solid #333;
     }
 }
 
@@ -370,34 +631,21 @@ button:hover {
     min-height: 200px;
 }
 
-#instructions {
-    max-width: 600px;
-    min-height: 300px;
-}
-
-#answer-form {
+#round-start, #game-complete {
     max-width: 500px;
-    min-height: 400px;
+    min-height: auto;
+    padding: 25px;
 }
 
 #practice-complete-prompt {
-    max-width: 450px;
-    min-height: 180px;
+    max-width: 500px;
+    min-height: auto;
+    padding: 25px;
 }
 
-#real-game-instructions {
-    max-width: 600px;
-    min-height: 350px;
-}
-
-#round-start {
-    max-width: 400px;
-    min-height: 180px;
-}
-
-#game-complete {
-    max-width: 400px;
-    min-height: 200px;
+#practice-complete-prompt p {
+    font-size: 18px;
+    margin-bottom: 20px;
 }
 
 /* Add to styles.css */
@@ -409,74 +657,6 @@ button:hover {
 
 #instruction-screen {
     text-align: center;
-}
-
-/* Example screen styles */
-#example {
-    max-width: 600px;
-    min-height: 400px;
-    text-align: left;
-    padding: 30px;
-}
-
-#example h2 {
-    font-size: 18px;
-    margin: 20px 0;
-    text-align: left;
-}
-
-.example-shapes {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    margin: 30px 0;
-}
-
-.example-shape {
-    width: 60px;
-    height: 60px;
-}
-
-.example-shape.circle {
-    width: 60px;
-    height: 60px;
-    background: #e8e8cf;
-    border: 2px solid #333;
-    border-radius: 50%;
-}
-
-.example-shape.square {
-    width: 60px;
-    height: 60px;
-    background: #4a90e2;
-    border: 2px solid #333;
-}
-
-.example-shape.triangle {
-    width: 0;
-    height: 0;
-    border-left: 35px solid transparent;
-    border-right: 35px solid transparent;
-    border-bottom: 60px solid #ff6b6b; /* Bright red color */
-    background: transparent;
-    display: block; /* Ensure proper display */
-}
-
-/* Remove the pseudo-element for the black outline */
-.example-shape.triangle::after {
-    display: none;
-}
-
-.example-counts {
-    margin: 20px 0;
-    text-align: left;
-}
-
-.example-counts p {
-    margin: 10px 0;
-    text-align: left;
-    font-size: 16px;
 }
 
 /* Number input styling */
@@ -531,4 +711,27 @@ button:hover {
     -webkit-appearance: textfield;
     -moz-appearance: textfield;
     appearance: textfield;
+}
+
+#answer-form {
+    max-width: 600px;
+    min-height: auto;
+    padding: 25px;
+}
+
+#answer-form h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+/* Remove scrollable content */
+#instructions, #answer-form, #real-game-instructions, #example {
+    overflow: visible;
+    max-height: none;
+}
+
+/* Add a strong emphasis class for important instructions */
+.important {
+    font-weight: bold;
+    color: #333;
 }

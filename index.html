@@ -42,8 +42,8 @@
         <!-- Screen 5: Instructions -->
         <div id="instructions" class="screen hidden">
             <h2>Now you will play a <span class="highlight">Shape Counting</span> game.</h2>
-            <p>You will see a series of shapes (squares, triangles, and circles) one at a time. Your job is to keep a MENTAL count for each type of shape. You can keep count out loud or in your head, but please DO NOT use your fingers or a pencil/pen and paper to count.</p>
-            <p>After you see each shape series, you will be asked how many of each type of shape you saw.</p>
+            <p>You will see a series of shapes (squares, triangles, and circles) one at a time. Your job is to keep a <span class="important">MENTAL count for each type of shape</span>. You can keep count out loud or in your head, but please <span class="important">DO NOT use your fingers or a pencil/pen and paper</span> to count.</p>
+            <p>After you see each shape series, you will be asked <span class="important">how many of each type of shape</span> you saw.</p>
             <p>Click 'continue' to see an example.</p>
             <button id="instructionsButton">continue</button>
         </div>
@@ -64,9 +64,9 @@
             <h2>In this example, the correct count number for each shape would be:</h2>
             
             <div class="example-counts">
-                <p><strong>Squares: 2</strong></p>
-                <p><strong>Triangles: 3</strong></p>
-                <p><strong>Circles: 1</strong></p>
+                <p><strong>Squares: <span class="important">2</span></strong></p>
+                <p><strong>Triangles: <span class="important">3</span></strong></p>
+                <p><strong>Circles: <span class="important">1</span></strong></p>
             </div>
             
             <p>Click the 'continue' button to practice the <strong>Shape Counting</strong> game.</p>
@@ -90,7 +90,7 @@
                 <p>Squares:</p>
                 <div class="number-input">
                     <button class="decrement" data-target="square-count">-</button>
-                    <input type="number" id="square-count" min="0" max="10" value="0">
+                    <input type="number" id="square-count" min="0" max="9" value="0">
                     <button class="increment" data-target="square-count">+</button>
                 </div>
             </div>
@@ -99,7 +99,7 @@
                 <p>Triangles:</p>
                 <div class="number-input">
                     <button class="decrement" data-target="triangle-count">-</button>
-                    <input type="number" id="triangle-count" min="0" max="10" value="0">
+                    <input type="number" id="triangle-count" min="0" max="9" value="0">
                     <button class="increment" data-target="triangle-count">+</button>
                 </div>
             </div>
@@ -108,7 +108,7 @@
                 <p>Circles:</p>
                 <div class="number-input">
                     <button class="decrement" data-target="circle-count">-</button>
-                    <input type="number" id="circle-count" min="0" max="10" value="0">
+                    <input type="number" id="circle-count" min="0" max="9" value="0">
                     <button class="increment" data-target="circle-count">+</button>
                 </div>
             </div>
@@ -146,10 +146,10 @@
             <p>You are now finished practicing the Shape Counting game.</p>
             <p>Next, you will play the actual game.</p>
             <ul>
-                <li>The series will be longer in the real game than in the practice round.</li>
-                <li>Remember to keep a running count of each type of shape you see.</li>
+                <li>The series will be <span class="important">longer</span> in the real game than in the practice round.</li>
+                <li><span class="important">Remember to keep a running count</span> of each type of shape you see.</li>
             </ul>
-            <p>You will play 5 rounds of the game. From now on you will not receive feedback after each round.</p>
+            <p>You will play <span class="important">5 rounds</span> of the game. From now on you will <span class="important">not receive feedback</span> after each round.</p>
             <p>Click the button below to begin.</p>
             <button id="startRealGameButton">Start</button>
         </div>
