@@ -735,3 +735,33 @@ button:hover {
     font-weight: bold;
     color: #333;
 }
+
+/* Counting game example objects */
+.example-objects {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.example-object {
+    width: 120px;
+    height: 80px;
+    object-fit: contain;
+    border: 2px solid #333;
+    border-radius: 5px;
+}
+
+/* Counting objects */
+.counting-object {
+    width: 250px;
+    height: 250px;
+    object-fit: contain;
+    border: 5px solid #333;
+    border-radius: 10px;
+    display: block; /* Ensure it's displayed as a block element */
+    margin: 0 auto; /* Center horizontally */
+    background-color: white; /* Add background color */
+}

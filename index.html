@@ -32,6 +32,43 @@
             </div>
         </div>
 
+        <!-- Counting Game Intro (for scheme 4) -->
+        <div id="counting-game-intro" class="screen hidden">
+            <h2>You will now play a Counting game.</h2>
+            <p>In this game, you will see a series of pictures ($5 bill, UTA bus, and a face) one at a time. Your job is to keep a <span class="important">MENTAL count for each object</span>. You can keep count out loud or in your head, but please <span class="important">DO NOT use your fingers or a pencil/pen and paper</span> to count.</p>
+            <p>After you see each object series, you will be asked to report the number of each type of object you saw in the series.</p>
+            <p>Click 'continue' to see an example.</p>
+            <button id="countingGameIntroButton">continue</button>
+        </div>
+
+        <!-- Counting Game Example -->
+        <div id="counting-game-example" class="screen hidden">
+            <h2>In this example, let's say you see the following series of objects:</h2>
+            
+            <div class="example-objects">
+                <img src="dollarmanbus/5dollar.jpg" alt="$5 bill" class="example-object">
+                <img src="dollarmanbus/bus.jpg" alt="UTA bus" class="example-object">
+                <img src="dollarmanbus/face.jpg" alt="Face" class="example-object">
+                <img src="dollarmanbus/bus.jpg" alt="UTA bus" class="example-object">
+                <img src="dollarmanbus/5dollar.jpg" alt="$5 bill" class="example-object">
+            </div>
+            
+            <h2>In this example, the correct count number for each object would be:</h2>
+            
+            <div class="example-counts">
+                <p><strong>Bills: <span class="important">2</span></strong></p>
+                <p><strong>Buses: <span class="important">2</span></strong></p>
+                <p><strong>Faces: <span class="important">1</span></strong></p>
+            </div>
+            
+            <p>Click the 'continue' button to practice the <strong>Counting</strong> game.</p>
+            
+            <div class="button-group">
+                <button id="countingGoBackButton">go back</button>
+                <button id="startCountingPracticeButton">continue</button>
+            </div>
+        </div>
+
         <!-- Screen 4: Welcome -->
         <div id="welcome" class="screen hidden">
             <h1>Welcome!</h1>
@@ -116,6 +153,40 @@
             <button id="submitAnswersButton">continue</button>
         </div>
 
+        <!-- Counting Game Answer Form -->
+        <div id="counting-answer-form" class="screen hidden">
+            <h2>How many of each object did you count?</h2>
+            
+            <div class="question">
+                <p>$5 Bills:</p>
+                <div class="number-input">
+                    <button class="decrement" data-target="bill-count">-</button>
+                    <input type="number" id="bill-count" min="0" max="9" value="0">
+                    <button class="increment" data-target="bill-count">+</button>
+                </div>
+            </div>
+            
+            <div class="question">
+                <p>UTA Buses:</p>
+                <div class="number-input">
+                    <button class="decrement" data-target="bus-count">-</button>
+                    <input type="number" id="bus-count" min="0" max="9" value="0">
+                    <button class="increment" data-target="bus-count">+</button>
+                </div>
+            </div>
+            
+            <div class="question">
+                <p>Faces:</p>
+                <div class="number-input">
+                    <button class="decrement" data-target="face-count">-</button>
+                    <input type="number" id="face-count" min="0" max="9" value="0">
+                    <button class="increment" data-target="face-count">+</button>
+                </div>
+            </div>
+            
+            <button id="submitCountingAnswersButton">continue</button>
+        </div>
+
         <!-- Results -->
         <div id="results" class="screen hidden">
             <h2>The correct number of each shape was:</h2>
@@ -131,12 +202,36 @@
             <button id="nextRoundButton">continue</button>
         </div>
 
+        <!-- Counting Game Results -->
+        <div id="counting-results" class="screen hidden">
+            <h2>The correct number of each object was:</h2>
+            <p>$5 Bills: <span id="correct-bills"></span></p>
+            <p>UTA Buses: <span id="correct-buses"></span></p>
+            <p>Faces: <span id="correct-faces"></span></p>
+            
+            <h3>Your answers:</h3>
+            <p class="user-answer">$5 Bills: <span id="user-bills"></span></p>
+            <p class="user-answer">UTA Buses: <span id="user-buses"></span></p>
+            <p class="user-answer">Faces: <span id="user-faces"></span></p>
+            
+            <button id="nextCountingRoundButton">continue</button>
+        </div>
+
         <!-- Practice Complete Prompt -->
         <div id="practice-complete-prompt" class="screen hidden">
             <p>Would you like to practice the Shape Counting game again?</p>
             <div class="button-group">
                 <button id="readyToContinueButton">No, I am ready to continue</button>
                 <button id="practiceAgainButton">Yes, practice again</button>
+            </div>
+        </div>
+
+        <!-- Counting Game Practice Complete Prompt -->
+        <div id="counting-practice-complete-prompt" class="screen hidden">
+            <p>Would you like to practice the Counting game again?</p>
+            <div class="button-group">
+                <button id="countingReadyToContinueButton">No, I am ready to continue</button>
+                <button id="countingPracticeAgainButton">Yes, practice again</button>
             </div>
         </div>
 
@@ -152,6 +247,20 @@
             <p>You will play <span class="important">5 rounds</span> of the game. From now on you will <span class="important">not receive feedback</span> after each round.</p>
             <p>Click the button below to begin.</p>
             <button id="startRealGameButton">Start</button>
+        </div>
+
+        <!-- Counting Game Real Game Instructions -->
+        <div id="counting-real-game-instructions" class="screen hidden">
+            <h2>Great job!</h2>
+            <p>You are now finished practicing the Counting game.</p>
+            <p>Next, you will play the actual game.</p>
+            <ul>
+                <li>The series will be <span class="important">longer</span> in the real game than in the practice round.</li>
+                <li><span class="important">Remember to keep a running count</span> of each type of object you see.</li>
+            </ul>
+            <p>You will play <span class="important">5 rounds</span> of the game. From now on you will <span class="important">not receive feedback</span> after each round.</p>
+            <p>Click the button below to begin.</p>
+            <button id="startCountingRealGameButton">Start</button>
         </div>
 
         <!-- Round Start -->
