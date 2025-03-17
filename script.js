@@ -1,9 +1,10 @@
 // Game Configuration
 const CONFIG = {
-    practiceMode: { minShapes: 5, maxShapes: 9, displayTime: 1000, blankTime: 500 },
-    realMode: { minShapes: 5, maxShapes: 9, displayTime: 1000, blankTime: 500, rounds: 5 },
-    countingMode: { minObjects: 5, maxObjects: 9, displayTime: 1000, blankTime: 500 },
-    countingRealMode: { minObjects: 9, maxObjects: 15, displayTime: 1000, blankTime: 500, rounds: 5 }
+    practiceMode: { minShapes: 5, maxShapes: 10, displayTime: 1000, blankTime: 250 },
+    realMode: { minShapes: 10, maxShapes: 15, displayTime: 1000, blankTime: 250, rounds: 5 },
+    countingMode: { minObjects: 5, maxObjects: 10, displayTime: 1000, blankTime: 250 },
+    countingRealMode: { minObjects: 10, maxObjects: 15, displayTime: 1000, blankTime: 250, rounds: 5 },
+    digitSpanMode: { displayTime: 1000, blankTime: 500, startDigits: 3, maxDigits: 9 }
 };
 
 // Game State Management
@@ -12,9 +13,11 @@ const gameState = {
     scheme: null, 
     isRealGame: false,
     isCountingGame: false,
+    isPatternGame: false,
     currentRound: 0, 
     gameResults: [],
-    correctCounts: null
+    correctCounts: null,
+    isBackward: false
 };
 
 // Add to the top of script.js
@@ -89,10 +92,20 @@ function submitStudentId() {
 
 function selectScheme(scheme) {
     gameState.scheme = scheme;
-    if (scheme === '4') {
+    
+    // Store the scheme in the results
+    results.scheme = scheme;
+    
+    // Show the appropriate screen based on the scheme
+    if (scheme === '2') {
+        // Digit Span Game
+        showScreen('pattern-game-intro');
+    } else if (scheme === '4') {
+        // Counting Game
         showScreen('counting-game-intro');
     } else {
-        transitionScreens('counter-balance', 'welcome');
+        // Shape Counting Game
+        showScreen('welcome');
     }
 }
 
@@ -151,11 +164,11 @@ function animateShapes(sequence) {
                 shapeElement.className = 'shape blank';
                 
                 // Wait during blank time before showing next shape
-                setTimeout(() => {
-                    index++;
-                    displayNext();
-                }, CONFIG.realMode.blankTime);
-            }, CONFIG.realMode.displayTime);
+            setTimeout(() => {
+                index++;
+                displayNext();
+            }, CONFIG.realMode.blankTime);
+        }, CONFIG.realMode.displayTime);
         }, 50);
     }
     
@@ -185,7 +198,7 @@ function submitAnswers() {
             showScreen('game-complete');
         }
     } else {
-        showResults(userAnswers);
+    showResults(userAnswers);
     }
     
     // Reset inputs for next time
@@ -221,25 +234,34 @@ function transitionScreens(hideId, showId) {
 }
 
 function finishGame() {
-    // Original JSON export
-    const results = { 
-        studentId: gameState.studentId, 
-        scheme: gameState.scheme, 
-        timestamp: new Date().toISOString(), 
-        rounds: gameState.gameResults 
+    console.log("Finish button clicked - Exporting results");
+    
+    // Prepare results for export
+    const results = {
+        studentId: gameState.studentId,
+        scheme: gameState.scheme,
+        rounds: gameState.gameResults
     };
     
-    // Export JSON
-    const jsonBlob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
-    const jsonUrl = URL.createObjectURL(jsonBlob);
-    const jsonLink = document.createElement('a');
-    jsonLink.href = jsonUrl;
-    jsonLink.download = `results_${gameState.studentId}_${Date.now()}.json`;
-    jsonLink.click();
-    URL.revokeObjectURL(jsonUrl);
+    console.log("Exporting results:", results);
     
-    // Export CSV with required structure
+    // Export results as CSV
     exportCSV(results);
+    
+    // Also save as JSON for debugging
+    saveResultsAsJSON(results);
+    
+    // Reset game state for next session
+    gameState.isRealGame = false;
+    gameState.isCountingGame = false;
+    gameState.isPatternGame = false;
+    gameState.isBackward = false;
+    gameState.currentRound = 0;
+    gameState.gameResults = [];
+    gameState.correctCounts = null;
+    
+    // Return to counter balance screen for next participant
+    showScreen('counter-balance');
 }
 
 /**
@@ -262,11 +284,11 @@ function exportCSV(results) {
     const startTime = Date.now() - (results.rounds.length * 5000); // Approximate start time
     
     results.rounds.forEach((round, roundIndex) => {
-        // Create a row for each round
         let formattedUserAnswers, formattedCorrectCounts, taskName, variable;
         
-        // Check if this is a counting game (scheme 4) or shape counting game
+        // Check if this is a counting game (scheme 4), shape counting game, or digit span game
         const isCountingGame = results.scheme === '4';
+        const isDigitSpanGame = results.scheme === '2';
         
         if (isCountingGame) {
             // Format for counting game (bills, buses, faces)
@@ -284,6 +306,18 @@ function exportCSV(results) {
             
             taskName = 'object_counting';
             variable = 'object_count';
+        } else if (isDigitSpanGame) {
+            // Format for digit span game
+            formattedUserAnswers = {
+                "Q0": round.userResponse
+            };
+            
+            formattedCorrectCounts = {
+                "Q0": round.correctResponse
+            };
+            
+            taskName = 'digit_span';
+            variable = 'digit_sequence';
         } else {
             // Format for shape game (squares, triangles, circles)
             formattedUserAnswers = {
@@ -306,14 +340,14 @@ function exportCSV(results) {
         // Convert values to strings to ensure consistent formatting
         const responsesObj = {
             "Q0": String(formattedUserAnswers.Q0),
-            "Q1": String(formattedUserAnswers.Q1),
-            "Q2": String(formattedUserAnswers.Q2)
+            "Q1": String(formattedUserAnswers.Q1 || ''),
+            "Q2": String(formattedUserAnswers.Q2 || '')
         };
         
         const correctObj = {
             "Q0": String(formattedCorrectCounts.Q0),
-            "Q1": String(formattedCorrectCounts.Q1),
-            "Q2": String(formattedCorrectCounts.Q2)
+            "Q1": String(formattedCorrectCounts.Q1 || ''),
+            "Q2": String(formattedCorrectCounts.Q2 || '')
         };
         
         const responses = JSON.stringify(responsesObj);
@@ -580,6 +614,19 @@ function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.add('hidden');
     });
+    
+    // Special handling for digit-span-response screen
+    if (screenId === 'digit-span-response') {
+        const responseTitle = document.querySelector('#digit-span-response h2');
+        if (responseTitle) {
+            if (gameState.isBackward) {
+                responseTitle.textContent = "Please type in the number in REVERSE order and press enter.";
+            } else {
+                responseTitle.textContent = "Please type in the number in the same order and press enter.";
+            }
+        }
+    }
+    
     document.getElementById(screenId).classList.remove('hidden');
 }
 
@@ -598,12 +645,7 @@ function initializeEventListeners() {
     document.querySelectorAll('.scheme-button').forEach(button => {
         button.addEventListener('click', (e) => {
             const scheme = e.target.dataset.scheme;
-            gameState.scheme = scheme;
-            if (scheme === '4') {
-                showScreen('counting-game-intro');
-            } else {
-                showScreen('welcome');
-            }
+            selectScheme(scheme);
         });
     });
 
@@ -678,7 +720,10 @@ function initializeEventListeners() {
     document.getElementById('beginRoundButton').addEventListener('click', startRound);
 
     // Game complete
-    document.getElementById('finishGameButton').addEventListener('click', finishGame);
+    document.getElementById('finishGameButton').addEventListener('click', function() {
+        console.log("Finish game button clicked");
+        finishGame();
+    });
 
     // Number input buttons
     document.querySelectorAll('.increment').forEach(button => {
@@ -698,6 +743,118 @@ function initializeEventListeners() {
             input.value = Math.max(currentValue - 1, parseInt(input.min));
         });
     });
+
+    // Digit span game intro screen
+    document.getElementById('digitSpanIntroButton').addEventListener('click', () => {
+        showScreen('digit-span-example');
+    });
+
+    // Digit span game example screen
+    document.getElementById('startDigitSpanPracticeButton').addEventListener('click', startDigitSpanPractice);
+
+    // Digit span practice game
+    document.getElementById('startDigitSpanPracticeButton').addEventListener('click', startDigitSpanPractice);
+
+    // Digit span real game
+    document.getElementById('startDigitSpanBackwardButton').addEventListener('click', () => {
+        console.log("Starting backward digit span practice from button click");
+        gameState.isBackward = true; // Explicitly set backward mode
+        console.log("isBackward flag set to:", gameState.isBackward);
+        startDigitSpanBackwardPractice();
+    });
+
+    // Digit span complete
+    document.getElementById('finishDigitSpanButton').addEventListener('click', () => {
+        if (gameState.isBackward) {
+            // If we've completed the backward mode, go to game complete and export results
+            showScreen('game-complete');
+            
+            // Prepare results for export
+            const results = {
+                studentId: gameState.studentId,
+                scheme: gameState.scheme,
+                rounds: gameState.gameResults
+            };
+            
+            // Export results as CSV
+            exportCSV(results);
+            
+            // Also save as JSON for debugging
+            saveResultsAsJSON(results);
+            
+            // Reset game state to prevent transitioning to other games
+            gameState.isRealGame = false;
+            gameState.isCountingGame = false;
+            gameState.isPatternGame = false;
+            gameState.isBackward = false;
+            gameState.currentRound = 0;
+        } else {
+            // If we've completed the forward mode, go to backward mode instructions
+            showScreen('digit-span-backward-example');
+        }
+    });
+
+    // Add event listener for starting the real digit span game
+    document.getElementById('startDigitSpanRealGameButton').addEventListener('click', startDigitSpanRealGame);
+
+    // Add event listener for digit span response submission
+    document.getElementById('submitDigitResponseButton').addEventListener('click', submitDigitSpanResponse);
+
+    // Update the nextDigitSpanButton to handle transitions between modes
+    document.getElementById('nextDigitSpanButton').addEventListener('click', () => {
+        if (gameState.isRealGame) {
+            console.log(`Next button clicked - Real game, Round: ${gameState.currentRound}/${CONFIG.realMode.rounds}, Mode: ${gameState.isBackward ? "Backward" : "Forward"}`);
+            
+            if (gameState.currentRound < CONFIG.realMode.rounds) {
+                // Move to next round in the current mode
+                gameState.currentRound++;
+                console.log(`Moving to round ${gameState.currentRound} in ${gameState.isBackward ? "backward" : "forward"} mode`);
+                document.getElementById('round-number').textContent = gameState.currentRound;
+                
+                // Show the digit game area directly instead of the round start screen
+                const digitGameArea = document.getElementById('digit-game-area');
+                
+                // Hide all screens
+                document.querySelectorAll('.screen').forEach(screen => {
+                    screen.classList.add('hidden');
+                });
+                
+                // Show the digit game area
+                digitGameArea.classList.remove('hidden');
+                digitGameArea.style.display = 'flex';
+                
+                // Start the digit sequence
+                startDigitSequence();
+            } else {
+                // Completed all rounds in current mode
+                if (gameState.isBackward) {
+                    // If backward mode is complete, show completion screen
+                    console.log("Completed all backward rounds, showing completion screen");
+                    showScreen('digit-span-complete');
+                } else {
+                    // If forward mode is complete, transition to backward mode
+                    console.log("Completed all forward rounds, transitioning to backward mode");
+                    completeForwardDigitSpanRealGame();
+                }
+            }
+        } else {
+            // Practice mode
+            console.log(`Next button clicked - Practice mode, Mode: ${gameState.isBackward ? "Backward" : "Forward"}`);
+            
+            if (gameState.isBackward) {
+                // If backward practice is complete, show real game instructions
+                console.log("Completed backward practice, showing real game instructions");
+                showScreen('digit-span-real-game-instructions');
+            } else {
+                // If forward practice is complete, transition to backward practice
+                console.log("Completed forward practice, transitioning to backward practice");
+                completeForwardDigitSpanPractice();
+            }
+        }
+    });
+
+    // Function to start the real backward digit span game
+    // document.getElementById('startDigitSpanBackwardRealGame').addEventListener('click', startDigitSpanBackwardRealGame);
 }
 
 // Game Logic
@@ -759,9 +916,18 @@ function startRound() {
     gameArea.style.display = 'flex';
     
     // Start the sequence based on game type
-    if (gameState.isCountingGame) {
+    if (gameState.isPatternGame) {
+        // For digit span game
+        const digitGameArea = document.getElementById('digit-game-area');
+        digitGameArea.classList.remove('hidden');
+        digitGameArea.style.display = 'flex';
+        gameArea.style.display = 'none';
+        startDigitSequence();
+    } else if (gameState.isCountingGame) {
+        // For counting game
         startCountingSequence();
     } else {
+        // For shape counting game
         startShapeSequence();
     }
 }
@@ -1059,4 +1225,242 @@ function storeCountingRoundResults(userAnswers) {
         correctCounts: { ...gameState.correctCounts },
         userAnswers: { ...userAnswers }
     });
+}
+
+// Function to start the digit span game
+function startDigitSpanGame() {
+    gameState.isPatternGame = true;
+    gameState.currentRound = 1;
+    gameState.correctCounts = null;
+    showScreen('digit-game-area');
+    startDigitSequence();
+}
+
+// Function to start a sequence of digits
+function startDigitSequence() {
+    // Generate a sequence of random digits
+    const sequenceLength = gameState.isRealGame ? 
+        Math.min(3 + gameState.currentRound, 9) : // Increase length with rounds in real game
+        3; // Fixed length for practice
+    
+    console.log(`Starting digit sequence - Mode: ${gameState.isBackward ? "Backward" : "Forward"}, Round: ${gameState.currentRound}, Length: ${sequenceLength}`);
+    
+    const sequence = [];
+    for (let i = 0; i < sequenceLength; i++) {
+        sequence.push(Math.floor(Math.random() * 10)); // Random digit 0-9
+    }
+    
+    console.log("Digit sequence:", sequence);
+    
+    // Store the correct sequence for later comparison
+    gameState.correctSequence = sequence;
+    
+    // Display the sequence
+    animateDigits(sequence);
+}
+
+// Function to animate digits one by one
+function animateDigits(sequence) {
+    let index = 0;
+    const digitElement = document.querySelector('.digit');
+    const config = CONFIG.digitSpanMode;
+
+    function showNextDigit() {
+        if (index >= sequence.length) {
+            digitElement.textContent = '';
+            setTimeout(() => {
+                // Show response form
+                showScreen('digit-span-response');
+            }, 500);
+            return;
+        }
+
+        digitElement.textContent = sequence[index];
+        setTimeout(() => {
+            digitElement.textContent = '';
+            setTimeout(() => {
+                index++;
+                showNextDigit();
+            }, config.blankTime);
+        }, config.displayTime);
+    }
+
+    showNextDigit();
+}
+
+// Function to submit digit span response
+function submitDigitSpanResponse() {
+    const userResponse = document.getElementById('digit-response').value;
+    const originalSequence = gameState.correctSequence.join('');
+    
+    console.log("Digit Span Response - Mode:", gameState.isBackward ? "Backward" : "Forward");
+    console.log("Original sequence:", gameState.correctSequence);
+    
+    // Determine the correct response based on mode
+    let correctResponse;
+    if (gameState.isBackward) {
+        // For backward mode, the correct response is the reverse of the original sequence
+        correctResponse = gameState.correctSequence.slice().reverse().join('');
+        console.log("Backward mode - Correct response should be:", correctResponse);
+    } else {
+        // For forward mode, the correct response is the original sequence
+        correctResponse = originalSequence;
+        console.log("Forward mode - Correct response should be:", correctResponse);
+    }
+    
+    // Check if the response is correct
+    const isCorrect = userResponse === correctResponse;
+    console.log("User response:", userResponse, "Correct response:", correctResponse, "Is correct:", isCorrect);
+    
+    // Display the results
+    document.getElementById('user-digit-response').textContent = userResponse;
+    document.getElementById('correct-digit-response').textContent = correctResponse;
+    
+    // Show correct/incorrect feedback
+    const resultElement = document.getElementById('digit-span-result-feedback');
+    if (isCorrect) {
+        resultElement.textContent = "Correct!";
+        resultElement.className = "correct-answer";
+    } else {
+        resultElement.textContent = "Incorrect";
+        resultElement.className = "incorrect-answer";
+    }
+    
+    // Store round results
+    if (gameState.isRealGame) {
+        gameState.gameResults.push({
+            round: gameState.currentRound,
+            userResponse: userResponse,
+            correctResponse: correctResponse,
+            originalSequence: originalSequence,
+            isCorrect: isCorrect,
+            isBackward: gameState.isBackward
+        });
+    }
+    
+    // Clear the input field
+    document.getElementById('digit-response').value = '';
+    
+    // Show the results screen
+    showScreen('digit-span-results');
+}
+
+// Function to start the digit span practice game
+function startDigitSpanPractice() {
+    gameState.isPatternGame = true;
+    gameState.isRealGame = false;
+    gameState.isBackward = false;
+    gameState.currentRound = 1;
+    gameState.correctCounts = null;
+    showScreen('digit-game-area');
+    startDigitSequence();
+}
+
+// Function to start the backward digit span practice
+function startDigitSpanBackwardPractice() {
+    gameState.isPatternGame = true;
+    gameState.isRealGame = false;
+    gameState.isBackward = true;
+    gameState.currentRound = 1;
+    gameState.correctCounts = null;
+    console.log("Starting backward digit span practice. isBackward:", gameState.isBackward);
+    showScreen('digit-game-area');
+    startDigitSequence();
+}
+
+// Function to start the real digit span game
+function startDigitSpanRealGame() {
+    console.log("Starting real forward digit span game");
+    gameState.isPatternGame = true;
+    gameState.isRealGame = true;
+    gameState.isBackward = false;
+    gameState.currentRound = 1;
+    gameState.correctCounts = null;
+    
+    // Show the digit game area directly
+    const digitGameArea = document.getElementById('digit-game-area');
+    
+    // Hide all screens
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.add('hidden');
+    });
+    
+    // Show the digit game area
+    digitGameArea.classList.remove('hidden');
+    digitGameArea.style.display = 'flex';
+    
+    // Start the digit sequence
+    startDigitSequence();
+}
+
+// Function to handle completion of forward digit span practice
+function completeForwardDigitSpanPractice() {
+    showScreen('digit-span-backward-example');
+}
+
+// Function to handle completion of forward digit span real game
+function completeForwardDigitSpanRealGame() {
+    console.log("Completing forward digit span real game, transitioning to backward mode");
+    
+    // Reset round counter for backward digit span
+    gameState.currentRound = 1;
+    
+    // Set backward mode
+    gameState.isBackward = true;
+    
+    // Show backward instructions before starting
+    showScreen('digit-span-backward-example');
+    
+    // Add event listener for the backward button if it doesn't exist
+    const backwardButton = document.getElementById('startDigitSpanBackwardButton');
+    if (backwardButton) {
+        // Remove any existing listeners to avoid duplicates
+        const newBackwardButton = backwardButton.cloneNode(true);
+        backwardButton.parentNode.replaceChild(newBackwardButton, backwardButton);
+        
+        // Add the correct listener for real game mode
+        newBackwardButton.addEventListener('click', () => {
+            console.log("Starting backward digit span real game from transition");
+            startDigitSpanBackwardRealGame();
+        });
+    }
+}
+
+// Function to save results as JSON
+function saveResultsAsJSON(results) {
+    const jsonString = JSON.stringify(results, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `digit_span_results_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// Function to start the real backward digit span game
+function startDigitSpanBackwardRealGame() {
+    console.log("Starting real backward digit span game");
+    gameState.isPatternGame = true;
+    gameState.isRealGame = true;
+    gameState.isBackward = true;
+    gameState.currentRound = 1;
+    gameState.correctCounts = null;
+    
+    // Show the digit game area directly
+    const digitGameArea = document.getElementById('digit-game-area');
+    
+    // Hide all screens
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.add('hidden');
+    });
+    
+    // Show the digit game area
+    digitGameArea.classList.remove('hidden');
+    digitGameArea.style.display = 'flex';
+    
+    // Start the digit sequence
+    startDigitSequence();
 }

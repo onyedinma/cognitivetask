@@ -32,6 +32,101 @@
             </div>
         </div>
 
+        <!-- Digit Span Game Intro (for scheme 2) -->
+        <div id="pattern-game-intro" class="screen hidden">
+            <h2>You will now play a Digit Span game.</h2>
+            <p>In this game, you will be presented with a sequence of digits, one at a time on the screen. Your job is to <span class="important">REMEMBER the sequence</span> of digits.</p>
+            <p>After you see each digit sequence, you will be asked to type the list of digits in exactly the order you saw them in.</p>
+            <p>Click 'continue' to see an example.</p>
+            <button id="digitSpanIntroButton">continue</button>
+        </div>
+
+        <!-- Digit Span Game Example -->
+        <div id="digit-span-example" class="screen hidden">
+            <h2>In this example, let's say you see the following sequence of digits:</h2>
+            
+            <div class="example-digits">
+                <div class="example-digit">7</div>
+                <div class="example-digit">9</div>
+                <div class="example-digit">3</div>
+            </div>
+            
+            <h2>In this example, the correct response would be:</h2>
+            
+            <div class="example-response">
+                <p><strong>Type: <span class="important">793</span></strong></p>
+            </div>
+            
+            <p>Click the 'continue' button to practice the <strong>Digit Span</strong> game.</p>
+            
+            <div class="button-group">
+                <button id="digitSpanGoBackButton">go back</button>
+                <button id="startDigitSpanPracticeButton">continue</button>
+            </div>
+        </div>
+
+        <!-- Digit Span Backward Example -->
+        <div id="digit-span-backward-example" class="screen hidden">
+            <h2>Very good! In the next part of the task, you will continue to see sequences of digits.</h2>
+            <p>But now you will be asked to type the list of digits in exactly the <span class="important">OPPOSITE</span> order you saw them in.</p>
+            <p>That means, if you see the sequence '13', you type '31'.</p>
+            
+            <div class="example-digits">
+                <div class="example-digit">1</div>
+                <div class="example-digit">3</div>
+                <div class="example-digit">8</div>
+            </div>
+            
+            <h2>In this example, the correct response would be:</h2>
+            
+            <div class="example-response">
+                <p><strong>Type: <span class="important">831</span></strong></p>
+            </div>
+            
+            <p>Click the 'continue' button to practice the <strong>Backward Digit Span</strong> game.</p>
+            
+            <div class="button-group">
+                <button id="startDigitSpanBackwardButton">continue</button>
+            </div>
+        </div>
+
+        <!-- Digit Span Game Area -->
+        <div id="digit-game-area" class="screen hidden">
+            <div class="digit"></div>
+        </div>
+
+        <!-- Digit Span Response Form -->
+        <div id="digit-span-response" class="screen hidden">
+            <h2>Please type in the number in the correct order and press enter.</h2>
+            <p>Do not leave spaces between the numbers.</p>
+            
+            <div class="response-input">
+                <input type="text" id="digit-response" pattern="[0-9]*" inputmode="numeric">
+            </div>
+            
+            <button id="submitDigitResponseButton">Submit</button>
+        </div>
+
+        <!-- Digit Span Results -->
+        <div id="digit-span-results" class="screen hidden">
+            <h2>Your response was:</h2>
+            <p class="user-answer">You typed: <span id="user-digit-response"></span></p>
+            <p class="correct-answer">Correct response: <span id="correct-digit-response"></span></p>
+            
+            <!-- Add feedback element -->
+            <p id="digit-span-result-feedback" class="result-feedback"></p>
+            
+            <button id="nextDigitSpanButton">continue</button>
+        </div>
+
+        <!-- Digit Span Complete -->
+        <div id="digit-span-complete" class="screen hidden">
+            <h2>Great work!</h2>
+            <p>You have completed the Digit Span task.</p>
+            <p>Click 'finish' to continue.</p>
+            <button id="finishDigitSpanButton">Finish</button>
+        </div>
+
         <!-- Counting Game Intro (for scheme 4) -->
         <div id="counting-game-intro" class="screen hidden">
             <h2>You will now play a Counting game.</h2>
@@ -276,6 +371,22 @@
             <p>You are now finished playing this game.</p>
             <p>Click 'finish' to continue.</p>
             <button id="finishGameButton">Finish</button>
+        </div>
+
+        <!-- Digit Span Real Game Instructions -->
+        <div id="digit-span-real-game-instructions" class="screen hidden">
+            <h2>Great job!</h2>
+            <p>You are now finished practicing the Digit Span games.</p>
+            <p>Next, you will play the actual game.</p>
+            <ul>
+                <li>The sequences will be <span class="important">longer</span> in the real game than in the practice rounds.</li>
+                <li><span class="important">Remember to pay close attention</span> to each digit in the sequence.</li>
+                <li>For forward digit span, type the digits in the <span class="important">same order</span> as you saw them.</li>
+                <li>For backward digit span, type the digits in the <span class="important">reverse order</span> from how you saw them.</li>
+            </ul>
+            <p>You will play <span class="important">5 rounds</span> of each game. From now on you will <span class="important">not receive feedback</span> after each round.</p>
+            <p>Click the button below to begin.</p>
+            <button id="startDigitSpanRealGameButton">Start</button>
         </div>
     </div>
     <script src="script.js"></script>

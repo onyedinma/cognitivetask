@@ -765,3 +765,101 @@ button:hover {
     margin: 0 auto; /* Center horizontally */
     background-color: white; /* Add background color */
 }
+
+/* Digit Span Game Styles */
+.digit {
+    font-size: 120px;
+    font-weight: bold;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 250px;
+    height: 250px;
+    margin: 0 auto;
+}
+
+.example-digits {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.example-digit {
+    width: 70px;
+    height: 70px;
+    background-color: #f8f9fa;
+    border: 2px solid #333;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 36px;
+    font-weight: bold;
+}
+
+.example-response {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.response-input {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.response-input input {
+    width: 200px;
+    height: 50px;
+    font-size: 24px;
+    text-align: center;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+}
+
+#digit-game-area {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: white;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    transform: none;
+    border: none;
+}
+
+.correct-answer {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.incorrect-answer {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.result-feedback {
+    font-size: 24px;
+    margin: 15px 0;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.user-answer {
+    margin-bottom: 10px;
+}
