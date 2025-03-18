@@ -4,7 +4,14 @@ const CONFIG = {
     realMode: { minShapes: 10, maxShapes: 15, displayTime: 1000, blankTime: 250, rounds: 5 },
     countingMode: { minObjects: 5, maxObjects: 10, displayTime: 1000, blankTime: 250 },
     countingRealMode: { minObjects: 10, maxObjects: 15, displayTime: 1000, blankTime: 250, rounds: 5 },
-    digitSpanMode: { displayTime: 1000, blankTime: 500, startDigits: 3, maxDigits: 9 }
+    digitSpanMode: { displayTime: 1000, blankTime: 500, startDigits: 3, maxDigits: 9 },
+    patternRecognitionMode: { 
+        displayTime: 3000, 
+        blankTime: 500, 
+        rounds: 5, 
+        practiceDifficulty: 'easy',
+        realDifficulty: 'medium'
+    }
 };
 
 // Game State Management
@@ -14,10 +21,14 @@ const gameState = {
     isRealGame: false,
     isCountingGame: false,
     isPatternGame: false,
+    isPatternRecognitionGame: false,
     currentRound: 0, 
     gameResults: [],
     correctCounts: null,
-    isBackward: false
+    isBackward: false,
+    currentPattern: null,
+    currentPatternType: null,
+    patternAnswer: null
 };
 
 // Add to the top of script.js
@@ -61,6 +72,161 @@ const SCREENS = {
     // ... other screens
 };
 
+// Pattern Recognition Game Functions
+const patternTypes = [
+    'wordRelationship',
+    'categoryMatching', 
+    'memoryRecall',
+    'visualPattern'
+];
+
+const patternData = {
+    wordRelationship: {
+        easy: [
+            { 
+                prompt: "Mary and Jane hang out", 
+                options: [
+                    "Mary and Jane are friends", 
+                    "Mary and Jane are not friends"
+                ],
+                correctAnswer: "Mary and Jane are friends",
+                explanation: "Hanging out indicates friendship" 
+            },
+            { 
+                prompt: "John dislikes Peter", 
+                options: [
+                    "John and Peter are friends", 
+                    "John and Peter are not friends"
+                ],
+                correctAnswer: "John and Peter are not friends",
+                explanation: "Disliking indicates they are not friends" 
+            }
+        ],
+        medium: [
+            { 
+                prompt: "Alice and Bob frequently argue", 
+                options: [
+                    "Alice and Bob agree on most things", 
+                    "Alice and Bob disagree on most things"
+                ],
+                correctAnswer: "Alice and Bob disagree on most things",
+                explanation: "Arguing frequently indicates disagreement" 
+            },
+            { 
+                prompt: "Claire and David collaborate on projects", 
+                options: [
+                    "Claire and David work well together", 
+                    "Claire and David struggle to work together"
+                ],
+                correctAnswer: "Claire and David work well together",
+                explanation: "Collaborating indicates working well together" 
+            }
+        ]
+    },
+    categoryMatching: {
+        easy: [
+            { 
+                pairs: [
+                    { first: "Teacher", second: "Doctor" },
+                    { first: "Cat", second: "Dog" },
+                    { first: "Red", second: "Blue" }
+                ],
+                question: "Which pair belongs to the same category?",
+                correctAnswer: ["Teacher – Doctor", "Cat – Dog"],
+                explanation: "Teacher and Doctor are professions; Cat and Dog are animals." 
+            },
+            { 
+                pairs: [
+                    { first: "Apple", second: "Banana" },
+                    { first: "Car", second: "Book" },
+                    { first: "Happy", second: "Sad" }
+                ],
+                question: "Which pair belongs to the same category?",
+                correctAnswer: ["Apple – Banana", "Happy – Sad"],
+                explanation: "Apple and Banana are fruits; Happy and Sad are emotions." 
+            }
+        ],
+        medium: [
+            { 
+                pairs: [
+                    { first: "Python", second: "JavaScript" },
+                    { first: "Guitar", second: "Piano" },
+                    { first: "Mercury", second: "Mars" }
+                ],
+                question: "Which pair belongs to the same category?",
+                correctAnswer: ["Python – JavaScript", "Guitar – Piano", "Mercury – Mars"],
+                explanation: "Programming languages, musical instruments, and planets." 
+            }
+        ]
+    },
+    memoryRecall: {
+        easy: [
+            { 
+                sequence: "8 A Z 5 5 3",
+                question: "What was the sequence you saw?",
+                options: [
+                    "8 A Z 5 5 3",
+                    "8 A Z 5 3 5",
+                    "8 Z A 5 5 3"
+                ],
+                correctAnswer: "8 A Z 5 5 3",
+                explanation: "The exact sequence shown was 8 A Z 5 5 3" 
+            },
+            { 
+                sequence: "3 7 K L M 9",
+                question: "What was the sequence you saw?",
+                options: [
+                    "3 7 K L M 9",
+                    "3 K 7 L M 9",
+                    "3 7 L K M 9"
+                ],
+                correctAnswer: "3 7 K L M 9",
+                explanation: "The exact sequence shown was 3 7 K L M 9" 
+            }
+        ],
+        medium: [
+            { 
+                sequence: "P 4 Q 9 R 2 S",
+                question: "What was the sequence you saw?",
+                options: [
+                    "P 4 Q 9 R 2 S",
+                    "P 4 9 Q R 2 S",
+                    "P 4 Q 9 2 R S"
+                ],
+                correctAnswer: "P 4 Q 9 R 2 S",
+                explanation: "The exact sequence shown was P 4 Q 9 R 2 S" 
+            }
+        ]
+    },
+    visualPattern: {
+        easy: [
+            { 
+                pattern: "○ ○ ○ □ □",
+                question: "What comes next in the pattern?",
+                options: ["○", "□", "△"],
+                correctAnswer: "□",
+                explanation: "The pattern follows: 3 circles, then 3 squares" 
+            },
+            { 
+                pattern: "1 2 3 5 8",
+                question: "What comes next in the pattern?",
+                options: ["9", "11", "13"],
+                correctAnswer: "13",
+                explanation: "Each number is the sum of the two preceding numbers (Fibonacci sequence)" 
+            }
+        ],
+        medium: [
+            { 
+                pattern: "A C E G",
+                question: "What comes next in the pattern?",
+                options: ["H", "I", "J"],
+                correctAnswer: "I",
+                explanation: "Every other letter in the alphabet (A, C, E, G, I)" 
+            }
+        ]
+    }
+};
+
 // Utility function for error handling
 function handleError(fn) {
     return function (...args) {
@@ -97,15 +263,41 @@ function selectScheme(scheme) {
     results.scheme = scheme;
     
     // Show the appropriate screen based on the scheme
-    if (scheme === '2') {
-        // Digit Span Game
-        showScreen('pattern-game-intro');
-    } else if (scheme === '4') {
-        // Counting Game
-        showScreen('counting-game-intro');
-    } else {
-        // Shape Counting Game
-        showScreen('welcome');
+    switch (scheme) {
+        case '1':
+            // Object Span Game (Ecological Working Memory Capacity)
+            showScreen('object-span-intro');
+            break;
+        case '2':
+            // Digit Span Game
+            showScreen('pattern-game-intro');
+            break;
+        case '3':
+            // Shape Counting Game
+            showScreen('welcome');
+            break;
+        case '4':
+            // Counting Game
+            showScreen('counting-game-intro');
+            break;
+        case '5':
+            // Task 5
+            showScreen('task-5-intro');
+            break;
+        case '6':
+            // Task 6
+            showScreen('task-6-intro');
+            break;
+        case '7':
+            // Task 7
+            showScreen('task-7-intro');
+            break;
+        case '8':
+            // Task 8
+            showScreen('task-8-intro');
+            break;
+        default:
+            console.error('Invalid scheme selected');
     }
 }
 
@@ -161,7 +353,7 @@ function animateShapes(sequence) {
             // Display for the configured time
             setTimeout(() => {
                 // Hide the shape
-                shapeElement.className = 'shape blank';
+            shapeElement.className = 'shape blank';
                 
                 // Wait during blank time before showing next shape
             setTimeout(() => {
@@ -855,6 +1047,262 @@ function initializeEventListeners() {
 
     // Function to start the real backward digit span game
     // document.getElementById('startDigitSpanBackwardRealGame').addEventListener('click', startDigitSpanBackwardRealGame);
+
+    // Pattern Recognition Game
+    document.getElementById('patternRecognitionIntroButton').addEventListener('click', function() {
+        showScreen('pattern-recognition-example');
+    });
+
+    document.getElementById('startPatternPracticeButton').addEventListener('click', function() {
+        startPatternGame(false); // false = practice mode
+    });
+
+    function startPatternGame(isReal) {
+        gameState.isRealGame = isReal;
+        gameState.isPatternRecognitionGame = true;
+        gameState.currentRound = isReal ? 1 : 0;
+        
+        if (isReal) {
+            document.getElementById('round-number').textContent = gameState.currentRound;
+            showScreen('round-start');
+        } else {
+            showPatternGame();
+        }
+    }
+
+    function showPatternGame() {
+        // Hide all screens except the pattern game area
+        const screens = document.querySelectorAll('.screen');
+        screens.forEach(screen => screen.classList.add('hidden'));
+        
+        const gameArea = document.getElementById('pattern-game-area');
+        gameArea.classList.remove('hidden');
+        
+        // Select a random pattern type
+        const patternType = patternTypes[Math.floor(Math.random() * patternTypes.length)];
+        gameState.currentPatternType = patternType;
+        
+        // Select difficulty based on game mode
+        const difficulty = gameState.isRealGame ? 
+            CONFIG.patternRecognitionMode.realDifficulty : 
+            CONFIG.patternRecognitionMode.practiceDifficulty;
+        
+        // Get patterns for the selected type and difficulty
+        const patterns = patternData[patternType][difficulty];
+        
+        // Select a random pattern
+        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+        gameState.currentPattern = pattern;
+        
+        // Display pattern based on type
+        displayPattern(patternType, pattern);
+    }
+
+    function displayPattern(patternType, pattern) {
+        const contentArea = document.querySelector('.pattern-content');
+        contentArea.innerHTML = '';
+        
+        const responseArea = document.querySelector('.response-area');
+        responseArea.innerHTML = '';
+        
+        // Set up content based on pattern type
+        switch(patternType) {
+            case 'wordRelationship':
+                contentArea.innerHTML = `<h2>Word Relationship</h2><p class="pattern-prompt">${pattern.prompt}</p>`;
+                break;
+                
+            case 'categoryMatching':
+                contentArea.innerHTML = `<h2>Category Matching</h2>`;
+                const pairsContainer = document.createElement('div');
+                pairsContainer.className = 'pairs-container';
+                
+                pattern.pairs.forEach(pair => {
+                    const pairElement = document.createElement('div');
+                    pairElement.className = 'pair';
+                    pairElement.innerHTML = `<span>${pair.first} – ${pair.second}</span>`;
+                    pairsContainer.appendChild(pairElement);
+                });
+                
+                contentArea.appendChild(pairsContainer);
+                contentArea.innerHTML += `<p class="pattern-question">${pattern.question}</p>`;
+                break;
+                
+            case 'memoryRecall':
+                contentArea.innerHTML = `<h2>Memory Recall</h2><p class="pattern-sequence">${pattern.sequence}</p>`;
+                
+                // Hide sequence after display time and show answer form
+                setTimeout(() => {
+                    contentArea.innerHTML = `<h2>Memory Recall</h2><p class="pattern-question">${pattern.question}</p>`;
+                    showPatternAnswerForm(patternType, pattern);
+                }, CONFIG.patternRecognitionMode.displayTime);
+                return; // Exit early to prevent showing answer form immediately
+                
+            case 'visualPattern':
+                contentArea.innerHTML = `<h2>Visual Pattern</h2><p class="pattern-sequence">${pattern.pattern}</p>`;
+                contentArea.innerHTML += `<p class="pattern-question">${pattern.question}</p>`;
+                break;
+        }
+        
+        // Show answer form after display time for all except memory recall (which is handled separately)
+        if (patternType !== 'memoryRecall') {
+            setTimeout(() => {
+                showPatternAnswerForm(patternType, pattern);
+            }, CONFIG.patternRecognitionMode.displayTime);
+        }
+    }
+
+    function showPatternAnswerForm(patternType, pattern) {
+        // Hide game area and show answer form
+        document.getElementById('pattern-game-area').classList.add('hidden');
+        const answerForm = document.getElementById('pattern-answer-form');
+        answerForm.classList.remove('hidden');
+        
+        const responseContainer = document.getElementById('pattern-response-container');
+        responseContainer.innerHTML = '';
+        
+        // Create response interface based on pattern type
+        switch(patternType) {
+            case 'wordRelationship':
+                pattern.options.forEach(option => {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'pattern-option';
+                    optionElement.innerHTML = `
+                        <input type="radio" name="wordRelationship" value="${option}" id="${option.replace(/\s+/g, '-')}">
+                        <label for="${option.replace(/\s+/g, '-')}">${option}</label>
+                    `;
+                    responseContainer.appendChild(optionElement);
+                });
+                break;
+                
+            case 'categoryMatching':
+                pattern.pairs.forEach(pair => {
+                    const pairElement = document.createElement('div');
+                    pairElement.className = 'pattern-option';
+                    const pairText = `${pair.first} – ${pair.second}`;
+                    pairElement.innerHTML = `
+                        <input type="checkbox" name="categoryMatching" value="${pairText}" id="${pairText.replace(/\s+/g, '-')}">
+                        <label for="${pairText.replace(/\s+/g, '-')}">${pairText}</label>
+                    `;
+                    responseContainer.appendChild(pairElement);
+                });
+                break;
+                
+            case 'memoryRecall':
+            case 'visualPattern':
+                pattern.options.forEach(option => {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = 'pattern-option';
+                    optionElement.innerHTML = `
+                        <input type="radio" name="patternResponse" value="${option}" id="${option.replace(/\s+/g, '-')}">
+                        <label for="${option.replace(/\s+/g, '-')}">${option}</label>
+                    `;
+                    responseContainer.appendChild(optionElement);
+                });
+                break;
+        }
+    }
+
+    // Handle pattern answer submission
+    document.getElementById('submitPatternAnswerButton').addEventListener('click', function() {
+        const patternType = gameState.currentPatternType;
+        const pattern = gameState.currentPattern;
+        let userAnswer = null;
+        let isCorrect = false;
+        
+        // Get user's answer based on pattern type
+        switch(patternType) {
+            case 'wordRelationship':
+            case 'visualPattern':
+                const selectedOption = document.querySelector('input[name="patternResponse"]:checked') || 
+                                      document.querySelector('input[name="wordRelationship"]:checked');
+                userAnswer = selectedOption ? selectedOption.value : null;
+                isCorrect = userAnswer === pattern.correctAnswer;
+                break;
+                
+            case 'memoryRecall':
+                const selectedMemory = document.querySelector('input[name="patternResponse"]:checked');
+                userAnswer = selectedMemory ? selectedMemory.value : null;
+                isCorrect = userAnswer === pattern.correctAnswer;
+                break;
+                
+            case 'categoryMatching':
+                const selectedPairs = document.querySelectorAll('input[name="categoryMatching"]:checked');
+                userAnswer = Array.from(selectedPairs).map(input => input.value);
+                
+                // Check if user selected the correct number of pairs and all correct pairs
+                isCorrect = userAnswer.length === pattern.correctAnswer.length && 
+                            pattern.correctAnswer.every(correct => userAnswer.includes(correct));
+                break;
+        }
+        
+        // Store results
+        if (gameState.isRealGame) {
+            storePatternResults(patternType, pattern, userAnswer, isCorrect);
+        }
+        
+        // Show results
+        showPatternResults(patternType, pattern, userAnswer, isCorrect);
+    });
+
+    function storePatternResults(patternType, pattern, userAnswer, isCorrect) {
+        const result = {
+            round: gameState.currentRound,
+            patternType: patternType,
+            prompt: patternType === 'wordRelationship' ? pattern.prompt : 
+                    patternType === 'categoryMatching' ? pattern.question : 
+                    patternType === 'memoryRecall' ? pattern.sequence : 
+                    pattern.pattern,
+            correctAnswer: pattern.correctAnswer,
+            userAnswer: userAnswer,
+            isCorrect: isCorrect,
+            timestamp: new Date().toISOString()
+        };
+        
+        gameState.gameResults.push(result);
+    }
+
+    function showPatternResults(patternType, pattern, userAnswer, isCorrect) {
+        const resultsScreen = document.getElementById('pattern-results');
+        const feedbackArea = document.getElementById('pattern-feedback');
+        
+        // Hide answer form and show results
+        document.getElementById('pattern-answer-form').classList.add('hidden');
+        resultsScreen.classList.remove('hidden');
+        
+        // Show feedback
+        feedbackArea.innerHTML = `
+            <div class="result-status ${isCorrect ? 'correct' : 'incorrect'}">
+                <p>${isCorrect ? 'Correct!' : 'Incorrect'}</p>
+            </div>
+            <div class="result-details">
+                <p><strong>Your answer:</strong> ${Array.isArray(userAnswer) ? userAnswer.join(', ') : userAnswer || 'No answer provided'}</p>
+                <p><strong>Correct answer:</strong> ${Array.isArray(pattern.correctAnswer) ? pattern.correctAnswer.join(', ') : pattern.correctAnswer}</p>
+                <p><strong>Explanation:</strong> ${pattern.explanation}</p>
+            </div>
+        `;
+    }
+
+    // Handle next round after showing results
+    document.getElementById('nextPatternRoundButton').addEventListener('click', function() {
+        if (gameState.isRealGame) {
+            if (gameState.currentRound < CONFIG.patternRecognitionMode.rounds) {
+                gameState.currentRound++;
+                document.getElementById('round-number').textContent = gameState.currentRound;
+                showScreen('round-start');
+            } else {
+                // Game complete
+                showScreen('game-complete');
+            }
+        } else {
+            // Show real game instructions after practice
+            showScreen('pattern-recognition-real-intro');
+        }
+    });
+
+    // Start real pattern recognition game
+    document.getElementById('startPatternRealGameButton').addEventListener('click', function() {
+        startPatternGame(true); // true = real mode
+    });
 }
 
 // Game Logic
@@ -1463,4 +1911,326 @@ function startDigitSpanBackwardRealGame() {
     
     // Start the digit sequence
     startDigitSequence();
+}
+
+// Task Initialization Functions
+function startTask1aPractice() {
+    console.log("Starting Task 1a Practice");
+    // Initialize task 1a practice logic here
+    showScreen('task-1a-practice');
+}
+
+function startTask1bPractice() {
+    console.log("Starting Task 1b Practice");
+    // Initialize task 1b practice logic here
+    showScreen('task-1b-practice');
+}
+
+function startTask2aPractice() {
+    console.log("Starting Task 2a Practice");
+    // Initialize task 2a practice logic here
+    showScreen('task-2a-practice');
+}
+
+function startTask2bPractice() {
+    console.log("Starting Task 2b Practice");
+    // Initialize task 2b practice logic here
+    showScreen('task-2b-practice');
+}
+
+function startTask3aPractice() {
+    console.log("Starting Task 3a Practice");
+    // Initialize task 3a practice logic here
+    showScreen('task-3a-practice');
+}
+
+function startTask3bPractice() {
+    console.log("Starting Task 3b Practice");
+    // Initialize task 3b practice logic here
+    showScreen('task-3b-practice');
+}
+
+function startTask4aPractice() {
+    console.log("Starting Task 4a Practice");
+    // Initialize task 4a practice logic here
+    showScreen('task-4a-practice');
+}
+
+function startTask4bPractice() {
+    console.log("Starting Task 4b Practice");
+    // Initialize task 4b practice logic here
+    showScreen('task-4b-practice');
+}
+
+// Event Listeners for Task Buttons
+document.getElementById('startTask1aPracticeButton').addEventListener('click', startTask1aPractice);
+document.getElementById('startTask1bPracticeButton').addEventListener('click', startTask1bPractice);
+document.getElementById('startTask2aPracticeButton').addEventListener('click', startTask2aPractice);
+document.getElementById('startTask2bPracticeButton').addEventListener('click', startTask2bPractice);
+document.getElementById('startTask3aPracticeButton').addEventListener('click', startTask3aPractice);
+document.getElementById('startTask3bPracticeButton').addEventListener('click', startTask3bPractice);
+document.getElementById('startTask4aPracticeButton').addEventListener('click', startTask4aPractice);
+document.getElementById('startTask4bPracticeButton').addEventListener('click', startTask4bPractice);
+
+// Object Span Game Configuration
+const OBJECT_SPAN_CONFIG = {
+    displayTime: 1000,
+    blankTime: 500,
+    startObjects: 3,
+    maxObjects: 9,
+    objectMapping: {
+        1: { name: 'bread', image: 'images/Bread.png' },
+        2: { name: 'car', image: 'images/Car.png' },
+        3: { name: 'pot', image: 'images/Pot.png' },
+        4: { name: 'money', image: 'images/Money.png' },
+        5: { name: 'book', image: 'images/Book.png' },
+        6: { name: 'chair', image: 'images/Chair.png' },
+        7: { name: 'shoe', image: 'images/Shoe.png' },
+        8: { name: 'bag', image: 'images/Bag.png' },
+        9: { name: 'computer', image: 'images/Computer.png' }
+    }
+};
+
+// Object Span Game State
+const objectSpanState = {
+    sequence: [],
+    isBackward: false,
+    currentLevel: OBJECT_SPAN_CONFIG.startObjects,
+    successes: 0,
+    failures: 0,
+    isRealGame: false,
+    results: []
+};
+
+// Event listeners for Object Span game
+document.getElementById('objectSpanIntroButton')?.addEventListener('click', function() {
+    showScreen('object-span-example');
+});
+
+document.getElementById('objectSpanGoBackButton')?.addEventListener('click', function() {
+    showScreen('object-span-intro');
+});
+
+document.getElementById('startObjectSpanPracticeButton')?.addEventListener('click', function() {
+    startObjectSpanPractice();
+});
+
+document.getElementById('startObjectSpanBackwardButton')?.addEventListener('click', function() {
+    startObjectSpanBackwardPractice();
+});
+
+document.getElementById('submitObjectResponseButton')?.addEventListener('click', function() {
+    submitObjectSpanResponse();
+});
+
+document.getElementById('nextObjectSpanButton')?.addEventListener('click', function() {
+    if (objectSpanState.isRealGame) {
+        startObjectSequence();
+    } else {
+        if (objectSpanState.isBackward) {
+            completeBackwardObjectSpanPractice();
+        } else {
+            completeForwardObjectSpanPractice();
+        }
+    }
+});
+
+document.getElementById('startObjectSpanRealGameButton')?.addEventListener('click', function() {
+    startObjectSpanRealGame();
+});
+
+document.getElementById('finishObjectSpanButton')?.addEventListener('click', function() {
+    showScreen('counter-balance');
+});
+
+// Object Span Game Functions
+function startObjectSpanPractice() {
+    objectSpanState.isRealGame = false;
+    objectSpanState.isBackward = false;
+    objectSpanState.currentLevel = OBJECT_SPAN_CONFIG.startObjects;
+    objectSpanState.successes = 0;
+    objectSpanState.failures = 0;
+    objectSpanState.results = [];
+    
+    startObjectSequence();
+}
+
+function startObjectSpanBackwardPractice() {
+    objectSpanState.isRealGame = false;
+    objectSpanState.isBackward = true;
+    objectSpanState.currentLevel = OBJECT_SPAN_CONFIG.startObjects;
+    objectSpanState.successes = 0;
+    objectSpanState.failures = 0;
+    objectSpanState.results = [];
+    
+    startObjectSequence();
+}
+
+function startObjectSpanRealGame() {
+    objectSpanState.isRealGame = true;
+    objectSpanState.isBackward = false;
+    objectSpanState.currentLevel = OBJECT_SPAN_CONFIG.startObjects;
+    objectSpanState.successes = 0;
+    objectSpanState.failures = 0;
+    objectSpanState.results = [];
+    
+    startObjectSequence();
+}
+
+function startObjectSequence() {
+    // Generate a sequence of digits from 1-9 of the current level length
+    const objectSequence = [];
+    for (let i = 0; i < objectSpanState.currentLevel; i++) {
+        // Generate random number from 1-9
+        const objectDigit = Math.floor(Math.random() * 9) + 1;
+        objectSequence.push(objectDigit);
+    }
+    
+    objectSpanState.sequence = objectSequence;
+    
+    console.log("Object Sequence:", objectSequence.map(d => OBJECT_SPAN_CONFIG.objectMapping[d].name).join(' '));
+    
+    // Show the game area and animate the digits
+    showScreen('object-game-area');
+    
+    // Start the animation
+    animateObjects(objectSequence);
+}
+
+function animateObjects(sequence) {
+    let index = 0;
+    const objectDisplay = document.querySelector('.object-display');
+    objectDisplay.innerHTML = ''; // Clear any previous content
+    
+    function showNextObject() {
+        if (index >= sequence.length) {
+            // End of sequence, show response form
+            setTimeout(() => {
+                showScreen('object-span-response');
+                document.getElementById('object-response').value = '';
+                document.getElementById('object-response').focus();
+            }, OBJECT_SPAN_CONFIG.blankTime);
+            return;
+        }
+        
+        const objectDigit = sequence[index];
+        const objectData = OBJECT_SPAN_CONFIG.objectMapping[objectDigit];
+        
+        // Display the object image
+        objectDisplay.innerHTML = `<img src="${objectData.image}" alt="${objectData.name}">`;
+        
+        // Wait for display time, then hide
+        setTimeout(() => {
+            objectDisplay.innerHTML = ''; // Clear the display
+            
+            // Wait during blank time before showing next object
+            setTimeout(() => {
+                index++;
+                showNextObject();
+            }, OBJECT_SPAN_CONFIG.blankTime);
+        }, OBJECT_SPAN_CONFIG.displayTime);
+    }
+    
+    // Start showing objects
+    showNextObject();
+}
+
+function submitObjectSpanResponse() {
+    const userResponse = document.getElementById('object-response').value.trim().toLowerCase();
+    
+    // Convert the sequence to object names
+    const correctSequence = objectSpanState.sequence.map(digit => 
+        OBJECT_SPAN_CONFIG.objectMapping[digit].name
+    );
+    
+    // If backward, reverse the correct sequence
+    const expectedResponse = objectSpanState.isBackward ? 
+        [...correctSequence].reverse().join(' ') : 
+        correctSequence.join(' ');
+    
+    // Check if response is correct
+    const isCorrect = userResponse === expectedResponse;
+    
+    // Store result
+    const result = {
+        level: objectSpanState.currentLevel,
+        userResponse: userResponse,
+        correctResponse: expectedResponse,
+        isCorrect: isCorrect,
+        isBackward: objectSpanState.isBackward,
+        timestamp: new Date().toISOString()
+    };
+    objectSpanState.results.push(result);
+    
+    // Update success/failure count
+    if (isCorrect) {
+        objectSpanState.successes++;
+        if (objectSpanState.successes >= 2) {
+            // Two consecutive successes at this level, move to next level
+            objectSpanState.successes = 0;
+            objectSpanState.failures = 0;
+            objectSpanState.currentLevel++;
+        }
+    } else {
+        objectSpanState.failures++;
+        if (objectSpanState.failures >= 2) {
+            // Two consecutive failures at this level, end game
+            if (objectSpanState.isRealGame) {
+                if (objectSpanState.isBackward) {
+                    // End of backward real game
+                    showScreen('object-span-complete');
+                    return;
+                } else {
+                    // End of forward real game, start backward
+                    completeBackwardObjectSpanPractice();
+                    return;
+                }
+            }
+        }
+    }
+    
+    // Show results in the real game only if it's not correct
+    if (objectSpanState.isRealGame && !isCorrect) {
+        showObjectSpanResults(result);
+    } else if (!objectSpanState.isRealGame) {
+        // Always show results in practice mode
+        showObjectSpanResults(result);
+    } else {
+        // Real game and correct response, continue to next sequence
+        startObjectSequence();
+    }
+}
+
+function showObjectSpanResults(result) {
+    document.getElementById('user-object-response').textContent = result.userResponse || 'No response provided';
+    document.getElementById('correct-object-response').textContent = result.correctResponse;
+    
+    const feedback = document.getElementById('object-span-result-feedback');
+    if (result.isCorrect) {
+        feedback.textContent = 'Correct! You remembered the sequence correctly.';
+        feedback.className = 'result-feedback correct-answer';
+    } else {
+        feedback.textContent = 'Incorrect. Try to remember the sequence exactly as shown.';
+        feedback.className = 'result-feedback incorrect-answer';
+    }
+    
+    showScreen('object-span-results');
+}
+
+function completeForwardObjectSpanPractice() {
+    showScreen('object-span-backward-example');
+}
+
+function completeBackwardObjectSpanPractice() {
+    showScreen('object-span-real-game-instructions');
+}
+
+function completeForwardObjectSpanRealGame() {
+    objectSpanState.isBackward = true;
+    objectSpanState.currentLevel = OBJECT_SPAN_CONFIG.startObjects;
+    objectSpanState.successes = 0;
+    objectSpanState.failures = 0;
+    
+    // Show the backward instructions before starting
+    showScreen('object-span-backward-example');
 }

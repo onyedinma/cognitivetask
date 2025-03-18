@@ -29,6 +29,10 @@
                 <button class="scheme-button" data-scheme="2">2</button>
                 <button class="scheme-button" data-scheme="3">3</button>
                 <button class="scheme-button" data-scheme="4">4</button>
+                <button class="scheme-button" data-scheme="5">5</button>
+                <button class="scheme-button" data-scheme="6">6</button>
+                <button class="scheme-button" data-scheme="7">7</button>
+                <button class="scheme-button" data-scheme="8">8</button>
             </div>
         </div>
 
@@ -215,10 +219,10 @@
         </div>
 
         <!-- Answer Form - Updated without radio buttons -->
-        <div id="answer-form" class="screen hidden">
+    <div id="answer-form" class="screen hidden">
             <h2>How many of each shape did you count?</h2>
             
-            <div class="question">
+        <div class="question">
                 <p>Squares:</p>
                 <div class="number-input">
                     <button class="decrement" data-target="square-count">-</button>
@@ -233,10 +237,10 @@
                     <button class="decrement" data-target="triangle-count">-</button>
                     <input type="number" id="triangle-count" min="0" max="9" value="0">
                     <button class="increment" data-target="triangle-count">+</button>
-                </div>
             </div>
-            
-            <div class="question">
+        </div>
+        
+        <div class="question">
                 <p>Circles:</p>
                 <div class="number-input">
                     <button class="decrement" data-target="circle-count">-</button>
@@ -251,8 +255,8 @@
         <!-- Counting Game Answer Form -->
         <div id="counting-answer-form" class="screen hidden">
             <h2>How many of each object did you count?</h2>
-            
-            <div class="question">
+        
+        <div class="question">
                 <p>$5 Bills:</p>
                 <div class="number-input">
                     <button class="decrement" data-target="bill-count">-</button>
@@ -267,9 +271,9 @@
                     <button class="decrement" data-target="bus-count">-</button>
                     <input type="number" id="bus-count" min="0" max="9" value="0">
                     <button class="increment" data-target="bus-count">+</button>
-                </div>
             </div>
-            
+        </div>
+        
             <div class="question">
                 <p>Faces:</p>
                 <div class="number-input">
@@ -277,23 +281,23 @@
                     <input type="number" id="face-count" min="0" max="9" value="0">
                     <button class="increment" data-target="face-count">+</button>
                 </div>
-            </div>
-            
+    </div>
+
             <button id="submitCountingAnswersButton">continue</button>
         </div>
 
         <!-- Results -->
-        <div id="results" class="screen hidden">
-            <h2>The correct number of each shape was:</h2>
-            <p>Squares: <span id="correct-squares"></span></p>
-            <p>Triangles: <span id="correct-triangles"></span></p>
-            <p>Circles: <span id="correct-circles"></span></p>
-            
-            <h3>Your answers:</h3>
-            <p class="user-answer">Squares: <span id="user-squares"></span></p>
-            <p class="user-answer">Triangles: <span id="user-triangles"></span></p>
-            <p class="user-answer">Circles: <span id="user-circles"></span></p>
-            
+    <div id="results" class="screen hidden">
+        <h2>The correct number of each shape was:</h2>
+        <p>Squares: <span id="correct-squares"></span></p>
+        <p>Triangles: <span id="correct-triangles"></span></p>
+        <p>Circles: <span id="correct-circles"></span></p>
+        
+        <h3>Your answers:</h3>
+        <p class="user-answer">Squares: <span id="user-squares"></span></p>
+        <p class="user-answer">Triangles: <span id="user-triangles"></span></p>
+        <p class="user-answer">Circles: <span id="user-circles"></span></p>
+        
             <button id="nextRoundButton">continue</button>
         </div>
 
@@ -310,12 +314,12 @@
             <p class="user-answer">Faces: <span id="user-faces"></span></p>
             
             <button id="nextCountingRoundButton">continue</button>
-        </div>
+    </div>
 
         <!-- Practice Complete Prompt -->
-        <div id="practice-complete-prompt" class="screen hidden">
-            <p>Would you like to practice the Shape Counting game again?</p>
-            <div class="button-group">
+    <div id="practice-complete-prompt" class="screen hidden">
+        <p>Would you like to practice the Shape Counting game again?</p>
+        <div class="button-group">
                 <button id="readyToContinueButton">No, I am ready to continue</button>
                 <button id="practiceAgainButton">Yes, practice again</button>
             </div>
@@ -327,15 +331,15 @@
             <div class="button-group">
                 <button id="countingReadyToContinueButton">No, I am ready to continue</button>
                 <button id="countingPracticeAgainButton">Yes, practice again</button>
-            </div>
         </div>
+    </div>
 
         <!-- Real Game Instructions -->
-        <div id="real-game-instructions" class="screen hidden">
-            <h2>Great job!</h2>
-            <p>You are now finished practicing the Shape Counting game.</p>
-            <p>Next, you will play the actual game.</p>
-            <ul>
+    <div id="real-game-instructions" class="screen hidden">
+        <h2>Great job!</h2>
+        <p>You are now finished practicing the Shape Counting game.</p>
+        <p>Next, you will play the actual game.</p>
+        <ul>
                 <li>The series will be <span class="important">longer</span> in the real game than in the practice round.</li>
                 <li><span class="important">Remember to keep a running count</span> of each type of shape you see.</li>
             </ul>
@@ -352,24 +356,24 @@
             <ul>
                 <li>The series will be <span class="important">longer</span> in the real game than in the practice round.</li>
                 <li><span class="important">Remember to keep a running count</span> of each type of object you see.</li>
-            </ul>
+        </ul>
             <p>You will play <span class="important">5 rounds</span> of the game. From now on you will <span class="important">not receive feedback</span> after each round.</p>
-            <p>Click the button below to begin.</p>
+        <p>Click the button below to begin.</p>
             <button id="startCountingRealGameButton">Start</button>
-        </div>
+    </div>
 
         <!-- Round Start -->
-        <div id="round-start" class="screen hidden">
-            <h2>You are about to start round <span id="round-number"></span>.</h2>
-            <p>Click start when you are ready!</p>
+    <div id="round-start" class="screen hidden">
+        <h2>You are about to start round <span id="round-number"></span>.</h2>
+        <p>Click start when you are ready!</p>
             <button id="beginRoundButton">Start</button>
         </div>
 
         <!-- Game Complete -->
-        <div id="game-complete" class="screen hidden">
-            <h2>Great work!</h2>
-            <p>You are now finished playing this game.</p>
-            <p>Click 'finish' to continue.</p>
+    <div id="game-complete" class="screen hidden">
+        <h2>Great work!</h2>
+        <p>You are now finished playing this game.</p>
+        <p>Click 'finish' to continue.</p>
             <button id="finishGameButton">Finish</button>
         </div>
 
@@ -387,6 +391,308 @@
             <p>You will play <span class="important">5 rounds</span> of each game. From now on you will <span class="important">not receive feedback</span> after each round.</p>
             <p>Click the button below to begin.</p>
             <button id="startDigitSpanRealGameButton">Start</button>
+        </div>
+
+        <!-- Pattern Recognition Game Intro (for scheme 1) -->
+        <div id="pattern-recognition-intro" class="screen hidden">
+            <h2>You will now play a Pattern Recognition game.</h2>
+            <p>In this game, you will see different types of patterns and relationships.</p>
+            <p>Your task is to identify the correct patterns, relationships, or complete sequences based on what you've seen.</p>
+            <p>Click 'continue' to see an example.</p>
+            <button id="patternRecognitionIntroButton">continue</button>
+        </div>
+        
+        <!-- Pattern Recognition Example -->
+        <div id="pattern-recognition-example" class="screen hidden">
+            <h2>Example:</h2>
+            <div class="example-container">
+                <div class="pattern-example">
+                    <p>Sequence: 8 A Z 5 5 3</p>
+                    <p>Your task: Memorize and recall this sequence.</p>
+                </div>
+                <div class="pattern-example">
+                    <p>Word Relationship:</p>
+                    <p>Teacher – Doctor</p>
+                    <p>Your task: Identify if these belong to the same category.</p>
+                </div>
+            </div>
+            <p>In the real game, you'll see different patterns and will need to either:</p>
+            <ul>
+                <li>Identify correct relationships</li>
+                <li>Match objects to categories</li>
+                <li>Recall sequences from memory</li>
+                <li>Recognize visual patterns</li>
+            </ul>
+            <button id="startPatternPracticeButton">Start Practice</button>
+        </div>
+        
+        <!-- Pattern Recognition Game Area -->
+        <div id="pattern-game-area" class="screen hidden">
+            <div class="pattern-content">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+            <div class="response-area">
+                <!-- Response options will be dynamically inserted here -->
+            </div>
+        </div>
+        
+        <!-- Pattern Recognition Answer Form -->
+        <div id="pattern-answer-form" class="screen hidden">
+            <h2>Your Response</h2>
+            <div id="pattern-response-container">
+                <!-- Will be dynamically populated based on task type -->
+            </div>
+            <button id="submitPatternAnswerButton">continue</button>
+        </div>
+        
+        <!-- Pattern Recognition Results -->
+        <div id="pattern-results" class="screen hidden">
+            <h2>Results:</h2>
+            <div id="pattern-feedback">
+                <!-- Will be dynamically populated with feedback -->
+            </div>
+            <button id="nextPatternRoundButton">continue</button>
+        </div>
+        
+        <!-- Pattern Recognition Real Game Instructions -->
+        <div id="pattern-recognition-real-intro" class="screen hidden">
+            <h2>Great job!</h2>
+            <p>You are now finished practicing the Pattern Recognition game.</p>
+            <p>Next, you will play the actual game.</p>
+            <ul>
+                <li>The patterns will be <span class="important">more complex</span> in the real game.</li>
+                <li><span class="important">Pay close attention</span> to the details of each pattern.</li>
+                <li>Try to identify the underlying relationships and rules.</li>
+            </ul>
+            <p>You will play <span class="important">5 rounds</span> of the game.</p>
+            <p>Click the button below to begin.</p>
+            <button id="startPatternRealGameButton">Start</button>
+        </div>
+
+        <!-- Working Memory Updating Task 1a: Abstract Version -->
+        <div id="task-1a-intro" class="screen hidden">
+            <h2>Working Memory Updating - Abstract Version</h2>
+            <p>In this task, you will see sequences of numbers and will need to update them mentally.</p>
+            <button id="startTask1aPracticeButton">Start Practice</button>
+        </div>
+
+        <!-- Working Memory Updating Task 1b: Ecological Version -->
+        <div id="task-1b-intro" class="screen hidden">
+            <h2>Working Memory Updating - Ecological Version</h2>
+            <p>In this task, you will track items in a shopping list instead of numbers.</p>
+            <button id="startTask1bPracticeButton">Start Practice</button>
+        </div>
+
+        <!-- Working Memory Capacity Task 2a: Abstract Version -->
+        <div id="task-2a-intro" class="screen hidden">
+            <h2>Working Memory Capacity - Abstract Version</h2>
+            <p>In this task, you will recall sequences of numbers in forward and backward conditions.</p>
+            <button id="startTask2aPracticeButton">Start Practice</button>
+        </div>
+
+        <!-- Working Memory Capacity Task 2b: Ecological Version -->
+        <div id="task-2b-intro" class="screen hidden">
+            <h2>Working Memory Capacity - Ecological Version</h2>
+            <p>In this task, you will recall sequences of real-world objects.</p>
+            <button id="startTask2bPracticeButton">Start Practice</button>
+        </div>
+
+        <!-- Spatial Working Memory Task 3a: Abstract Version -->
+        <div id="task-3a-intro" class="screen hidden">
+            <h2>Spatial Working Memory - Abstract Version</h2>
+            <p>In this task, you will memorize locations of shapes and identify which have moved.</p>
+            <button id="startTask3aPracticeButton">Start Practice</button>
+        </div>
+
+        <!-- Spatial Working Memory Task 3b: Ecological Version -->
+        <div id="task-3b-intro" class="screen hidden">
+            <h2>Spatial Working Memory - Ecological Version</h2>
+            <p>In this task, you will memorize locations of real-world objects and identify which have moved.</p>
+            <button id="startTask3bPracticeButton">Start Practice</button>
+        </div>
+
+        <!-- Deductive Reasoning Task 4a: Abstract Version -->
+        <div id="task-4a-intro" class="screen hidden">
+            <h2>Deductive Reasoning - Abstract Version</h2>
+            <p>In this task, you will solve logical puzzles using abstract concepts.</p>
+            <button id="startTask4aPracticeButton">Start Practice</button>
+        </div>
+
+        <!-- Deductive Reasoning Task 4b: Ecological Version -->
+        <div id="task-4b-intro" class="screen hidden">
+            <h2>Deductive Reasoning - Ecological Version</h2>
+            <p>In this task, you will solve logical puzzles using real-world rules.</p>
+            <button id="startTask4bPracticeButton">Start Practice</button>
+    </div>
+
+        <!-- Working Memory Capacity (Ecological) Intro -->
+        <div id="object-span-intro" class="screen hidden">
+            <h2>Working Memory Capacity Task</h2>
+            <p>In this task, you will be presented with a sequence of common objects, one at a time on the screen. Your job is to <span class="important">REMEMBER the sequence</span> of objects.</p>
+            <p>After you see each object sequence, you will be asked to type the names of the objects in exactly the order you saw them in.</p>
+            <p>Click 'continue' to see an example.</p>
+            <button id="objectSpanIntroButton">continue</button>
+        </div>
+
+        <!-- Object Span Example -->
+        <div id="object-span-example" class="screen hidden">
+            <h2>In this example, let's say you see the following sequence of objects:</h2>
+            
+            <div class="example-objects-sequence">
+                <div class="example-object-container">
+                    <img src="images/Bread.png" alt="Bread" class="example-object-image">
+                    <p>Bread</p>
+                </div>
+                <div class="example-object-container">
+                    <img src="images/Car.png" alt="Car" class="example-object-image">
+                    <p>Car</p>
+                </div>
+                <div class="example-object-container">
+                    <img src="images/Book.png" alt="Book" class="example-object-image">
+                    <p>Book</p>
+                </div>
+            </div>
+            
+            <h2>In this example, the correct response would be:</h2>
+            
+            <div class="example-response">
+                <p><strong>Type: <span class="important">bread car book</span></strong></p>
+            </div>
+            
+            <p>Click the 'continue' button to practice the <strong>Object Memory</strong> task.</p>
+            
+            <div class="button-group">
+                <button id="objectSpanGoBackButton">go back</button>
+                <button id="startObjectSpanPracticeButton">continue</button>
+            </div>
+        </div>
+
+        <!-- Object Span Backward Example -->
+        <div id="object-span-backward-example" class="screen hidden">
+            <h2>Very good! In the next part of the task, you will continue to see sequences of objects.</h2>
+            <p>But now you will be asked to type the names of the objects in exactly the <span class="important">OPPOSITE</span> order you saw them in.</p>
+            <p>That means, if you see the sequence 'Bread Car', you type 'car bread'.</p>
+            
+            <div class="example-objects-sequence">
+                <div class="example-object-container">
+                    <img src="images/Pot.png" alt="Pot" class="example-object-image">
+                    <p>Pot</p>
+                </div>
+                <div class="example-object-container">
+                    <img src="images/Shoe.png" alt="Shoe" class="example-object-image">
+                    <p>Shoe</p>
+                </div>
+                <div class="example-object-container">
+                    <img src="images/Bag.png" alt="Bag" class="example-object-image">
+                    <p>Bag</p>
+                </div>
+            </div>
+            
+            <h2>In this example, the correct response would be:</h2>
+            
+            <div class="example-response">
+                <p><strong>Type: <span class="important">bag shoe pot</span></strong></p>
+            </div>
+            
+            <p>Click the 'continue' button to practice the <strong>Backward Object Memory</strong> task.</p>
+            
+            <div class="button-group">
+                <button id="startObjectSpanBackwardButton">continue</button>
+            </div>
+        </div>
+
+        <!-- Object Span Game Area -->
+        <div id="object-game-area" class="screen hidden">
+            <div class="object-display"></div>
+        </div>
+
+        <!-- Object Span Response Form -->
+        <div id="object-span-response" class="screen hidden">
+            <h2>Please type in the names of the objects in the correct order and press enter.</h2>
+            <p>Separate each object name with a space.</p>
+            
+            <div class="response-input">
+                <input type="text" id="object-response" autocomplete="off">
+            </div>
+            
+            <button id="submitObjectResponseButton">Submit</button>
+            
+            <div class="object-names-reference">
+                <h3>Object Names Reference:</h3>
+                <div class="object-reference-grid">
+                    <div class="object-reference-item">
+                        <img src="images/Bread.png" alt="Bread" class="reference-image">
+                        <p>bread</p>
+                    </div>
+                    <div class="object-reference-item">
+                        <img src="images/Car.png" alt="Car" class="reference-image">
+                        <p>car</p>
+                    </div>
+                    <div class="object-reference-item">
+                        <img src="images/Pot.png" alt="Pot" class="reference-image">
+                        <p>pot</p>
+                    </div>
+                    <div class="object-reference-item">
+                        <img src="images/Money.png" alt="Money" class="reference-image">
+                        <p>money</p>
+                    </div>
+                    <div class="object-reference-item">
+                        <img src="images/Book.png" alt="Book" class="reference-image">
+                        <p>book</p>
+                    </div>
+                    <div class="object-reference-item">
+                        <img src="images/Chair.png" alt="Chair" class="reference-image">
+                        <p>chair</p>
+                    </div>
+                    <div class="object-reference-item">
+                        <img src="images/Shoe.png" alt="Shoe" class="reference-image">
+                        <p>shoe</p>
+                    </div>
+                    <div class="object-reference-item">
+                        <img src="images/Bag.png" alt="Bag" class="reference-image">
+                        <p>bag</p>
+                    </div>
+                    <div class="object-reference-item">
+                        <img src="images/Computer.png" alt="Computer" class="reference-image">
+                        <p>computer</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Object Span Results -->
+        <div id="object-span-results" class="screen hidden">
+            <h2>Your response was:</h2>
+            <p class="user-answer">You typed: <span id="user-object-response"></span></p>
+            <p class="correct-answer">Correct response: <span id="correct-object-response"></span></p>
+            
+            <p id="object-span-result-feedback" class="result-feedback"></p>
+            
+            <button id="nextObjectSpanButton">continue</button>
+        </div>
+
+        <!-- Object Span Complete -->
+        <div id="object-span-complete" class="screen hidden">
+            <h2>Great work!</h2>
+            <p>You have completed the Object Span task.</p>
+            <p>Click 'finish' to continue.</p>
+            <button id="finishObjectSpanButton">Finish</button>
+        </div>
+
+        <!-- Object Span Real Game Instructions -->
+        <div id="object-span-real-game-instructions" class="screen hidden">
+            <h2>Great job!</h2>
+            <p>You are now finished practicing the Object Span tasks.</p>
+            <p>Next, you will play the actual game.</p>
+            <ul>
+                <li>The sequences will be <span class="important">longer</span> in the real game than in the practice rounds.</li>
+                <li><span class="important">Remember to pay close attention</span> to each object in the sequence.</li>
+                <li>For forward object span, type the object names in the <span class="important">same order</span> as you saw them.</li>
+                <li>For backward object span, type the object names in the <span class="important">reverse order</span> from how you saw them.</li>
+            </ul>
+            <p>You will play <span class="important">5 rounds</span> of each game. From now on you will <span class="important">not receive feedback</span> after each round.</p>
+            <p>Click the button below to begin.</p>
+            <button id="startObjectSpanRealGameButton">Start</button>
         </div>
     </div>
     <script src="script.js"></script>
