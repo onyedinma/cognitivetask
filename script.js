@@ -28,7 +28,11 @@ const gameState = {
     isBackward: false,
     currentPattern: null,
     currentPatternType: null,
-    patternAnswer: null
+    patternAnswer: null,
+    originalShapesData: null,
+    movedShapeIndices: null,
+    spatialPracticeTimerInterval: null,
+    spatialRealTimerInterval: null
 };
 
 // Add to the top of script.js
@@ -281,8 +285,8 @@ function selectScheme(scheme) {
             showScreen('counting-game-intro');
             break;
         case '5':
-            // Task 5
-            showScreen('task-5-intro');
+            // Spatial Working Memory Task
+            showScreen('spatial-memory-intro');
             break;
         case '6':
             // Task 6
@@ -421,12 +425,20 @@ function startRealGame() {
 }
 
 function transitionScreens(hideId, showId) {
+    // If transitioning from a spatial memory screen, clear any active timers
+    if (hideId === 'spatial-memory-grid' || hideId === 'spatial-memory-response') {
+        clearSpatialTimer();
+    }
+    
     document.getElementById(hideId).classList.add('hidden');
     document.getElementById(showId).classList.remove('hidden');
 }
 
 function finishGame() {
     console.log("Finish button clicked - Exporting results");
+    
+    // Clear any active timers
+    clearSpatialTimer();
     
     // Prepare results for export
     const results = {
@@ -451,6 +463,10 @@ function finishGame() {
     gameState.currentRound = 0;
     gameState.gameResults = [];
     gameState.correctCounts = null;
+    gameState.originalShapesData = null;
+    gameState.movedShapeIndices = null;
+    gameState.spatialPracticeTimerInterval = null;
+    gameState.spatialRealTimerInterval = null;
     
     // Return to counter balance screen for next participant
     showScreen('counter-balance');
@@ -769,6 +785,17 @@ function startPracticeRound() {
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize event listeners
     initializeEventListeners();
+    
+    // Add event listeners for page visibility and unload to clean up timers
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            clearSpatialTimer();
+        }
+    });
+    
+    window.addEventListener('beforeunload', () => {
+        clearSpatialTimer();
+    });
 });
 
 // Add new function to handle image screens
@@ -839,6 +866,11 @@ function initializeEventListeners() {
             const scheme = e.target.dataset.scheme;
             selectScheme(scheme);
         });
+    });
+
+    // Spatial Memory Task intro screen
+    document.getElementById('spatialMemoryIntroButton')?.addEventListener('click', () => {
+        startSpatialPractice();
     });
 
     // Counting game intro screen
@@ -2233,4 +2265,352 @@ function completeForwardObjectSpanRealGame() {
     
     // Show the backward instructions before starting
     showScreen('object-span-backward-example');
+}
+
+// Function to start the Spatial Memory Practice
+function startSpatialPractice() {
+    // Clear any existing timers before starting practice
+    clearSpatialTimer();
+    
+    transitionScreens('spatial-memory-intro', 'spatial-memory-practice-instructions');
+    
+    // Add listener for the start practice button if it doesn't already have one
+    const startPracticeButton = document.getElementById('startSpatialPracticeButton');
+    if (startPracticeButton) {
+        // Remove any existing listeners to avoid duplicates
+        const newStartPracticeButton = startPracticeButton.cloneNode(true);
+        startPracticeButton.parentNode.replaceChild(newStartPracticeButton, startPracticeButton);
+        
+        // Add the new listener
+        newStartPracticeButton.addEventListener('click', () => {
+            transitionScreens('spatial-memory-practice-instructions', 'spatial-memory-grid');
+            initializeSpatialGrid(false); // false = practice mode
+        });
+    }
+}
+
+// Function to generate random shapes
+function generateRandomShapes(count) {
+    const availableShapes = [
+        'blackcircle', 'blackpentagon', 'blacksquare', 'blacktraingle',
+        'bluecircle', 'blueheart', 'greencircle', 'greenpentagon', 
+        'greentraingle', 'purpletraingle', 'redheart', 'redsquare',
+        'yellowpentagon', 'yellowsquare'
+    ];
+    
+    const shapesData = [];
+    
+    for (let i = 0; i < count; i++) {
+        const randomShapeIndex = Math.floor(Math.random() * availableShapes.length);
+        const shapeName = availableShapes[randomShapeIndex];
+        
+        shapesData.push({
+            name: shapeName,
+            position: i
+        });
+    }
+    
+    return shapesData;
+}
+
+// Function to initialize the grid with shapes
+function initializeSpatialGrid(isRealGame) {
+    // Clear any existing timer before starting a new one
+    clearSpatialTimer();
+    
+    const gridContainer = document.querySelector('#spatial-memory-grid .grid-container');
+    gridContainer.innerHTML = ''; // Clear any previous content
+    
+    // Get configuration based on game mode
+    const config = isRealGame ? 
+        { maxShapes: 20, displayTime: 90000 } : // 90 seconds for real game
+        { maxShapes: 5, displayTime: 30000 };  // 30 seconds for practice
+    
+    // Update the timer display
+    const timerElement = document.getElementById('spatial-timer');
+    const timeInSeconds = config.displayTime / 1000;
+    timerElement.textContent = `Time remaining: ${timeInSeconds} seconds`;
+    
+    // Generate random shapes and their positions
+    const shapesData = generateRandomShapes(config.maxShapes);
+    
+    // Store original positions for comparison later
+    gameState.originalShapesData = [...shapesData];
+    
+    // Calculate grid dimensions to ensure content fits
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    const gridSize = Math.min(screenWidth * 0.8, screenHeight * 0.7);
+    
+    // Set grid container size
+    gridContainer.style.maxWidth = `${gridSize}px`;
+    gridContainer.style.maxHeight = `${Math.floor(gridSize * 0.8)}px`;
+    
+    // Create grid cells with shapes
+    shapesData.forEach((shapeData, index) => {
+        const cell = document.createElement('div');
+        cell.className = 'grid-cell';
+        cell.dataset.index = index;
+        
+        const shapeImg = document.createElement('img');
+        shapeImg.src = `shapes/${shapeData.name}.png`;
+        shapeImg.alt = shapeData.name;
+        shapeImg.className = 'grid-shape';
+        
+        // Optional: Add a number label to each shape
+        const numberLabel = document.createElement('div');
+        numberLabel.className = 'cell-number';
+        numberLabel.textContent = (index + 1);
+        
+        cell.appendChild(shapeImg);
+        cell.appendChild(numberLabel);
+        gridContainer.appendChild(cell);
+    });
+    
+    // Start timer - use a different property based on game mode to prevent interference
+    let timeLeft = timeInSeconds;
+    const timerProperty = isRealGame ? 'spatialRealTimerInterval' : 'spatialPracticeTimerInterval';
+    
+    const timerInterval = setInterval(() => {
+        timeLeft--;
+        timerElement.textContent = `Time remaining: ${timeLeft} seconds`;
+        
+        if (timeLeft <= 0) {
+            clearInterval(gameState[timerProperty]);
+            gameState[timerProperty] = null;
+            transitionScreens('spatial-memory-grid', 'spatial-memory-response');
+            initializeResponseGrid(isRealGame);
+        }
+    }, 1000);
+    
+    // Store timer interval to clear it if needed
+    gameState[timerProperty] = timerInterval;
+    
+    // Allow early submission after a minimum viewing time
+    setTimeout(() => {
+        // Add a "I'm ready" button after 10 seconds
+        const gridElement = document.getElementById('spatial-memory-grid');
+        const readyButton = document.createElement('button');
+        readyButton.id = 'readyForResponseButton';
+        readyButton.textContent = "I'm ready to identify changes";
+        readyButton.addEventListener('click', () => {
+            clearSpatialTimer();
+            transitionScreens('spatial-memory-grid', 'spatial-memory-response');
+            initializeResponseGrid(isRealGame);
+        });
+        
+        // Only add if it doesn't already exist
+        if (!document.getElementById('readyForResponseButton')) {
+            gridElement.appendChild(readyButton);
+        }
+    }, 10000); // Allow early submission after 10 seconds
+}
+
+// Add a function to clear any active spatial timer
+function clearSpatialTimer() {
+    // Clear any existing timers
+    if (gameState.spatialPracticeTimerInterval) {
+        clearInterval(gameState.spatialPracticeTimerInterval);
+        gameState.spatialPracticeTimerInterval = null;
+    }
+    
+    if (gameState.spatialRealTimerInterval) {
+        clearInterval(gameState.spatialRealTimerInterval);
+        gameState.spatialRealTimerInterval = null;
+    }
+}
+
+// Function to initialize the response grid
+function initializeResponseGrid(isRealGame) {
+    const gridContainer = document.querySelector('#spatial-memory-response .grid-container');
+    gridContainer.innerHTML = ''; // Clear any previous content
+    
+    // Get the original shapes data
+    const originalShapesData = gameState.originalShapesData;
+    
+    // Create a copy to modify for the response grid
+    const modifiedShapesData = [...originalShapesData];
+    
+    // Determine how many shapes to move based on difficulty
+    const shapesToMove = isRealGame ? 
+        Math.floor(originalShapesData.length * 0.4) : // 40% of shapes in real game
+        Math.min(2, originalShapesData.length - 1);   // 2 shapes in practice (or less if fewer shapes)
+    
+    // Move shapes (swap positions)
+    const movedIndices = [];
+    for (let i = 0; i < shapesToMove; i++) {
+        let index1, index2;
+        
+        // Keep trying until we find a new pair to swap
+        do {
+            index1 = Math.floor(Math.random() * modifiedShapesData.length);
+            index2 = Math.floor(Math.random() * modifiedShapesData.length);
+        } while (
+            index1 === index2 || 
+            movedIndices.includes(index1) || 
+            movedIndices.includes(index2)
+        );
+        
+        // Swap the shapes (same shapes, different positions)
+        [modifiedShapesData[index1], modifiedShapesData[index2]] = 
+        [modifiedShapesData[index2], modifiedShapesData[index1]];
+        
+        // Track which indices were moved
+        movedIndices.push(index1, index2);
+    }
+    
+    // Store which shapes were moved for evaluation
+    gameState.movedShapeIndices = movedIndices;
+    
+    // Calculate grid dimensions to ensure content fits
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    const gridSize = Math.min(screenWidth * 0.8, screenHeight * 0.7);
+    
+    // Set grid container size
+    gridContainer.style.maxWidth = `${gridSize}px`;
+    gridContainer.style.maxHeight = `${Math.floor(gridSize * 0.8)}px`;
+    
+    // Create response grid with modified shape positions
+    modifiedShapesData.forEach((shapeData, index) => {
+        const cell = document.createElement('div');
+        cell.className = 'grid-cell clickable';
+        cell.dataset.index = index;
+        cell.dataset.originalPosition = shapeData.position;
+        
+        const shapeImg = document.createElement('img');
+        shapeImg.src = `shapes/${shapeData.name}.png`;
+        shapeImg.alt = shapeData.name;
+        shapeImg.className = 'grid-shape';
+        
+        // Optional: Add a number label to each shape
+        const numberLabel = document.createElement('div');
+        numberLabel.className = 'cell-number';
+        numberLabel.textContent = (index + 1);
+        
+        cell.appendChild(shapeImg);
+        cell.appendChild(numberLabel);
+        
+        // Add click event to toggle selection
+        cell.addEventListener('click', () => {
+            cell.classList.toggle('selected');
+        });
+        
+        gridContainer.appendChild(cell);
+    });
+    
+    // Set up submission button event
+    const submitButton = document.getElementById('submitSpatialResponseButton');
+    if (submitButton) {
+        // Remove any existing listeners to avoid duplicates
+        const newSubmitButton = submitButton.cloneNode(true);
+        submitButton.parentNode.replaceChild(newSubmitButton, submitButton);
+        
+        // Add new listener
+        newSubmitButton.addEventListener('click', () => {
+            evaluateSpatialResponse(isRealGame);
+        });
+    }
+}
+
+// Function to evaluate the user's response
+function evaluateSpatialResponse(isRealGame) {
+    // Make sure any lingering timer is cleared
+    clearSpatialTimer();
+    
+    const selectedCells = document.querySelectorAll('#spatial-memory-response .grid-cell.selected');
+    const movedIndices = gameState.movedShapeIndices || [];
+    
+    let correctCount = 0;
+    let incorrectCount = 0;
+    
+    // Check each selected cell
+    selectedCells.forEach(cell => {
+        const cellIndex = parseInt(cell.dataset.index);
+        
+        // If this shape was actually moved
+        if (movedIndices.includes(cellIndex)) {
+            correctCount++;
+        } else {
+            incorrectCount++;
+        }
+    });
+    
+    // Calculate total score
+    const totalScore = correctCount - incorrectCount;
+    
+    // Update results display
+    document.getElementById('spatial-correct-count').textContent = correctCount;
+    document.getElementById('spatial-incorrect-count').textContent = incorrectCount;
+    document.getElementById('spatial-total-score').textContent = totalScore;
+    
+    // Determine next screen
+    if (isRealGame) {
+        // Store result for real game
+        gameState.gameResults.push({
+            task: 'spatial_working_memory',
+            correctCount: correctCount,
+            incorrectCount: incorrectCount,
+            totalScore: totalScore,
+            movedShapesCount: movedIndices.length / 2, // Divide by 2 because we counted each swapped pair twice
+            timestamp: new Date().toISOString()
+        });
+        
+        transitionScreens('spatial-memory-response', 'spatial-memory-results');
+        
+        // Setup finish button
+        const finishButton = document.getElementById('finishSpatialTaskButton');
+        if (finishButton) {
+            // Remove any existing listeners to avoid duplicates
+            const newFinishButton = finishButton.cloneNode(true);
+            finishButton.parentNode.replaceChild(newFinishButton, finishButton);
+            
+            // Add new listener
+            newFinishButton.addEventListener('click', () => {
+                // Make sure timers are cleared before finishing
+                clearSpatialTimer();
+                finishGame();
+            });
+        }
+    } else {
+        // Practice results
+        const accuracyElement = document.getElementById('practice-accuracy');
+        const totalPossible = movedIndices.length / 2; // Divide by 2 because we counted each swapped pair twice
+        const accuracy = (correctCount / totalPossible) * 100;
+        
+        if (accuracyElement) {
+            accuracyElement.textContent = `You correctly identified ${correctCount} out of ${totalPossible} moved shapes (${accuracy.toFixed(1)}% accuracy).`;
+        }
+        
+        transitionScreens('spatial-memory-response', 'spatial-memory-practice-results');
+        
+        // Setup real game button
+        const startRealButton = document.getElementById('startSpatialRealButton');
+        if (startRealButton) {
+            // Remove any existing listeners to avoid duplicates
+            const newStartRealButton = startRealButton.cloneNode(true);
+            startRealButton.parentNode.replaceChild(newStartRealButton, startRealButton);
+            
+            // Add new listener
+            newStartRealButton.addEventListener('click', () => {
+                // Make sure practice timers are cleared before starting real game
+                clearSpatialTimer();
+                transitionScreens('spatial-memory-practice-results', 'spatial-memory-real-instructions');
+                
+                // Setup main task button
+                const startMainButton = document.getElementById('startSpatialMainButton');
+                if (startMainButton) {
+                    // Remove any existing listeners to avoid duplicates
+                    const newStartMainButton = startMainButton.cloneNode(true);
+                    startMainButton.parentNode.replaceChild(newStartMainButton, startMainButton);
+                    
+                    // Add new listener
+                    newStartMainButton.addEventListener('click', () => {
+                        transitionScreens('spatial-memory-real-instructions', 'spatial-memory-grid');
+                        initializeSpatialGrid(true); // true = real game
+                    });
+                }
+            });
+        }
+    }
 }

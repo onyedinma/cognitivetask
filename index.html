@@ -367,7 +367,7 @@
         <h2>You are about to start round <span id="round-number"></span>.</h2>
         <p>Click start when you are ready!</p>
             <button id="beginRoundButton">Start</button>
-        </div>
+    </div>
 
         <!-- Game Complete -->
     <div id="game-complete" class="screen hidden">
@@ -497,18 +497,87 @@
             <button id="startTask2bPracticeButton">Start Practice</button>
         </div>
 
-        <!-- Spatial Working Memory Task 3a: Abstract Version -->
-        <div id="task-3a-intro" class="screen hidden">
-            <h2>Spatial Working Memory - Abstract Version</h2>
-            <p>In this task, you will memorize locations of shapes and identify which have moved.</p>
-            <button id="startTask3aPracticeButton">Start Practice</button>
+        <!-- Spatial Working Memory Task Intro (for scheme 5) -->
+        <div id="spatial-memory-intro" class="screen hidden">
+            <h2>Spatial Working Memory Task</h2>
+            <p>In this task, you will be shown a grid containing various colored shapes.</p>
+            <p>Your job is to <span class="important">MEMORIZE the exact location</span> of each shape.</p>
+            <p>After studying the shapes, you will be shown a second grid where some shapes may have <span class="important">moved from their original positions</span>.</p>
+            <p>The <span class="important">same shapes</span> will appear in both grids - only their <span class="important">positions</span> will change. No shapes will be replaced with different shapes.</p>
+            <p>You will need to identify which shapes have moved by clicking on them.</p>
+            <ul>
+                <li>For each shape you correctly identify as having moved, you will gain <span class="important">one point</span>.</li>
+                <li>For each shape you incorrectly identify as having moved, you will lose <span class="important">one point</span>.</li>
+            </ul>
+            <p>Click 'continue' to practice with a smaller example first.</p>
+            <button id="spatialMemoryIntroButton">continue</button>
         </div>
 
-        <!-- Spatial Working Memory Task 3b: Ecological Version -->
-        <div id="task-3b-intro" class="screen hidden">
-            <h2>Spatial Working Memory - Ecological Version</h2>
-            <p>In this task, you will memorize locations of real-world objects and identify which have moved.</p>
-            <button id="startTask3bPracticeButton">Start Practice</button>
+        <!-- Spatial Memory Practice Instructions -->
+        <div id="spatial-memory-practice-instructions" class="screen hidden">
+            <h2>Practice Session</h2>
+            <p>Let's practice with a small example first.</p>
+            <p>You will see a grid with 5 shapes for <span class="important">30 seconds</span>. Try to remember the position of each shape.</p>
+            <p>Then you'll be shown a second grid with the <span class="important">exact same shapes</span>, but some shapes may have changed position.</p>
+            <p>Your task is to click on any shapes that have changed position. Remember, the <span class="important">shapes themselves do not change</span> - only their positions.</p>
+            <p>You can click the "I'm ready" button at any time if you feel you've memorized the positions before the timer ends.</p>
+            <button id="startSpatialPracticeButton">Start Practice</button>
+        </div>
+
+        <!-- Spatial Memory Grid Display -->
+        <div id="spatial-memory-grid" class="screen hidden">
+            <h2 id="spatial-grid-title">Study the positions of these shapes</h2>
+            <p id="spatial-timer">Time remaining: 90 seconds</p>
+            <div class="grid-container">
+                <!-- Grid will be dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Spatial Memory Response Grid -->
+        <div id="spatial-memory-response" class="screen hidden">
+            <h2>Click on all shapes that have MOVED from their original positions</h2>
+            <p>Remember: only the <span class="important">positions</span> have changed - the shapes themselves are the same.</p>
+            <div class="grid-container clickable">
+                <!-- Grid will be dynamically populated -->
+            </div>
+            <button id="submitSpatialResponseButton">Submit Answers</button>
+        </div>
+
+        <!-- Spatial Memory Practice Results -->
+        <div id="spatial-memory-practice-results" class="screen hidden">
+            <h2>Practice Results</h2>
+            <p>Great job! Now you understand how the task works.</p>
+            <p id="practice-accuracy"></p>
+            <p>In the main task, you'll see a larger grid with more shapes.</p>
+            <button id="startSpatialRealButton">Start Main Task</button>
+        </div>
+
+        <!-- Spatial Memory Real Instructions -->
+        <div id="spatial-memory-real-instructions" class="screen hidden">
+            <h2>Main Task</h2>
+            <p>Now you'll see a grid with 20 different colored shapes.</p>
+            <p>You will have <span class="important">90 seconds</span> to study the grid.</p>
+            <p>Try to remember the exact position of each shape.</p>
+            <p>After the study period, you'll see a second grid with the <span class="important">same shapes</span> but in different positions.</p>
+            <p>Remember:</p>
+            <ul>
+                <li>Only the <span class="important">positions</span> of shapes change, not the shapes themselves.</li>
+                <li>For each shape you correctly identify as having moved, you gain <span class="important">one point</span>.</li>
+                <li>For each shape you incorrectly identify as having moved, you lose <span class="important">one point</span>.</li>
+                <li>You can click "I'm ready" after 10 seconds if you feel you've memorized the positions.</li>
+            </ul>
+            <p><span class="important">Note:</span> This is the main task with a new timer separate from the practice session.</p>
+            <button id="startSpatialMainButton">Begin</button>
+        </div>
+
+        <!-- Spatial Memory Results -->
+        <div id="spatial-memory-results" class="screen hidden">
+            <h2>Results</h2>
+            <p>Task completed!</p>
+            <p>Correct identifications: <span id="spatial-correct-count"></span></p>
+            <p>Incorrect identifications: <span id="spatial-incorrect-count"></span></p>
+            <p>Total score: <span id="spatial-total-score"></span></p>
+            <button id="finishSpatialTaskButton">Finish</button>
         </div>
 
         <!-- Deductive Reasoning Task 4a: Abstract Version -->
@@ -693,7 +762,7 @@
             <p>You will play <span class="important">5 rounds</span> of each game. From now on you will <span class="important">not receive feedback</span> after each round.</p>
             <p>Click the button below to begin.</p>
             <button id="startObjectSpanRealGameButton">Start</button>
-        </div>
+    </div>
     </div>
     <script src="script.js"></script>
 </body>
