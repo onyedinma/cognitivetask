@@ -27,7 +27,7 @@ body {
     transform: translate(-50%, -50%);
     width: 60%;
     max-width: 800px;
-    padding: 30px;
+    padding: 20px;
     box-sizing: border-box;
     opacity: 1;
     transition: opacity 0.3s ease;
@@ -41,7 +41,8 @@ body {
     border: 2px solid #333;
     box-shadow: none;
     margin: 0; /* Remove margin */
-    max-height: 90vh; /* Limit maximum height */
+    max-height: 95vh;
+    overflow-y: auto;
 }
 
 .hidden {
@@ -622,8 +623,57 @@ button:hover {
 }
 
 #counter-balance {
-    max-width: 450px;
-    min-height: 180px;
+    max-width: 700px;
+    text-align: center;
+    padding: 40px;
+    border: 2px solid #333;
+    border-radius: 16px;
+    background-color: white;
+}
+
+#counter-balance p {
+    margin-bottom: 25px;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+#counter-balance .button-group {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 15px;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+#counter-balance .scheme-button {
+    width: 100%;
+    height: 60px;
+    margin: 0;
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#counter-balance .scheme-button:hover {
+    background-color: #3a7bc8;
+}
+
+@media (max-width: 600px) {
+    #counter-balance .button-group {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+    }
+    
+    #counter-balance {
+        padding: 25px;
+    }
 }
 
 #welcome {
@@ -810,17 +860,17 @@ button:hover {
 }
 
 .response-input {
-    margin: 20px 0;
-    text-align: center;
+    margin: 10px 0;
 }
 
 .response-input input {
     width: 200px;
-    height: 50px;
+    height: 32px;
     font-size: 24px;
     text-align: center;
     border: 2px solid #dee2e6;
     border-radius: 8px;
+    padding: 4px 8px;
 }
 
 #digit-game-area {
@@ -862,50 +912,6 @@ button:hover {
 
 .user-answer {
     margin-bottom: 10px;
-}
-
-/* Counter balance buttons - arrange in two rows */
-#counter-balance .button-group {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 10px;
-    max-width: 500px;
-    width: 100%;
-    margin: 20px auto;
-}
-
-#counter-balance .scheme-button {
-    margin: 0;
-    min-width: 80px;
-    min-height: 50px;
-}
-
-/* Ensure buttons 7 and 8 appear in the second row */
-#counter-balance .scheme-button:nth-child(7),
-#counter-balance .scheme-button:nth-child(8) {
-    grid-row: 2;
-}
-
-#counter-balance .scheme-button:nth-child(7) {
-    grid-column: 3;
-}
-
-#counter-balance .scheme-button:nth-child(8) {
-    grid-column: 4;
-}
-
-/* For mobile or smaller screens, adjust to ensure 2 rows */
-@media (max-width: 500px) {
-    #counter-balance .button-group {
-        max-width: 320px;
-    }
-    
-    #counter-balance .scheme-button {
-        flex: 0 0 calc(25% - 10px);
-        min-width: 50px;
-        max-width: 70px;
-    }
 }
 
 /* Object Span Game Styles */
@@ -958,7 +964,7 @@ button:hover {
 }
 
 .object-names-reference {
-    margin-top: 30px;
+    margin-top: 10px;
     width: 100%;
     max-width: 600px;
 }
@@ -966,7 +972,8 @@ button:hover {
 .object-reference-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+    gap: 8px;
+    padding: 8px;
     margin-top: 10px;
 }
 
@@ -977,8 +984,8 @@ button:hover {
 }
 
 .reference-image {
-    width: 70px;
-    height: 70px;
+    width: 35px;
+    height: 35px;
     object-fit: contain;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -1196,4 +1203,26 @@ button:hover {
 
 #readyForResponseButton:hover {
     background-color: #218838;
+}
+
+@media (max-width: 480px) {
+    .screen {
+        padding: 15px;
+    }
+
+    .reference-image {
+        width: 30px;
+        height: 30px;
+    }
+}
+
+@media (max-height: 600px) {
+    .screen {
+        padding: 10px;
+    }
+
+    .reference-image {
+        width: 28px;
+        height: 28px;
+    }
 }

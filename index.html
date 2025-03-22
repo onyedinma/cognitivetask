@@ -65,7 +65,7 @@
             
             <div class="button-group">
                 <button id="digitSpanGoBackButton">go back</button>
-                <button id="startDigitSpanPracticeButton">continue</button>
+                <button id="startDigitSpanPracticeButton" onclick="console.log('Button clicked directly'); directStartDigitSpanPractice();">continue</button>
             </div>
         </div>
 
@@ -90,7 +90,7 @@
             <p>Click the 'continue' button to practice the <strong>Backward Digit Span</strong> game.</p>
             
             <div class="button-group">
-                <button id="startDigitSpanBackwardButton">continue</button>
+                <button id="startDigitSpanBackwardButton" onclick="console.log('Backward button clicked directly'); directStartDigitSpanBackwardPractice();">continue</button>
             </div>
         </div>
 
@@ -597,77 +597,48 @@
         <!-- Working Memory Capacity (Ecological) Intro -->
         <div id="object-span-intro" class="screen hidden">
             <h2>Working Memory Capacity Task</h2>
-            <p>In this task, you will be presented with a sequence of common objects, one at a time on the screen. Your job is to <span class="important">REMEMBER the sequence</span> of objects.</p>
-            <p>After you see each object sequence, you will be asked to type the names of the objects in exactly the order you saw them in.</p>
+            <p>In this task, you will see a series of objects one at a time. Your job is to <span class="important">remember the sequence</span> of objects you saw.</p>
+            <p>After each sequence, you will be asked to type the names of all objects you saw in the <span class="important">same order</span> they were presented.</p>
+            <p>For the next part, you'll need to report the objects in the <span class="important">REVERSE order</span>.</p>
             <p>Click 'continue' to see an example.</p>
-            <button id="objectSpanIntroButton">continue</button>
+            <button id="objectSpanIntroButton" onclick="console.log('Object Intro button clicked directly'); directObjectSpanExample();">continue</button>
         </div>
 
-        <!-- Object Span Example -->
+        <!-- Object Span Example Screen -->
         <div id="object-span-example" class="screen hidden">
-            <h2>In this example, let's say you see the following sequence of objects:</h2>
-            
-            <div class="example-objects-sequence">
-                <div class="example-object-container">
-                    <img src="images/Bread.png" alt="Bread" class="example-object-image">
-                    <p>Bread</p>
+            <h2>Working Memory Capacity Task Example</h2>
+            <p>In this task:</p>
+            <ol>
+                <li>You'll see objects like this:</li>
+                <div class="example-container">
+                    <img src="images/Bread.png" alt="Bread" class="example-object">
+                    <img src="images/Car.png" alt="Car" class="example-object">
+                    <img src="images/Shoe.png" alt="Shoe" class="example-object">
                 </div>
-                <div class="example-object-container">
-                    <img src="images/Car.png" alt="Car" class="example-object-image">
-                    <p>Car</p>
-                </div>
-                <div class="example-object-container">
-                    <img src="images/Book.png" alt="Book" class="example-object-image">
-                    <p>Book</p>
-                </div>
-            </div>
-            
-            <h2>In this example, the correct response would be:</h2>
-            
-            <div class="example-response">
-                <p><strong>Type: <span class="important">bread car book</span></strong></p>
-            </div>
-            
-            <p>Click the 'continue' button to practice the <strong>Object Memory</strong> task.</p>
-            
-            <div class="button-group">
-                <button id="objectSpanGoBackButton">go back</button>
-                <button id="startObjectSpanPracticeButton">continue</button>
+                <li>After seeing the sequence, type the names of all objects in the <span class="important">order they appeared</span>.</li>
+                <li>For example, if you saw the objects above in that order, you would type: "bread car shoe"</li>
+                <li>Later, you'll be asked to type the objects in <span class="important">REVERSE order</span>. (Example: "shoe car bread")</li>
+            </ol>
+            <p>Let's practice with a few objects.</p>
+            <div class="button-container">
+                <button id="objectSpanGoBackButton">Go Back</button>
+                <button id="startObjectSpanPracticeButton" onclick="console.log('Practice button clicked directly'); directStartObjectSpanPractice();">Start Practice</button>
             </div>
         </div>
 
         <!-- Object Span Backward Example -->
         <div id="object-span-backward-example" class="screen hidden">
-            <h2>Very good! In the next part of the task, you will continue to see sequences of objects.</h2>
-            <p>But now you will be asked to type the names of the objects in exactly the <span class="important">OPPOSITE</span> order you saw them in.</p>
-            <p>That means, if you see the sequence 'Bread Car', you type 'car bread'.</p>
-            
-            <div class="example-objects-sequence">
-                <div class="example-object-container">
-                    <img src="images/Pot.png" alt="Pot" class="example-object-image">
-                    <p>Pot</p>
-                </div>
-                <div class="example-object-container">
-                    <img src="images/Shoe.png" alt="Shoe" class="example-object-image">
-                    <p>Shoe</p>
-                </div>
-                <div class="example-object-container">
-                    <img src="images/Bag.png" alt="Bag" class="example-object-image">
-                    <p>Bag</p>
-                </div>
+            <h2>Backward Working Memory Capacity Task</h2>
+            <p>Now you will do the task again, but this time, please report the objects in <span class="important">REVERSE ORDER</span>.</p>
+            <p>For example, if you see:</p>
+            <div class="example-container">
+                <img src="images/Bread.png" alt="Bread" class="example-object">
+                <img src="images/Car.png" alt="Car" class="example-object">
+                <img src="images/Shoe.png" alt="Shoe" class="example-object">
             </div>
-            
-            <h2>In this example, the correct response would be:</h2>
-            
-            <div class="example-response">
-                <p><strong>Type: <span class="important">bag shoe pot</span></strong></p>
-            </div>
-            
-            <p>Click the 'continue' button to practice the <strong>Backward Object Memory</strong> task.</p>
-            
-            <div class="button-group">
-                <button id="startObjectSpanBackwardButton">continue</button>
-            </div>
+            <p>You should type: "shoe car bread"</p>
+            <p>Let's practice with the backward version.</p>
+            <button id="startObjectSpanBackwardButton" onclick="console.log('Backward button clicked directly'); directStartObjectSpanBackwardPractice();">continue</button>
         </div>
 
         <!-- Object Span Game Area -->
@@ -765,5 +736,22 @@
     </div>
     </div>
     <script src="script.js"></script>
+    <script>
+    // This ensures any continue button in the object span intro will work
+    document.addEventListener('DOMContentLoaded', function() {
+        const objectIntroScreen = document.getElementById('object-span-intro');
+        if (objectIntroScreen) {
+            const continueButtons = objectIntroScreen.querySelectorAll('button');
+            continueButtons.forEach(button => {
+                if (button.textContent.toLowerCase().includes('continue')) {
+                    button.onclick = function() {
+                        console.log('Special handler for continue button');
+                        showScreen('object-span-example');
+                    };
+                }
+            });
+        }
+    });
+    </script>
 </body>
 </html>

@@ -14,105 +14,6 @@ const CONFIG = {
     }
 };
 
-// Centralized Timer Management System
-const TimerManager = {
-    timers: {},
-    intervals: {},
-
-    // Set a timeout with automatic cleanup
-    setTimeout: function(callback, delay, id) {
-        // Clear any existing timeout with this ID
-        this.clearTimeout(id);
-        
-        // Create a new timeout
-        const timeoutId = setTimeout(() => {
-            // Auto-remove from tracking when it fires
-            delete this.timers[id];
-            // Execute the callback
-            callback();
-        }, delay);
-        
-        // Track this timeout
-        if (id) {
-            this.timers[id] = timeoutId;
-        }
-        
-        return timeoutId;
-    },
-    
-    // Clear a specific timeout
-    clearTimeout: function(id) {
-        if (id && this.timers[id]) {
-            clearTimeout(this.timers[id]);
-            delete this.timers[id];
-        }
-    },
-    
-    // Set an interval with automatic tracking
-    setInterval: function(callback, delay, id) {
-        // Clear any existing interval with this ID
-        this.clearInterval(id);
-        
-        // Create a new interval
-        const intervalId = setInterval(callback, delay);
-        
-        // Track this interval
-        if (id) {
-            this.intervals[id] = intervalId;
-        }
-        
-        return intervalId;
-    },
-    
-    // Clear a specific interval
-    clearInterval: function(id) {
-        if (id && this.intervals[id]) {
-            clearInterval(this.intervals[id]);
-            delete this.intervals[id];
-        }
-    },
-    
-    // Clear all timers and intervals
-    clearAll: function() {
-        // Clear all timeouts
-        Object.keys(this.timers).forEach(id => {
-            clearTimeout(this.timers[id]);
-        });
-        this.timers = {};
-        
-        // Clear all intervals
-        Object.keys(this.intervals).forEach(id => {
-            clearInterval(this.intervals[id]);
-        });
-        this.intervals = {};
-        
-        console.log('All timers and intervals cleared');
-    },
-    
-    // Clear timers by category
-    clearCategory: function(category) {
-        const pattern = new RegExp(`^${category}`);
-        
-        // Clear timeouts in this category
-        Object.keys(this.timers).forEach(id => {
-            if (pattern.test(id)) {
-                clearTimeout(this.timers[id]);
-                delete this.timers[id];
-            }
-        });
-        
-        // Clear intervals in this category
-        Object.keys(this.intervals).forEach(id => {
-            if (pattern.test(id)) {
-                clearInterval(this.intervals[id]);
-                delete this.intervals[id];
-            }
-        });
-        
-        console.log(`Timers in category '${category}' cleared`);
-    }
-};
-
 // Ensure key functions are globally accessible
 window.startDigitSpanPractice = function() {
     console.log("Global wrapper for startDigitSpanPractice called");
@@ -443,18 +344,13 @@ function startShapeSequence() {
 }
 
 function animateShapes(sequence) {
-    // Clear any existing shape animation timers before starting a new animation
-    TimerManager.clearCategory('shapeAnim');
-    
     let index = 0;
     const shapeElement = document.querySelector('.shape');
-    const shapeConfig = gameState.isRealGame ? CONFIG.realMode : CONFIG.practiceMode;
     
     function displayNext() {
         if (index >= sequence.length) {
             shapeElement.className = 'shape blank';
-            
-            TimerManager.setTimeout(() => {
+            setTimeout(() => {
                 // Reset game area display
                 const gameArea = document.getElementById('game-area');
                 gameArea.style.display = 'none';
@@ -462,8 +358,7 @@ function animateShapes(sequence) {
                 
                 // Show answer form
                 showScreen('answer-form');
-            }, 500, 'shapeAnim_showAnswer');
-            
+            }, 500);
             return;
         }
         
@@ -471,27 +366,24 @@ function animateShapes(sequence) {
         shapeElement.className = 'shape';
         
         // Add a small delay before showing the next shape
-        TimerManager.setTimeout(() => {
+        setTimeout(() => {
             // Add the specific shape class
             shapeElement.classList.add(sequence[index]);
             
             // Display for the configured time
-            TimerManager.setTimeout(() => {
+            setTimeout(() => {
                 // Hide the shape
             shapeElement.className = 'shape blank';
                 
                 // Wait during blank time before showing next shape
-                TimerManager.setTimeout(() => {
+            setTimeout(() => {
                 index++;
                 displayNext();
-                }, shapeConfig.blankTime, 'shapeAnim_blankTime_' + index);
-                
-            }, shapeConfig.displayTime, 'shapeAnim_displayTime_' + index);
-            
-        }, 50, 'shapeAnim_delay_' + index);
+            }, CONFIG.realMode.blankTime);
+        }, CONFIG.realMode.displayTime);
+        }, 50);
     }
     
-    // Start the display sequence
     displayNext();
 }
 
@@ -549,37 +441,51 @@ function startRealGame() {
 }
 
 function transitionScreens(hideId, showId) {
-    // Clear all active timers whenever we transition screens
-    TimerManager.clearAll();
-    
-    // Hide the current screen
-    const currentScreen = document.getElementById(hideId);
-    if (currentScreen) {
-        currentScreen.classList.add('hidden');
+    // If transitioning from a spatial memory screen, clear any active timers
+    if (hideId === 'spatial-memory-grid' || hideId === 'spatial-memory-response') {
+        clearSpatialTimer();
     }
     
-    // Show the target screen
-    showScreen(showId);
+    document.getElementById(hideId).classList.add('hidden');
+    document.getElementById(showId).classList.remove('hidden');
 }
 
 function finishGame() {
-    // Clear all timers before finishing the game
-    TimerManager.clearAll();
+    console.log("Finish button clicked - Exporting results");
     
-    // Hide all screens except the completion screen
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(screen => {
-        screen.classList.add('hidden');
-    });
+    // Clear any active timers
+    clearSpatialTimer();
     
-    // Show the completion screen
-    document.getElementById('game-complete').classList.remove('hidden');
+    // Prepare results for export
+    const results = {
+        studentId: gameState.studentId,
+        scheme: gameState.scheme,
+        rounds: gameState.gameResults
+    };
     
-    // Export the results as a CSV file
-    exportCSV(gameState.results);
+    console.log("Exporting results:", results);
     
-    // Reset the game state for another attempt if needed
-    resetGameState();
+    // Export results as CSV
+    exportCSV(results);
+    
+    // Also save as JSON for debugging
+    saveResultsAsJSON(results);
+    
+    // Reset game state for next session
+    gameState.isRealGame = false;
+    gameState.isCountingGame = false;
+    gameState.isPatternGame = false;
+    gameState.isBackward = false;
+    gameState.currentRound = 0;
+    gameState.gameResults = [];
+    gameState.correctCounts = null;
+    gameState.originalShapesData = null;
+    gameState.movedShapeIndices = null;
+    gameState.spatialPracticeTimerInterval = null;
+    gameState.spatialRealTimerInterval = null;
+    
+    // Return to counter balance screen for next participant
+    showScreen('counter-balance');
 }
 
 /**
@@ -928,16 +834,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add event listeners for page visibility and unload to clean up timers
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
-            // Clear all timers when page is hidden
-            TimerManager.clearAll();
-            console.log('Page visibility hidden - all timers cleared');
+            clearSpatialTimer();
         }
     });
     
     window.addEventListener('beforeunload', () => {
-        // Clear all timers before page unload
-        TimerManager.clearAll();
-        console.log('Page unloading - all timers cleared');
+        clearSpatialTimer();
     });
 });
 
@@ -975,12 +877,15 @@ function loadScreen(screenId) {
 function showScreen(screenId) {
     console.log(`Showing screen: ${screenId}`);
     
-    // Clear all timers when switching screens to prevent overlapping animations or timing issues
-    TimerManager.clearAll();
+    // Make sure the element exists before trying to show it
+    const screenElement = document.getElementById(screenId);
+    if (!screenElement) {
+        console.error(`Screen element with ID "${screenId}" not found!`);
+        return;
+    }
     
     // Hide all screens
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(screen => {
+    document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.add('hidden');
     });
     
@@ -996,20 +901,11 @@ function showScreen(screenId) {
         }
     }
     
-    // Show the selected screen
-    const targetScreen = document.getElementById(screenId);
-    if (targetScreen) {
-        targetScreen.classList.remove('hidden');
-        
-        // Special handling for digit-game-area
-        if (screenId === 'digit-game-area') {
-            targetScreen.style.display = 'flex';
-        }
-        
-        console.log(`Screen "${screenId}" should now be visible`);
-    } else {
-        console.error(`Screen with ID "${screenId}" not found`);
-    }
+    // Show the requested screen and ensure it's displayed correctly
+    screenElement.classList.remove('hidden');
+    screenElement.style.display = screenId === 'digit-game-area' ? 'flex' : '';
+    
+    console.log(`Screen "${screenId}" should now be visible`);
 }
 
 // Set up all event listeners
@@ -1598,152 +1494,174 @@ function handleFullscreenChange() {
 
 // Start the counting game sequence
 function startCountingSequence() {
-    console.log('Starting counting sequence');
-    
-    // Set flag to indicate we're in the counting game
-    gameState.isCountingGame = true;
-    
-    // Determine which config to use
+    // Use the correct filename for the $5 bill image
+    const objects = ['5dollar', 'bus', 'face'];
+    const objectCount = { '5dollar': 0, bus: 0, face: 0 };
     const config = gameState.isRealGame ? CONFIG.countingRealMode : CONFIG.countingMode;
     
-    // Generate a sequence of counting objects
-    const objectCount = {
-        '5dollar': 0,
-        'bus': 0,
-        'face': 0
-    };
+    console.log(`Starting counting sequence with config:`, config);
     
-    // Build a sequence with a random number of each object type
-    const sequence = [];
-    const objects = ['5dollar', 'bus', 'face'];
+    // Calculate total objects - ensure we don't exceed the maximum
+    let totalObjects = Math.floor(Math.random() * (config.maxObjects - config.minObjects + 1)) + config.minObjects;
+    console.log(`Initial total objects: ${totalObjects} (min: ${config.minObjects}, max: ${config.maxObjects})`);
     
-    // Get random counts for each object
-    const billCount = Math.floor(Math.random() * (config.maxObjects / 3)) + 1; // At least 1
-    const busCount = Math.floor(Math.random() * (config.maxObjects / 3)) + 1; // At least 1
-    const faceCount = Math.floor(Math.random() * (config.maxObjects / 3)) + 1; // At least 1
+    // Ensure at least one of each object type appears
+    let sequence = ['5dollar', 'bus', 'face'];
+    objectCount['5dollar'] = 1;
+    objectCount.bus = 1;
+    objectCount.face = 1;
     
-    // Add the correct number of each object to the sequence
-    for (let i = 0; i < billCount; i++) sequence.push('5dollar');
-    for (let i = 0; i < busCount; i++) sequence.push('bus');
-    for (let i = 0; i < faceCount; i++) sequence.push('face');
+    // Add remaining objects randomly, but don't exceed the maximum
+    const remainingSlots = Math.min(totalObjects - 3, config.maxObjects - 3);
+    console.log(`Remaining slots to fill: ${remainingSlots}`);
     
-    // Shuffle the sequence
-    for (let i = sequence.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [sequence[i], sequence[j]] = [sequence[j], sequence[i]];
+    for (let i = 0; i < remainingSlots; i++) {
+        const object = objects[Math.floor(Math.random() * objects.length)];
+        sequence.push(object);
+        objectCount[object]++;
     }
     
-    // Store the counts for checking answers
-    objectCount['5dollar'] = billCount;
-    objectCount['bus'] = busCount;
-    objectCount['face'] = faceCount;
+    // Shuffle the sequence
+    sequence = sequence.sort(() => Math.random() - 0.5);
     
-    console.log('Generated sequence for counting game:', sequence);
-    console.log('Correct counts:', objectCount);
+    console.log("Sequence:", sequence);
+    console.log("Object counts:", objectCount);
+    console.log("Total objects:", sequence.length);
+    console.log("Game mode:", gameState.isRealGame ? "Real" : "Practice");
+    console.log("Max allowed:", config.maxObjects);
     
-    // Store the correct counts in the game state
+    // Ensure we don't exceed the maximum
+    if (sequence.length > config.maxObjects) {
+        console.warn(`Sequence length (${sequence.length}) exceeds maximum (${config.maxObjects}). Trimming sequence.`);
+        sequence = sequence.slice(0, config.maxObjects);
+        
+        // Recalculate object counts after trimming
+        objectCount['5dollar'] = 0;
+        objectCount.bus = 0;
+        objectCount.face = 0;
+        
+        sequence.forEach(obj => {
+            objectCount[obj]++;
+        });
+        
+        console.log("Updated sequence length:", sequence.length);
+        console.log("Updated object counts:", objectCount);
+    }
+    
     gameState.correctCounts = objectCount;
-    
-    // Use the dedicated counting objects animation function
-    animateCountingObjects(sequence);
+    animateObjects(sequence);
 }
 
 // Animate the counting objects
 function animateObjects(sequence) {
-    // Clear any existing object span timers before starting a new animation
-    TimerManager.clearCategory('objectSpan');
-    
     let index = 0;
-    const objectDisplay = document.querySelector('.object-display');
-    objectDisplay.innerHTML = ''; // Clear any previous content
+    const shapeElement = document.querySelector('.shape');
+    const config = gameState.isRealGame ? CONFIG.countingRealMode : CONFIG.countingMode;
     
-    console.log('Starting object animation with sequence:', sequence);
+    // Ensure we don't exceed the maximum number of objects
+    if (gameState.isCountingGame) {
+        const maxObjects = config.maxObjects;
+        if (sequence.length > maxObjects) {
+            console.warn(`Sequence length (${sequence.length}) exceeds maximum (${maxObjects}). Trimming sequence.`);
+            sequence = sequence.slice(0, maxObjects);
+        }
+    }
     
-    // Preload all images first
-    const imagesToPreload = sequence.map(digit => OBJECT_SPAN_CONFIG.objectMapping[digit].image);
-    let imagesLoaded = 0;
+    // Preload all images to ensure they're in the browser cache
+    const preloadImages = () => {
+        const imagesToPreload = ['5dollar', 'bus', 'face'];
+        imagesToPreload.forEach(imgName => {
+            const img = new Image();
+            img.src = `dollarmanbus/${imgName}.jpg`;
+            console.log(`Preloading image: dollarmanbus/${imgName}.jpg`);
+        });
+    };
     
-    // Create a promise that resolves when all images are loaded
-    console.log('Preloading images for sequence:', imagesToPreload);
+    // Preload images before starting the sequence
+    preloadImages();
     
-    // Initialize array to track preloaded images
-    const preloadedImages = [];
+    console.log(`Animating sequence with ${sequence.length} objects. Max allowed: ${config.maxObjects}`);
     
-    // Preload each image in the sequence
-    imagesToPreload.forEach(imageSrc => {
-        const img = new Image();
-        
-        img.onload = function() {
-            imagesLoaded++;
-            console.log(`Image loaded (${imagesLoaded}/${imagesToPreload.length}): ${imageSrc}`);
-            preloadedImages.push(img);
-            
-            // Start animation once all images are loaded
-            if (imagesLoaded === imagesToPreload.length) {
-                console.log('All images preloaded, starting animation with delay');
-                // Start with a delay to ensure everything is ready
-                TimerManager.setTimeout(() => {
-                    showNextObject();
-                }, 500, 'objectSpan_initialDelay');
-            }
-        };
-        
-        img.onerror = function() {
-            console.error(`Failed to load image: ${imageSrc}`);
-            imagesLoaded++;
-            
-            // Continue even if some images fail to load
-            if (imagesLoaded === imagesToPreload.length) {
-                console.log('All images attempted to load (some may have failed), starting animation');
-                TimerManager.setTimeout(() => {
-                    showNextObject();
-                }, 500, 'objectSpan_initialDelay');
-            }
-        };
-        
-        img.src = imageSrc;
-    });
-    
-    function showNextObject() {
+    function displayNext() {
         if (index >= sequence.length) {
-            // End of sequence, show response form
-            TimerManager.setTimeout(() => {
-                showScreen('object-span-response');
-                document.getElementById('object-response').value = '';
-                document.getElementById('object-response').focus();
-            }, OBJECT_SPAN_CONFIG.blankTime, 'objectSpan_showResponse');
+            shapeElement.className = 'shape blank';
+            shapeElement.innerHTML = '';
+            setTimeout(() => {
+                // Reset game area display
+                const gameArea = document.getElementById('game-area');
+                gameArea.style.display = 'none';
+                gameArea.classList.add('hidden');
+                
+                // Show answer form based on game type
+                if (gameState.isCountingGame) {
+                    showScreen('counting-answer-form');
+                } else {
+                    showScreen('answer-form');
+                }
+            }, 500);
             return;
         }
         
-        const objectDigit = sequence[index];
-        const objectData = OBJECT_SPAN_CONFIG.objectMapping[objectDigit];
+        // Clear all classes first
+        shapeElement.className = 'shape';
+        shapeElement.innerHTML = '';
         
-        console.log(`Showing object ${objectData.name} (${index + 1}/${sequence.length})`);
-        
-        // Create a new image element for better control
-        const imgElement = new Image();
-        imgElement.src = objectData.image;
-        imgElement.alt = objectData.name;
-        imgElement.style.maxWidth = '100%';
-        imgElement.style.maxHeight = '100%';
-        
-        // Clear previous content and add the new image
-        objectDisplay.innerHTML = '';
-        objectDisplay.appendChild(imgElement);
-        
-        // Wait for display time, then hide
-        TimerManager.setTimeout(() => {
-            console.log(`Hiding object ${objectData.name}`);
-            objectDisplay.innerHTML = ''; // Clear the display
+        // Add a small delay before showing the next object
+        setTimeout(() => {
+            // For counting game, use images
+            if (gameState.isCountingGame) {
+                const currentObject = sequence[index];
+                console.log(`Displaying object at index ${index}: ${currentObject}`);
+                
+                // Preload the image to ensure it's ready before displaying
+                const img = new Image();
+                img.onload = function() {
+                    console.log(`Image loaded successfully: dollarmanbus/${currentObject}.jpg`);
+                    shapeElement.innerHTML = `<img src="dollarmanbus/${currentObject}.jpg" alt="${currentObject}" class="counting-object">`;
+                    
+                    // Display for the configured time
+                    setTimeout(() => {
+                        // Hide the object
+                        shapeElement.className = 'shape blank';
+                        shapeElement.innerHTML = '';
+                        
+                        // Wait during blank time before showing next object
+                        setTimeout(() => {
+                            index++;
+                            displayNext();
+                        }, config.blankTime);
+                    }, config.displayTime);
+                };
+                
+                img.onerror = function() {
+                    console.error(`Failed to load image: dollarmanbus/${currentObject}.jpg`);
+                    // Continue to next image even if this one fails
+                    index++;
+                    displayNext();
+                };
+                
+                img.src = `dollarmanbus/${currentObject}.jpg`;
+            } else {
+                // For shape game, use CSS classes
+                const shapeConfig = gameState.isRealGame ? CONFIG.realMode : CONFIG.practiceMode;
+                shapeElement.classList.add(sequence[index]);
+                
+                // Display for the configured time
+                setTimeout(() => {
+                    // Hide the object
+                    shapeElement.className = 'shape blank';
                     
                     // Wait during blank time before showing next object
-            TimerManager.setTimeout(() => {
+                    setTimeout(() => {
                         index++;
-                showNextObject();
-            }, OBJECT_SPAN_CONFIG.blankTime, 'objectSpan_blankTime_' + index);
-            
-        }, OBJECT_SPAN_CONFIG.displayTime, 'objectSpan_displayTime_' + index);
+                        displayNext();
+                    }, shapeConfig.blankTime);
+                }, shapeConfig.displayTime);
+            }
+        }, 50);
     }
+    
+    displayNext();
 }
 
 // Submit answers for counting game
@@ -1882,8 +1800,8 @@ function startDigitSequence() {
         const digitElement = document.querySelector('.digit');
         if (digitElement) {
             console.log("Found digit display element, animating sequence");
-    // Display the sequence
-    animateDigits(sequence);
+            // Display the sequence
+            animateDigits(sequence);
         } else {
             console.error("Digit element not found. Creating one...");
             
@@ -1922,8 +1840,7 @@ function animateDigits(sequence) {
         if (index >= sequence.length) {
             console.log('Sequence complete, clearing digit display');
             digitElement.textContent = '';
-            
-            TimerManager.setTimeout(() => {
+            setTimeout(() => {
                 console.log('Showing response screen');
                 showScreen('digit-span-response');
                 
@@ -1933,8 +1850,7 @@ function animateDigits(sequence) {
                     inputField.value = '';
                     inputField.focus();
                 }
-            }, 500, 'digitSpan_showResponse');
-            
+            }, 500);
             return;
         }
 
@@ -1942,19 +1858,17 @@ function animateDigits(sequence) {
         digitElement.textContent = sequence[index];
         digitElement.style.fontSize = '5rem'; // Make sure the digit is large and visible
         
-        TimerManager.setTimeout(() => {
+        setTimeout(() => {
             console.log(`Hiding digit ${sequence[index]}`);
             digitElement.textContent = '';
-            
-            TimerManager.setTimeout(() => {
+            setTimeout(() => {
                 index++;
                 showNextDigit();
-            }, config.blankTime, 'digitSpan_blankTime');
-            
-        }, config.displayTime, 'digitSpan_displayTime');
+            }, config.blankTime);
+        }, config.displayTime);
     }
 
-    // Start showing the first digit
+    // Start showing digits
     showNextDigit();
 }
 
@@ -2213,19 +2127,19 @@ function startTask4bPractice() {
 }
 
 // Event Listeners for Task Buttons
-// Event listener removed and replaced with safe version below
-// Event listener removed and replaced with safe version below
-// Event listener removed and replaced with safe version below
-// Event listener removed and replaced with safe version below
-// Event listener removed and replaced with safe version below
-// Event listener removed and replaced with safe version below
-// Event listener removed and replaced with safe version below
-// Event listener removed and replaced with safe version below
+document.getElementById('startTask1aPracticeButton').addEventListener('click', startTask1aPractice);
+document.getElementById('startTask1bPracticeButton').addEventListener('click', startTask1bPractice);
+document.getElementById('startTask2aPracticeButton').addEventListener('click', startTask2aPractice);
+document.getElementById('startTask2bPracticeButton').addEventListener('click', startTask2bPractice);
+document.getElementById('startTask3aPracticeButton').addEventListener('click', startTask3aPractice);
+document.getElementById('startTask3bPracticeButton').addEventListener('click', startTask3bPractice);
+document.getElementById('startTask4aPracticeButton').addEventListener('click', startTask4aPractice);
+document.getElementById('startTask4bPracticeButton').addEventListener('click', startTask4bPractice);
 
 // Object Span Game Configuration
 const OBJECT_SPAN_CONFIG = {
-    displayTime: 1500,  // Increased from 1000ms to 1500ms for better visibility
-    blankTime: 750,     // Increased from 500ms to 750ms for better separation
+    displayTime: 1000,
+    blankTime: 500,
     startObjects: 3,
     maxObjects: 9,
     objectMapping: {
@@ -2295,93 +2209,25 @@ document.getElementById('finishObjectSpanButton')?.addEventListener('click', fun
 
 // Object Span Game Functions
 function startObjectSpanPractice() {
-    console.log('Starting object span practice');
-    
-    // Clear any existing timers
-    TimerManager.clearAll();
-    
-    // Set game flags
-    gameState.isPatternGame = false;
-    gameState.isRealGame = false;
-    gameState.isBackward = false;
-    gameState.currentRound = 0;
-    gameState.correctCounts = null;
-    
-    // Reset object span state to starting level
-    objectSpanState.currentLevel = OBJECT_SPAN_CONFIG.startObjects;
+    objectSpanState.isRealGame = false;
     objectSpanState.isBackward = false;
+    objectSpanState.currentLevel = OBJECT_SPAN_CONFIG.startObjects;
+    objectSpanState.successes = 0;
+    objectSpanState.failures = 0;
+    objectSpanState.results = [];
     
-    // Hide all screens
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(screen => screen.classList.add('hidden'));
-    
-    // Show object game area
-    const objectGameArea = document.getElementById('object-game-area');
-    if (objectGameArea) {
-        objectGameArea.classList.remove('hidden');
-        objectGameArea.style.display = 'flex';
-    } else {
-        console.error('Object game area not found');
-        return;
-    }
-    
-    // Generate a sequence of random objects
-    const sequence = generateObjectSequence(OBJECT_SPAN_CONFIG.startObjects);
-    objectSpanState.sequence = sequence;
-    
-    // Log the sequence (for debugging)
-    console.log("Object Sequence:", sequence.map(d => OBJECT_SPAN_CONFIG.objectMapping[d].name).join(' '));
-    
-    // Start animating the objects with delay to ensure everything is ready
-    setTimeout(() => {
-        // Start the animation
-        animateObjects(sequence);
-    }, 300);
+    startObjectSequence();
 }
 
 function startObjectSpanBackwardPractice() {
-    console.log('Starting object span backward practice');
-    
-    // Clear any existing timers
-    TimerManager.clearAll();
-    
-    // Set game flags
-    gameState.isPatternGame = false;
-    gameState.isRealGame = false;
-    gameState.isBackward = true;
-    gameState.currentRound = 0;
-    gameState.correctCounts = null;
-    
-    // Reset object span state to starting level
-    objectSpanState.currentLevel = OBJECT_SPAN_CONFIG.startObjects;
+    objectSpanState.isRealGame = false;
     objectSpanState.isBackward = true;
+    objectSpanState.currentLevel = OBJECT_SPAN_CONFIG.startObjects;
+    objectSpanState.successes = 0;
+    objectSpanState.failures = 0;
+    objectSpanState.results = [];
     
-    // Hide all screens
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(screen => screen.classList.add('hidden'));
-    
-    // Show object game area
-    const objectGameArea = document.getElementById('object-game-area');
-    if (objectGameArea) {
-        objectGameArea.classList.remove('hidden');
-        objectGameArea.style.display = 'flex';
-    } else {
-        console.error('Object game area not found');
-        return;
-    }
-    
-    // Generate a sequence of random objects
-    const sequence = generateObjectSequence(OBJECT_SPAN_CONFIG.startObjects);
-    objectSpanState.sequence = sequence;
-    
-    // Log the sequence (for debugging)
-    console.log("Object Sequence (backward):", sequence.map(d => OBJECT_SPAN_CONFIG.objectMapping[d].name).join(' '));
-    
-    // Start animating the objects with delay to ensure everything is ready
-    setTimeout(() => {
-        // Start the animation
-        animateObjects(sequence);
-    }, 300);
+    startObjectSequence();
 }
 
 function startObjectSpanRealGame() {
@@ -2413,6 +2259,44 @@ function startObjectSequence() {
     
     // Start the animation
     animateObjects(objectSequence);
+}
+
+function animateObjects(sequence) {
+    let index = 0;
+    const objectDisplay = document.querySelector('.object-display');
+    objectDisplay.innerHTML = ''; // Clear any previous content
+    
+    function showNextObject() {
+        if (index >= sequence.length) {
+            // End of sequence, show response form
+            setTimeout(() => {
+                showScreen('object-span-response');
+                document.getElementById('object-response').value = '';
+                document.getElementById('object-response').focus();
+            }, OBJECT_SPAN_CONFIG.blankTime);
+            return;
+        }
+        
+        const objectDigit = sequence[index];
+        const objectData = OBJECT_SPAN_CONFIG.objectMapping[objectDigit];
+        
+        // Display the object image
+        objectDisplay.innerHTML = `<img src="${objectData.image}" alt="${objectData.name}">`;
+        
+        // Wait for display time, then hide
+        setTimeout(() => {
+            objectDisplay.innerHTML = ''; // Clear the display
+            
+            // Wait during blank time before showing next object
+            setTimeout(() => {
+                index++;
+                showNextObject();
+            }, OBJECT_SPAN_CONFIG.blankTime);
+        }, OBJECT_SPAN_CONFIG.displayTime);
+    }
+    
+    // Start showing objects
+    showNextObject();
 }
 
 function submitObjectSpanResponse() {
@@ -2656,10 +2540,16 @@ function initializeSpatialGrid(isRealGame) {
 
 // Add a function to clear any active spatial timer
 function clearSpatialTimer() {
-    // Use the centralized timer manager instead of directly clearing intervals
-    TimerManager.clearCategory('spatial');
+    // Clear any existing timers
+    if (gameState.spatialPracticeTimerInterval) {
+        clearInterval(gameState.spatialPracticeTimerInterval);
+        gameState.spatialPracticeTimerInterval = null;
+    }
     
-    console.log('Spatial timers cleared');
+    if (gameState.spatialRealTimerInterval) {
+        clearInterval(gameState.spatialRealTimerInterval);
+        gameState.spatialRealTimerInterval = null;
+    }
 }
 
 // Function to initialize the response grid
@@ -3163,190 +3053,11 @@ function addSafeEventListener(id, event, handler) {
 }
 
 // Safely add event listeners
-/*addSafeEventListener('startTask1aPracticeButton', 'click', startTask1aPractice);
+addSafeEventListener('startTask1aPracticeButton', 'click', startTask1aPractice);
 addSafeEventListener('startTask1bPracticeButton', 'click', startTask1bPractice);
 addSafeEventListener('startTask2aPracticeButton', 'click', startTask2aPractice);
 addSafeEventListener('startTask2bPracticeButton', 'click', startTask2bPractice);
 addSafeEventListener('startTask3aPracticeButton', 'click', startTask3aPractice);
 addSafeEventListener('startTask3bPracticeButton', 'click', startTask3bPractice);
 addSafeEventListener('startTask4aPracticeButton', 'click', startTask4aPractice);
-addSafeEventListener('startTask4bPracticeButton', 'click', startTask4bPractice);*/
-
-// Animation function for counting objects (dollar bills, buses, faces)
-function animateCountingObjects(sequence) {
-    // Clear any existing counting object timers before starting a new animation
-    TimerManager.clearCategory('countingObj');
-    
-    let index = 0;
-    const shapeElement = document.querySelector('.shape');
-    const config = gameState.isRealGame ? CONFIG.countingRealMode : CONFIG.countingMode;
-    
-    // Ensure we don't exceed the maximum number of objects
-    if (gameState.isCountingGame) {
-        const maxObjects = config.maxObjects;
-        if (sequence.length > maxObjects) {
-            console.warn(`Sequence length (${sequence.length}) exceeds maximum (${maxObjects}). Trimming sequence.`);
-            sequence = sequence.slice(0, maxObjects);
-        }
-    }
-    
-    // Preload all images to ensure they're in the browser cache
-    const preloadImages = () => {
-        const imagesToPreload = ['5dollar', 'bus', 'face'];
-        imagesToPreload.forEach(imgName => {
-            const img = new Image();
-            img.src = `dollarmanbus/${imgName}.jpg`;
-            console.log(`Preloading image: dollarmanbus/${imgName}.jpg`);
-        });
-    };
-    
-    // Preload images before starting the sequence
-    preloadImages();
-    
-    console.log(`Animating sequence with ${sequence.length} objects. Max allowed: ${config.maxObjects}`);
-    
-    function displayNext() {
-        if (index >= sequence.length) {
-            shapeElement.className = 'shape blank';
-            shapeElement.innerHTML = '';
-            
-            TimerManager.setTimeout(() => {
-                // Reset game area display
-                const gameArea = document.getElementById('game-area');
-                gameArea.style.display = 'none';
-                gameArea.classList.add('hidden');
-                
-                // Show answer form based on game type
-                if (gameState.isCountingGame) {
-                    showScreen('counting-answer-form');
-                } else {
-                    showScreen('answer-form');
-                }
-            }, 500, 'countingObj_showAnswer');
-            
-            return;
-        }
-        
-        // Clear all classes first
-        shapeElement.className = 'shape';
-        shapeElement.innerHTML = '';
-        
-        // Add a small delay before showing the next object
-        TimerManager.setTimeout(() => {
-            // For counting game, use images
-            if (gameState.isCountingGame) {
-                const currentObject = sequence[index];
-                console.log(`Displaying object at index ${index}: ${currentObject}`);
-                
-                // Preload the image to ensure it's ready before displaying
-                const img = new Image();
-                img.onload = function() {
-                    console.log(`Image loaded successfully: dollarmanbus/${currentObject}.jpg`);
-                    shapeElement.innerHTML = `<img src="dollarmanbus/${currentObject}.jpg" alt="${currentObject}" class="counting-object">`;
-                    
-                    // Display for the configured time
-                    TimerManager.setTimeout(() => {
-                        // Hide the object
-                        shapeElement.className = 'shape blank';
-                        shapeElement.innerHTML = '';
-                        
-                        // Wait during blank time before showing next object
-                        TimerManager.setTimeout(() => {
-                            index++;
-                            displayNext();
-                        }, config.blankTime, 'countingObj_blankTime_' + index);
-                        
-                    }, config.displayTime, 'countingObj_displayTime_' + index);
-                };
-                
-                img.onerror = function() {
-                    console.error(`Failed to load image: dollarmanbus/${currentObject}.jpg`);
-                    // Continue to next image even if this one fails
-                    index++;
-                    displayNext();
-                };
-                
-                img.src = `dollarmanbus/${currentObject}.jpg`;
-            }
-        }, 50, 'countingObj_delay_' + index);
-    }
-    
-    // Start the display sequence
-    displayNext();
-}
-
-// Direct global function for starting object span practice
-window.directStartObjectSpanPractice = function() {
-    console.log('Direct start object span practice function called');
-    try {
-        // Call the normal start function
-        startObjectSpanPractice();
-    } catch (error) {
-        console.error('Error starting object span practice:', error);
-    }
-};
-
-window.directStartObjectSpanBackwardPractice = function() {
-    console.log('Direct start object span backward practice function called');
-    try {
-        // Call the normal start function
-        startObjectSpanBackwardPractice();
-    } catch (error) {
-        console.error('Error starting object span backward practice:', error);
-    }
-};
-
-// Direct global functions for Object Span tasks that can be called from inline onclick handlers
-window.directObjectSpanExample = function() {
-    console.log("Direct Object Span Example function called");
-    try {
-        // Hide all screens
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.add('hidden');
-        });
-        
-        // Show object span example screen
-        const exampleScreen = document.getElementById('object-span-example');
-        if (!exampleScreen) {
-            console.error("Could not find object-span-example element");
-            return;
-        }
-        exampleScreen.classList.remove('hidden');
-    } catch (error) {
-        console.error("Error in directObjectSpanExample:", error);
-    }
-};
-
-window.directStartObjectSpanPractice = function() {
-    console.log("Direct Object Span Practice function called");
-    try {
-        objectSpanState.isRealGame = false;
-        objectSpanState.isBackward = false;
-        objectSpanState.currentLevel = OBJECT_SPAN_CONFIG.startObjects;
-        objectSpanState.successes = 0;
-        objectSpanState.failures = 0;
-        objectSpanState.results = [];
-        
-        // Begin the object sequence
-        startObjectSequence();
-    } catch (error) {
-        console.error("Error in directStartObjectSpanPractice:", error);
-    }
-};
-
-window.directStartObjectSpanBackwardPractice = function() {
-    console.log("Direct Object Span Backward Practice function called");
-    try {
-        objectSpanState.isRealGame = false;
-        objectSpanState.isBackward = true;
-        objectSpanState.currentLevel = OBJECT_SPAN_CONFIG.startObjects;
-        objectSpanState.successes = 0;
-        objectSpanState.failures = 0;
-        objectSpanState.results = [];
-        
-        // Begin the object sequence
-        startObjectSequence();
-    } catch (error) {
-        console.error("Error in directStartObjectSpanBackwardPractice:", error);
-    }
-};
+addSafeEventListener('startTask4bPracticeButton', 'click', startTask4bPractice);
