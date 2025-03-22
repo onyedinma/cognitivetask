@@ -519,7 +519,12 @@
             <p>Let's practice with a small example first.</p>
             <p>You will see a grid with 5 shapes for <span class="important">30 seconds</span>. Try to remember the position of each shape.</p>
             <p>Then you'll be shown a second grid with the <span class="important">exact same shapes</span>, but some shapes may have changed position.</p>
-            <p>Your task is to click on any shapes that have changed position. Remember, the <span class="important">shapes themselves do not change</span> - only their positions.</p>
+            <p>Your task is to click on <span class="important">ALL shapes that have changed position</span>. Remember:</p>
+            <ul>
+                <li>When a shape moves to a new position, it <span class="important">swaps places</span> with another shape</li>
+                <li>This means for each swap, you need to identify <span class="important">BOTH shapes</span> that changed positions</li>
+                <li>The shapes themselves do not change - only their positions</li>
+            </ul>
             <p>You can click the "I'm ready" button at any time if you feel you've memorized the positions before the timer ends.</p>
             <button id="startSpatialPracticeButton">Start Practice</button>
         </div>
@@ -536,7 +541,11 @@
         <!-- Spatial Memory Response Grid -->
         <div id="spatial-memory-response" class="screen hidden">
             <h2>Click on all shapes that have MOVED from their original positions</h2>
-            <p>Remember: only the <span class="important">positions</span> have changed - the shapes themselves are the same.</p>
+            <p>Remember:</p>
+            <ul>
+                <li>When shapes swap positions, you need to identify <span class="important">BOTH shapes</span> involved in the swap</li>
+                <li>Only the <span class="important">positions</span> have changed - the shapes themselves are the same</li>
+            </ul>
             <div class="grid-container clickable">
                 <!-- Grid will be dynamically populated -->
             </div>
@@ -561,10 +570,11 @@
             <p>After the study period, you'll see a second grid with the <span class="important">same shapes</span> but in different positions.</p>
             <p>Remember:</p>
             <ul>
-                <li>Only the <span class="important">positions</span> of shapes change, not the shapes themselves.</li>
-                <li>For each shape you correctly identify as having moved, you gain <span class="important">one point</span>.</li>
-                <li>For each shape you incorrectly identify as having moved, you lose <span class="important">one point</span>.</li>
-                <li>You can click "I'm ready" after 10 seconds if you feel you've memorized the positions.</li>
+                <li>When shapes swap positions, you must identify <span class="important">BOTH shapes</span> involved in the swap</li>
+                <li>Only the <span class="important">positions</span> of shapes change, not the shapes themselves</li>
+                <li>For each shape you correctly identify as having moved, you gain <span class="important">one point</span></li>
+                <li>For each shape you incorrectly identify as having moved, you lose <span class="important">one point</span></li>
+                <li>You can click "I'm ready" after 10 seconds if you feel you've memorized the positions</li>
             </ul>
             <p><span class="important">Note:</span> This is the main task with a new timer separate from the practice session.</p>
             <button id="startSpatialMainButton">Begin</button>
@@ -733,6 +743,58 @@
             <p>You will play <span class="important">5 rounds</span> of each game. From now on you will <span class="important">not receive feedback</span> after each round.</p>
             <p>Click the button below to begin.</p>
             <button id="startObjectSpanRealGameButton">Start</button>
+    </div>
+
+    <div id="task-6-intro" class="screen hidden">
+        <h2>Task 6: Ecological Spatial Memory</h2>
+        <p>In this task, you will be shown a grid of shapes. Some shapes will swap positions. Your task is to identify which shapes have moved.</p>
+        <button id="startTask6PracticeButton" class="button">Start Practice</button>
+    </div>
+
+    <div id="task-6-practice-instructions" class="screen hidden">
+        <h2>Practice Instructions</h2>
+        <p>You will see a grid of shapes. Watch carefully as some shapes swap positions.</p>
+        <p>After the shapes stop moving, you will need to click on ALL shapes that have changed position.</p>
+        <p>Remember:</p>
+        <ul>
+            <li>Shapes swap places - they only change position, not the shapes themselves</li>
+            <li>For each swap, you must identify BOTH shapes that moved</li>
+            <li>Click on all shapes that moved to a new position</li>
+        </ul>
+        <button id="startTask6GridButton" class="button">Start</button>
+    </div>
+
+    <div id="task-6-grid" class="screen hidden">
+        <div class="grid-container"></div>
+    </div>
+
+    <div id="task-6-response" class="screen hidden">
+        <h2>Select ALL shapes that moved</h2>
+        <p>Click on each shape that changed position</p>
+        <div class="grid-container"></div>
+        <button id="submitTask6ResponseButton" class="button">Submit Response</button>
+    </div>
+
+    <div id="task-6-practice-results" class="screen hidden">
+        <h2>Practice Results</h2>
+        <p>You have completed the practice round.</p>
+        <button id="startTask6MainButton" class="button">Start Main Task</button>
+    </div>
+
+    <div id="task-6-real-instructions" class="screen hidden">
+        <h2>Main Task Instructions</h2>
+        <p>You will now begin the main task.</p>
+        <p>Remember to identify ALL shapes that have moved by clicking on them.</p>
+        <p>For each swap, you must identify BOTH shapes involved.</p>
+        <button id="startTask6RealButton" class="button">Start</button>
+    </div>
+
+    <div id="task-6-results" class="screen hidden">
+        <h2>Results</h2>
+        <p>Correct selections: <span id="task6-correct-count">0</span></p>
+        <p>Incorrect selections: <span id="task6-incorrect-count">0</span></p>
+        <p>Total score: <span id="task6-total-score">0</span></p>
+        <button id="task6NextRoundButton" class="button">Next Round</button>
     </div>
     </div>
     <script src="script.js"></script>
