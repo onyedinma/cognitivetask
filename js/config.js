@@ -11,6 +11,15 @@ export const CONFIG = {
         displayTime: 1000, 
         blankTime: 500, 
         rounds: 5 
+    },
+    task6Practice: { 
+        maxShapes: 5, 
+        displayTime: 30000 
+    },
+    task6Real: { 
+        maxShapes: 20, 
+        displayTime: 90000,
+        rounds: 5
     }
 };
 

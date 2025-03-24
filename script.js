@@ -14,6 +14,14 @@ const CONFIG = {
     }
 };
 
+// Array of available images for Task 6
+const TASK6_IMAGES = [
+    'bird', 'flower', 'electriciron', 'bus', 'teacup', 
+    'clock', 'cat', 'computer', 'dog', 'fryingpan',
+    'elephant', 'guitar', 'house', 'umbrella', 'chair',
+    'kettle'
+];
+
 // Centralized Timer Management System
 const TimerManager = {
     timers: {},
@@ -147,7 +155,8 @@ const gameState = {
     originalShapesData: null,
     movedShapeIndices: null,
     spatialPracticeTimerInterval: null,
-    spatialRealTimerInterval: null
+    spatialRealTimerInterval: null,
+    objectOrder: null
 };
 
 // Add to the top of script.js
@@ -376,11 +385,14 @@ function submitStudentId() {
 }
 
 function handleSchemeSelection(scheme) {
+    console.log(`Scheme selected: ${scheme}`);
     gameState.scheme = scheme;
+    
     switch (scheme) {
         case '1':
-            // Pattern Recognition Game
-            showScreen('pattern-recognition-intro');
+            // Object Span Task
+            console.log("Initializing Object Span Task");
+            initializeObjectSpanTask(1);
             break;
         case '2':
             // Digit Span Game
@@ -587,7 +599,52 @@ function exportCSV(results) {
     
     let csvHeader, csvRows = [];
     
-    if (taskType === 'spatial_working_memory') {
+    if (taskType === 'ecological_spatial_memory') {
+        // Ecological Spatial Memory task headers
+        csvHeader = [
+            'participant_id',
+            'counter_balance',
+            'task_type',
+            'trial_number',
+            'timestamp',
+            'correct_count',
+            'incorrect_count',
+            'total_score',
+            'accuracy_percentage',
+            'original_positions',
+            'final_positions',
+            'moved_indices',
+            'selected_indices'
+        ].join(',');
+        
+        // Process ecological spatial memory trials
+        results.gameResults.forEach((trial, index) => {
+            const totalPossible = trial.movedIndices.length;
+            const accuracyPercentage = totalPossible > 0 ? 
+                ((trial.correctCount / totalPossible) * 100).toFixed(2) : '0.00';
+            
+            const row = {
+                participant_id: results.studentId || 'unknown',
+                counter_balance: results.scheme || 'unknown',
+                task_type: 'ecological_spatial_memory',
+                trial_number: index + 1,
+                timestamp: trial.timestamp,
+                correct_count: trial.correctCount,
+                incorrect_count: trial.incorrectCount,
+                total_score: trial.totalScore,
+                accuracy_percentage: accuracyPercentage,
+                original_positions: JSON.stringify(trial.originalPositions || []),
+                final_positions: JSON.stringify(trial.finalPositions || []),
+                moved_indices: JSON.stringify(trial.movedIndices || []),
+                selected_indices: JSON.stringify(trial.selectedIndices || [])
+            };
+            
+            csvRows.push(Object.values(row).map(value => 
+                typeof value === 'string' && value.includes(',') ? 
+                `"${value}"` : value
+            ).join(','));
+        });
+    } else if (taskType === 'spatial_working_memory') {
         // Spatial Working Memory task headers
         csvHeader = [
             'participant_id',
@@ -2707,40 +2764,40 @@ function initializeResponseGrid(isRealGame) {
     
     // If we already have modified data, use it; otherwise create it
     if (!gameState.modifiedShapesData) {
-        // Create a copy to modify for the response grid
-        const modifiedShapesData = [...originalShapesData];
-        
-        // Determine how many shapes to move based on difficulty
-        const shapesToMove = isRealGame ? 
-            Math.floor(originalShapesData.length * 0.4) : // 40% of shapes in real game
+    // Create a copy to modify for the response grid
+    const modifiedShapesData = [...originalShapesData];
+    
+    // Determine how many shapes to move based on difficulty
+    const shapesToMove = isRealGame ? 
+        Math.floor(originalShapesData.length * 0.4) : // 40% of shapes in real game
             Math.min(2, originalShapesData.length - 1);   // 2 shapes in practice
+    
+    // Move shapes (swap positions)
+    const movedIndices = [];
+    for (let i = 0; i < shapesToMove; i++) {
+        let index1, index2;
         
-        // Move shapes (swap positions)
-        const movedIndices = [];
-        for (let i = 0; i < shapesToMove; i++) {
-            let index1, index2;
-            
-            // Keep trying until we find a new pair to swap
-            do {
-                index1 = Math.floor(Math.random() * modifiedShapesData.length);
-                index2 = Math.floor(Math.random() * modifiedShapesData.length);
-            } while (
-                index1 === index2 || 
-                movedIndices.includes(index1) || 
-                movedIndices.includes(index2)
-            );
-            
+        // Keep trying until we find a new pair to swap
+        do {
+            index1 = Math.floor(Math.random() * modifiedShapesData.length);
+            index2 = Math.floor(Math.random() * modifiedShapesData.length);
+        } while (
+            index1 === index2 || 
+            movedIndices.includes(index1) || 
+            movedIndices.includes(index2)
+        );
+        
             // Swap the shapes
-            [modifiedShapesData[index1], modifiedShapesData[index2]] = 
-            [modifiedShapesData[index2], modifiedShapesData[index1]];
-            
-            // Track which indices were moved
-            movedIndices.push(index1, index2);
-        }
+        [modifiedShapesData[index1], modifiedShapesData[index2]] = 
+        [modifiedShapesData[index2], modifiedShapesData[index1]];
         
+        // Track which indices were moved
+        movedIndices.push(index1, index2);
+    }
+    
         // Store the modified data and moved indices
         gameState.modifiedShapesData = modifiedShapesData;
-        gameState.movedShapeIndices = movedIndices;
+    gameState.movedShapeIndices = movedIndices;
     }
     
     // Initialize or restore selected cells tracking
@@ -3419,159 +3476,612 @@ window.directStartObjectSpanBackwardPractice = function() {
     }
 };
 
-// Task 6: Ecological Spatial Memory Task
-function startTask6Practice() {
-    transitionScreens('task-6-intro', 'task-6-practice-instructions');
-}
-
-function startTask6Grid() {
-    transitionScreens('task-6-practice-instructions', 'task-6-grid');
-    initializeTask6Grid(false);
-}
-
-function startTask6Real() {
-    transitionScreens('task-6-real-instructions', 'task-6-grid');
-    initializeTask6Grid(true);
-}
-
-function initializeTask6Grid(isRealGame) {
-    gameState.isRealGame = isRealGame;
-    const gridContainer = document.querySelector('#task-6-grid .grid-container');
-    gridContainer.innerHTML = '';
+// Task 6: Completely isolated ecological spatial memory module
+const Task6Module = {
+    IMAGES: [
+        'bird', 'flower', 'electriciron', 'bus', 'teacup', 
+        'clock', 'cat', 'computer', 'dog', 'fryingpan',
+        'elephant', 'guitar', 'house', 'umbrella', 'chair',
+        'kettle'
+    ],
     
-    const gridSize = 5;
-    const totalShapes = gridSize * gridSize;
-    const shapes = generateShapes(totalShapes);
+    state: {
+        isRealGame: false,
+        originalPositions: [],
+        finalPositions: [],
+        movedIndices: [],
+        results: []
+    },
     
-    gameState.originalPositions = [...shapes];
-    gameState.finalPositions = [...shapes];
-    gameState.movedIndices = [];
+    // Shuffle array method (Fisher-Yates algorithm)
+    shuffleArray: function(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    },
     
-    // Create grid
-    for (let i = 0; i < totalShapes; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'grid-cell';
-        cell.dataset.index = i;
+    // Initialize all event listeners for Task 6
+    initializeEventListeners: function() {
+        document.getElementById('task6ContinueButton')?.addEventListener('click', () => {
+            console.log('Task 6 continue button clicked');
+            Task6Module.startPractice();
+        });
         
-        const shape = document.createElement('div');
-        shape.className = `grid-shape ${shapes[i]}`;
-        cell.appendChild(shape);
-        gridContainer.appendChild(cell);
+        document.getElementById('startTask6GridButton')?.addEventListener('click', () => {
+            console.log('Task 6 start grid button clicked');
+            Task6Module.startGrid();
+        });
+        
+        document.getElementById('startTask6RealButton')?.addEventListener('click', () => {
+            console.log('Task 6 real button clicked');
+            Task6Module.startReal();
+        });
+        
+        document.getElementById('submitTask6ResponseButton')?.addEventListener('click', () => {
+            console.log('Task 6 submit response button clicked');
+            Task6Module.evaluateResponse();
+        });
+    },
+    
+    // Screen transition handling specific to Task 6
+    startPractice: function() {
+        // Clear any existing timers
+        TimerManager.clearAll();
+        transitionScreens('task-6-intro', 'task-6-practice-instructions');
+    },
+    
+    startGrid: function() {
+        transitionScreens('task-6-practice-instructions', 'task-6-grid');
+        this.initializeGrid(false); // false = practice mode
+    },
+    
+    startReal: function() {
+        transitionScreens('task-6-real-instructions', 'task-6-grid');
+        this.initializeGrid(true); // true = real game mode
+    },
+    
+    // Grid initialization specific to Task 6
+    initializeGrid: function(isRealGame) {
+        const gridContainer = document.querySelector('#task-6-grid .task6-grid-container');
+        gridContainer.innerHTML = '';
+        
+        // Add practice-mode class if in practice mode
+        if (!isRealGame) {
+            gridContainer.classList.add('practice-mode');
+        } else {
+            gridContainer.classList.remove('practice-mode');
+        }
+        
+        // Set game state
+        this.state.isRealGame = isRealGame;
+        
+        // Setup grid container
+        gridContainer.style.display = 'grid';
+        gridContainer.style.gridTemplateColumns = `repeat(${isRealGame ? 5 : 3}, 1fr)`;
+        gridContainer.style.gridTemplateRows = `repeat(${isRealGame ? 4 : 2}, 1fr)`;
+        gridContainer.style.gap = isRealGame ? '3px' : '6px'; // Further reduced gap for main task
+        gridContainer.style.margin = isRealGame ? '3px auto' : '6px auto';
+        gridContainer.style.padding = isRealGame ? '6px' : '8px'; // Further reduced padding for main task
+        gridContainer.style.backgroundColor = '#f8f9fa';
+        gridContainer.style.borderRadius = '8px';
+        gridContainer.style.border = '1px solid #dee2e6'; // Thinner border
+        gridContainer.style.boxSizing = 'border-box';
+        gridContainer.style.maxWidth = isRealGame ? '95vw' : '65vw'; // Increased width for main task
+        gridContainer.style.width = '100%';
+        gridContainer.style.maxHeight = isRealGame ? '80vh' : '70vh'; // Increased height for main task
+        gridContainer.style.overflow = 'hidden'; // Prevent scrolling
+        
+        // Reset grid cells
+        const totalCells = isRealGame ? 20 : 6; // 5x4 grid for real, 3x2 for practice
+        
+        // Determine how many images to place
+        const totalImages = isRealGame ? 20 : 6; // Using 20 images for real mode (all cells)
+        
+        // Get enough images, repeating from the list if necessary
+        let selectedImages = [];
+        while (selectedImages.length < totalImages) {
+            const neededImages = totalImages - selectedImages.length;
+            const shuffledImages = [...this.IMAGES];
+            this.shuffleArray(shuffledImages);
+            selectedImages = [...selectedImages, ...shuffledImages.slice(0, neededImages)];
+        }
+        
+        // Position images in grid - for real mode, fill all cells
+        const positions = isRealGame ? 
+            selectedImages.slice(0, totalCells) : // Fill all cells for real mode
+            new Array(totalCells).fill(null);     // Only some cells for practice
+            
+        // For practice mode, place images in random positions
+        if (!isRealGame) {
+            // Create and shuffle array of indices
+            const indices = Array.from({ length: totalCells }, (_, i) => i);
+            this.shuffleArray(indices);
+            
+            // Select positions for images
+            const imagePositions = indices.slice(0, totalImages);
+            
+            imagePositions.forEach((position, i) => {
+                positions[position] = selectedImages[i];
+            });
+        }
+        
+        // Store initial positions
+        this.state.initialPositions = [...positions];
+        
+        // Create grid cells
+        for (let i = 0; i < totalCells; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'task6-grid-cell';
+            cell.dataset.index = i;
+            
+            // Apply styling directly to ensure isolation
+            cell.style.position = 'relative';
+            cell.style.aspectRatio = '1/1';
+            cell.style.display = 'flex';
+            cell.style.justifyContent = 'center';
+            cell.style.alignItems = 'center';
+            cell.style.backgroundColor = 'white';
+            cell.style.border = '1px solid #dee2e6'; // Thinner border
+            cell.style.borderRadius = '3px'; // Smaller border radius
+            cell.style.padding = isRealGame ? '2px' : '3px'; // Reduced padding
+            cell.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)'; // Lighter shadow
+            cell.style.boxSizing = 'border-box';
+            cell.style.maxWidth = '100%';
+            cell.style.maxHeight = '100%';
+            
+            if (positions[i]) {
+                const img = document.createElement('img');
+                img.src = `imagescreen/${positions[i]}.png`;
+                img.alt = positions[i];
+                img.className = 'task6-grid-image';
+                
+                // Apply styling directly to ensure isolation
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'contain';
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '100%';
+                img.style.padding = isRealGame ? '1px' : '2px'; // Reduced padding for both
+                
+                cell.appendChild(img);
+            }
+            
+            gridContainer.appendChild(cell);
+        }
+        
+        // Update display timer
+        this.updateTimerDisplay();
+    },
+    
+    swapRandomImages: function() {
+        // Set number of images to move based on real/practice mode
+        const numToMove = this.state.isRealGame ? 3 : 2;
+        
+        // Get current positions
+        const positions = [...this.state.initialPositions];
+        const imageIndices = positions.map((p, i) => p ? i : null).filter(i => i !== null);
+        
+        // Shuffle image indices and select some to move
+        this.shuffleArray(imageIndices);
+        const indicesToMove = imageIndices.slice(0, numToMove);
+        
+        // Track which indices were moved (for scoring)
+        this.state.movedIndices = indicesToMove;
+        
+        // Create copy of positions for swapping
+        const newPositions = [...positions];
+        
+        // Create pair of indices to swap
+        for (let i = 0; i < indicesToMove.length; i += 2) {
+            if (i + 1 < indicesToMove.length) {
+                // Swap a pair
+                const temp = newPositions[indicesToMove[i]];
+                newPositions[indicesToMove[i]] = newPositions[indicesToMove[i + 1]];
+                newPositions[indicesToMove[i + 1]] = temp;
+            }
+        }
+        
+        // Store the final positions
+        this.state.finalPositions = [...newPositions];
+        
+        // Display final grid
+        const gridContainer = document.querySelector('#task-6-grid .task6-grid-container');
+        const cells = gridContainer.querySelectorAll('.task6-grid-cell');
+        
+        // Update the grid display
+        cells.forEach((cell, index) => {
+            const img = cell.querySelector('img');
+            if (img && newPositions[index]) {
+                img.src = `imagescreen/${newPositions[index]}.png`;
+                img.alt = newPositions[index];
+            }
+        });
+
+        // Immediately show response screen
+        this.showResponseScreen();
+    },
+    
+    // Show response screen and initialize response grid
+    showResponseScreen: function() {
+        transitionScreens('task-6-grid', 'task-6-response');
+        this.initializeResponseGrid();
+    },
+    
+    initializeResponseGrid: function() {
+        const responseContainer = document.querySelector('#task-6-response .task6-grid-container');
+        responseContainer.innerHTML = '';
+        
+        // Add practice-mode class if in practice mode
+        if (!this.state.isRealGame) {
+            responseContainer.classList.add('practice-mode');
+        } else {
+            responseContainer.classList.remove('practice-mode');
+        }
+        
+        // Apply grid container styling
+        responseContainer.style.display = 'grid';
+        responseContainer.style.gridTemplateColumns = `repeat(${this.state.isRealGame ? 5 : 3}, 1fr)`;
+        responseContainer.style.gridTemplateRows = `repeat(${this.state.isRealGame ? 4 : 2}, 1fr)`;
+        responseContainer.style.gap = this.state.isRealGame ? '3px' : '6px'; // Further reduced gap
+        responseContainer.style.margin = this.state.isRealGame ? '3px auto' : '6px auto';
+        responseContainer.style.padding = this.state.isRealGame ? '6px' : '8px'; 
+        responseContainer.style.backgroundColor = '#f8f9fa';
+        responseContainer.style.borderRadius = '8px';
+        responseContainer.style.border = '1px solid #dee2e6'; // Thinner border
+        responseContainer.style.boxSizing = 'border-box';
+        responseContainer.style.maxWidth = this.state.isRealGame ? '95vw' : '65vw';
+        responseContainer.style.width = '100%';
+        responseContainer.style.maxHeight = this.state.isRealGame ? '80vh' : '70vh';
+        responseContainer.style.overflow = 'hidden'; // Prevent scrolling
+        
+        // Copy the final grid state to response grid
+        this.state.finalPositions.forEach((imageName, index) => {
+            const cell = document.createElement('div');
+            cell.className = 'task6-grid-cell';
+            cell.dataset.index = index;
+            
+            // Apply styling directly to ensure isolation
+            cell.style.position = 'relative';
+            cell.style.aspectRatio = '1/1';
+            cell.style.display = 'flex';
+            cell.style.justifyContent = 'center';
+            cell.style.alignItems = 'center';
+            cell.style.backgroundColor = 'white';
+            cell.style.border = '1px solid #dee2e6'; // Thinner border
+            cell.style.borderRadius = '3px'; // Smaller border radius
+            cell.style.padding = this.state.isRealGame ? '2px' : '3px';
+            cell.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)'; // Lighter shadow
+            cell.style.boxSizing = 'border-box';
+            cell.style.maxWidth = '100%';
+            cell.style.maxHeight = '100%';
+            cell.style.cursor = 'pointer';
+            cell.style.transition = 'all 0.2s ease';
+            
+            if (imageName) {
+                const img = document.createElement('img');
+                img.src = `imagescreen/${imageName}.png`;
+                img.alt = imageName;
+                img.className = 'task6-grid-image';
+                
+                // Apply styling directly to ensure isolation
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'contain';
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '100%';
+                img.style.padding = this.state.isRealGame ? '1px' : '2px';
+                img.style.transition = 'transform 0.2s ease';
+                
+                cell.appendChild(img);
+            }
+            
+            responseContainer.appendChild(cell);
+            
+            // Add hover effect
+            const img = cell.querySelector('.task6-grid-image');
+            if (img) {
+                cell.addEventListener('mouseenter', () => {
+                    img.style.transform = 'scale(1.05)';
+                });
+                cell.addEventListener('mouseleave', () => {
+                    img.style.transform = 'scale(1)';
+                });
+            }
+            
+            // Add click handler
+            cell.addEventListener('click', () => {
+                cell.classList.toggle('selected');
+                if (cell.classList.contains('selected')) {
+                    cell.style.backgroundColor = '#d1ecf1';
+                    cell.style.border = '3px solid #0d6efd';
+                } else {
+                    cell.style.backgroundColor = 'white';
+                    cell.style.border = '2px solid #dee2e6';
+                }
+            });
+        });
+    },
+    
+    evaluateResponse: function() {
+        const selectedCells = document.querySelectorAll('#task-6-response .task6-grid-cell.selected');
+        const selectedIndices = Array.from(selectedCells).map(cell => parseInt(cell.dataset.index));
+        
+        let correctCount = 0;
+        let incorrectCount = 0;
+        
+        // Check each selected cell
+        selectedIndices.forEach(index => {
+            if (this.state.movedIndices.includes(index)) {
+                correctCount++;
+            } else {
+                incorrectCount++;
+            }
+        });
+        
+        const totalScore = correctCount - incorrectCount;
+        
+        if (this.state.isRealGame) {
+            // Store results for real game
+            const result = {
+                task: 'ecological_spatial_memory',
+                correctCount,
+                incorrectCount,
+                totalScore,
+                timestamp: new Date().toISOString(),
+                movedIndices: this.state.movedIndices,
+                selectedIndices,
+                originalPositions: this.state.originalPositions,
+                finalPositions: this.state.finalPositions
+            };
+            
+            if (!this.state.results) {
+                this.state.results = [];
+            }
+            this.state.results.push(result);
+            
+            // Also add to global game results for export
+            if (!gameState.gameResults) {
+                gameState.gameResults = [];
+            }
+            gameState.gameResults.push(result);
+            
+            // Show results
+            document.getElementById('task6-correct-count').textContent = correctCount;
+            document.getElementById('task6-incorrect-count').textContent = incorrectCount;
+            document.getElementById('task6-total-score').textContent = totalScore;
+            
+            transitionScreens('task-6-response', 'task-6-results');
+
+            // Setup finish button to export results
+            const finishButton = document.getElementById('completeTask6Button');
+            if (finishButton) {
+                const newFinishButton = finishButton.cloneNode(true);
+                finishButton.parentNode.replaceChild(newFinishButton, finishButton);
+                
+                newFinishButton.addEventListener('click', () => {
+                    // Export results when finishing the task
+                    exportCSV({
+                        studentId: gameState.studentId,
+                        scheme: gameState.scheme,
+                        gameResults: gameState.gameResults
+                    });
+                    finishGame();
+                });
+            }
+        } else {
+            // Show practice results
+            const accuracy = (correctCount / this.state.movedIndices.length) * 100;
+            const message = `You correctly identified ${correctCount} out of ${this.state.movedIndices.length} moved images (${accuracy.toFixed(1)}% accuracy).`;
+            
+            // Display practice results
+            const practiceResults = document.getElementById('task-6-practice-results');
+            const resultsParagraph = practiceResults.querySelector('p') || document.createElement('p');
+            resultsParagraph.textContent = message;
+            if (!practiceResults.contains(resultsParagraph)) {
+                practiceResults.insertBefore(resultsParagraph, practiceResults.querySelector('button'));
+            }
+            
+            transitionScreens('task-6-response', 'task-6-practice-results');
+        }
+    },
+    
+    // Update timer display
+    updateTimerDisplay: function() {
+        // Create timer display
+        const timerDisplay = document.createElement('div');
+        timerDisplay.id = 'task6-timer';
+        timerDisplay.className = 'task6-timer';
+        timerDisplay.style.fontSize = '1.1rem';
+        timerDisplay.style.marginBottom = '8px';
+        timerDisplay.style.textAlign = 'center';
+        timerDisplay.style.color = '#dc3545';
+        timerDisplay.style.fontWeight = 'bold';
+        
+        // Find grid container parent and add timer before it
+        const gridContainer = document.querySelector('#task-6-grid .task6-grid-container');
+        const existingTimer = document.getElementById('task6-timer');
+        if (existingTimer) {
+            existingTimer.remove();
+        }
+        
+        // Remove any existing ready button
+        const existingReadyButton = document.getElementById('task6-ready-button');
+        if (existingReadyButton) {
+            existingReadyButton.remove();
+        }
+        
+        gridContainer.parentElement.insertBefore(timerDisplay, gridContainer);
+        
+        // Set time limit based on real/practice mode
+        const timeLimit = this.state.isRealGame ? 90 : 30;
+        let timeLeft = timeLimit;
+        
+        // Update timer display
+        const updateTimer = () => {
+            timerDisplay.textContent = `Time remaining: ${timeLeft} seconds`;
+        };
+        updateTimer();
+
+        // Create ready button
+        const readyButton = document.createElement('button');
+        readyButton.id = 'task6-ready-button';
+        readyButton.textContent = "I'm ready";
+        readyButton.className = 'task6-button';
+        readyButton.style.marginTop = '8px';
+        readyButton.style.padding = this.state.isRealGame ? '6px 14px' : '5px 10px';
+        readyButton.style.fontSize = this.state.isRealGame ? '15px' : '13px';
+        
+        // Start timer
+        const timer = setInterval(() => {
+            timeLeft--;
+            updateTimer();
+
+            // Show ready button after 8 seconds (practice) or 10 seconds (real)
+            if (timeLeft === timeLimit - (this.state.isRealGame ? 10 : 8)) {
+                if (!document.getElementById('task6-ready-button')) {
+                    gridContainer.parentElement.appendChild(readyButton);
+                }
+            }
+
+            // When timer reaches 0
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                this.swapRandomImages();
+            }
+        }, 1000);
+
+        // Ready button click handler
+        readyButton.onclick = () => {
+            clearInterval(timer);
+            this.swapRandomImages();
+        };
+    },
+};
+
+// Add Task 6 module initialization to the main init function
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing code ...
+    
+    // Initialize Task 6 module
+    Task6Module.initializeEventListeners();
+});
+
+// Function to shuffle objects for counter-balance
+function shuffleObjects(objects) {
+    for (let i = objects.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [objects[i], objects[j]] = [objects[j], objects[i]];
     }
-    
-    // Set grid layout
-    gridContainer.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
-    
-    // After a delay, swap some shapes
-    setTimeout(() => {
-        const numSwaps = isRealGame ? 3 : 2;
-        swapRandomShapes(numSwaps);
-        
-        // After showing swapped shapes, transition to response screen
-        setTimeout(() => {
-            transitionScreens('task-6-grid', 'task-6-response');
-            initializeTask6ResponseGrid();
-        }, 5000);
-    }, 5000);
+    return objects;
 }
 
-function initializeTask6ResponseGrid() {
-    const gridElement = document.getElementById('task-6-grid');
-    const responseContainer = document.querySelector('#task-6-response .grid-container');
-    responseContainer.innerHTML = '';
+// Initialize Object Span task for session 1 with counter-balance
+function initializeObjectSpanTask(session) {
+    if (session === 1) {
+        console.log("Initializing Object Span Task for session 1");
+        
+        // Create the object span screen if it doesn't exist
+        let objectSpanScreen = document.getElementById('object-span-intro');
+        if (!objectSpanScreen) {
+            objectSpanScreen = document.createElement('div');
+            objectSpanScreen.id = 'object-span-intro';
+            objectSpanScreen.className = 'screen';
+            
+            // Create content for object span screen
+            objectSpanScreen.innerHTML = `
+                <h1>Object Span Task</h1>
+                <p>In this task, you will be shown a series of objects one at a time.</p>
+                <p>Your task is to remember the objects in the order they appeared.</p>
+                <p>After the objects are shown, you'll be asked to recall them.</p>
+                <button id="startObjectSpanButton" class="button">Start Object Span Task</button>
+            `;
+            
+            // Add screen to the document
+            document.body.appendChild(objectSpanScreen);
+            
+            // Add event listener to the button
+            document.getElementById('startObjectSpanButton').addEventListener('click', () => {
+                // Start the object span task
+                const objects = ['shoe', 'bread', 'car', 'pot', 'money', 'book', 'chair', 'bag', 'computer'];
+                const shuffledObjects = shuffleObjects(objects);
+                
+                // Store the shuffled order for this session
+                gameState.objectOrder = shuffledObjects;
+                
+                // Show the object span practice screen
+                startObjectSpanPractice();
+            });
+        }
+        
+        // Show the object span intro screen
+        showScreen('object-span-intro');
+    }
+}
+
+// Function to start the Object Span task
+function startObjectSpanTask(objects) {
+    // Logic to display objects in the given order
+    // This function will handle the presentation of objects to the participant
+    console.log('Starting Object Span Task with objects:', objects);
+    // ... existing code to display objects ...
+}
+
+// Ensure event listeners are set up for scheme buttons
+function initializeSchemeButtons() {
+    document.querySelectorAll('.scheme-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const scheme = e.target.dataset.scheme;
+            handleSchemeSelection(scheme);
+        });
+    });
+}
+
+// Call this function during initialization
+initializeSchemeButtons();
+
+// Function to directly select a scheme (for debugging/testing)
+function directSelectScheme(scheme) {
+    console.log(`Directly selecting scheme: ${scheme}`);
+    handleSchemeSelection(scheme);
+}
+
+// Fix event listeners for scheme buttons
+function fixSchemeButtons() {
+    console.log("Fixing scheme buttons...");
+    const schemeButtons = document.querySelectorAll('.scheme-button');
+    console.log(`Found ${schemeButtons.length} scheme buttons`);
     
-    // Copy the final grid state to response grid
-    gameState.finalPositions.forEach((shape, index) => {
-        const cell = document.createElement('div');
-        cell.className = 'grid-cell';
-        cell.dataset.index = index;
+    schemeButtons.forEach(button => {
+        const scheme = button.dataset.scheme;
+        console.log(`Setting up button for scheme: ${scheme}`);
         
-        const shapeElement = document.createElement('div');
-        shapeElement.className = `grid-shape ${shape}`;
-        cell.appendChild(shapeElement);
-        responseContainer.appendChild(cell);
+        // Remove all existing click listeners
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
         
-        // Add click handler
-        cell.addEventListener('click', () => {
-            cell.classList.toggle('selected');
+        // Add new click listener
+        newButton.addEventListener('click', () => {
+            console.log(`Button clicked for scheme: ${scheme}`);
+            directSelectScheme(scheme);
         });
     });
     
-    // Set grid layout
-    responseContainer.style.gridTemplateColumns = gridElement.querySelector('.grid-container').style.gridTemplateColumns;
-    
-    // Clear any existing selected cells
-    document.querySelectorAll('#task-6-response .grid-cell.selected').forEach(cell => {
-        cell.classList.remove('selected');
-    });
-}
-
-function submitTask6Response() {
-    const selectedCells = document.querySelectorAll('#task-6-response .grid-cell.selected');
-    const selectedIndices = Array.from(selectedCells).map(cell => parseInt(cell.dataset.index));
-    
-    // Calculate score
-    let correctCount = 0;
-    let incorrectCount = 0;
-    
-    selectedIndices.forEach(index => {
-        if (gameState.movedIndices.includes(index)) {
-            correctCount++;
-        } else {
-            incorrectCount++;
-        }
-    });
-    
-    // Store results
-    const results = {
-        task: 'ecological_spatial_memory',
-        timestamp: new Date().toISOString(),
-        totalShapes: gameState.originalPositions.length,
-        movedShapesCount: gameState.movedIndices.length / 2,
-        correctCount,
-        incorrectCount,
-        totalScore: correctCount - incorrectCount,
-        originalPositions: gameState.originalPositions,
-        finalPositions: gameState.finalPositions,
-        movedIndices: gameState.movedIndices,
-        selectedIndices,
-        studyTime: 5000
-    };
-    
-    if (gameState.isRealGame) {
-        if (!gameState.results) {
-            gameState.results = { gameResults: [] };
-        }
-        gameState.results.gameResults.push(results);
-        
-        if (gameState.results.gameResults.length >= CONFIG.realMode.rounds) {
-            finishGame();
-        } else {
-            transitionScreens('task-6-response', 'task-6-results');
-            displayTask6Results(results);
-        }
-    } else {
-        transitionScreens('task-6-response', 'task-6-practice-results');
+    // Add a manual click trigger for testing scheme 1
+    const scheme1Button = document.querySelector('.scheme-button[data-scheme="1"]');
+    if (scheme1Button) {
+        console.log("Adding test function for scheme 1");
+        window.testScheme1 = function() {
+            console.log("Testing scheme 1 button");
+            scheme1Button.click();
+        };
     }
 }
 
-function displayTask6Results(results) {
-    document.getElementById('task6-correct-count').textContent = results.correctCount;
-    document.getElementById('task6-incorrect-count').textContent = results.incorrectCount;
-    document.getElementById('task6-total-score').textContent = results.totalScore;
-}
-
-function task6NextRound() {
-    transitionScreens('task-6-results', 'task-6-grid');
-    initializeTask6Grid(true);
-}
-
-// Add event listeners for Task 6
-document.getElementById('startTask6PracticeButton').addEventListener('click', startTask6Practice);
-document.getElementById('startTask6GridButton').addEventListener('click', startTask6Grid);
-document.getElementById('startTask6MainButton').addEventListener('click', () => {
-    transitionScreens('task-6-practice-results', 'task-6-real-instructions');
+// Call this function during initialization
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM fully loaded, fixing scheme buttons");
+    fixSchemeButtons();
 });
-document.getElementById('startTask6RealButton').addEventListener('click', startTask6Real);
-document.getElementById('submitTask6ResponseButton').addEventListener('click', submitTask6Response);
-document.getElementById('task6NextRoundButton').addEventListener('click', task6NextRound);
+

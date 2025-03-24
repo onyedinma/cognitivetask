@@ -746,55 +746,56 @@
     </div>
 
     <div id="task-6-intro" class="screen hidden">
-        <h2>Task 6: Ecological Spatial Memory</h2>
-        <p>In this task, you will be shown a grid of shapes. Some shapes will swap positions. Your task is to identify which shapes have moved.</p>
-        <button id="startTask6PracticeButton" class="button">Start Practice</button>
+        <h1>Ecological Spatial Working Memory Task</h1>
+        <p>In this task, you will see a grid of real-world object images. You need to remember the locations of these images.</p>
+        <p>After studying the grid, some images will swap positions. Your job is to identify which images have moved from their original positions.</p>
+        <p>First, you'll complete a short practice to get familiar with the task.</p>
+        <button id="task6ContinueButton" class="task6-button">Continue</button>
     </div>
 
     <div id="task-6-practice-instructions" class="screen hidden">
-        <h2>Practice Instructions</h2>
-        <p>You will see a grid of shapes. Watch carefully as some shapes swap positions.</p>
-        <p>After the shapes stop moving, you will need to click on ALL shapes that have changed position.</p>
-        <p>Remember:</p>
-        <ul>
-            <li>Shapes swap places - they only change position, not the shapes themselves</li>
-            <li>For each swap, you must identify BOTH shapes that moved</li>
-            <li>Click on all shapes that moved to a new position</li>
-        </ul>
-        <button id="startTask6GridButton" class="button">Start</button>
+        <h1>Practice Instructions</h1>
+        <p>In this practice, you will see a 3×2 grid with 6 images.</p>
+        <p>Study the positions of these images carefully. After some time, one pair of images will swap positions.</p>
+        <p>Your task is to identify which images have changed positions by clicking on them in the final grid.</p>
+        <p>After the practice, you'll move on to the main task with a larger grid and more position changes.</p>
+        <button id="startTask6GridButton" class="task6-button">Start Practice</button>
     </div>
 
     <div id="task-6-grid" class="screen hidden">
-        <div class="grid-container"></div>
+        <h1>Study the Image Positions</h1>
+        <p>Remember where each image is located. Some images will change positions shortly.</p>
+        <div class="task6-grid-container"></div>
     </div>
 
     <div id="task-6-response" class="screen hidden">
-        <h2>Select ALL shapes that moved</h2>
-        <p>Click on each shape that changed position</p>
-        <div class="grid-container"></div>
-        <button id="submitTask6ResponseButton" class="button">Submit Response</button>
+        <h1>Which Images Changed Positions?</h1>
+        <p>Click on the images that have changed positions from the original grid.</p>
+        <div class="task6-grid-container"></div>
+        <button id="submitTask6ResponseButton" class="task6-button">Submit</button>
     </div>
 
     <div id="task-6-practice-results" class="screen hidden">
-        <h2>Practice Results</h2>
-        <p>You have completed the practice round.</p>
-        <button id="startTask6MainButton" class="button">Start Main Task</button>
+        <h1>Practice Results</h1>
+        <p></p>
+        <button id="startTask6RealButton" class="task6-button">Start Main Task</button>
     </div>
 
     <div id="task-6-real-instructions" class="screen hidden">
-        <h2>Main Task Instructions</h2>
-        <p>You will now begin the main task.</p>
-        <p>Remember to identify ALL shapes that have moved by clicking on them.</p>
-        <p>For each swap, you must identify BOTH shapes involved.</p>
-        <button id="startTask6RealButton" class="button">Start</button>
+        <h1>Main Task Instructions</h1>
+        <p>Now you'll complete the main task. You will see a 5×4 grid with 20 images.</p>
+        <p>Study the positions of these images carefully. After some time, three pairs of images will swap positions.</p>
+        <p>Your task is to identify which images have changed positions by clicking on them in the final grid.</p>
+        <p>You'll have 90 seconds to study the grid before the images swap positions.</p>
+        <button id="startTask6RealButton" class="task6-button">Start Main Task</button>
     </div>
 
     <div id="task-6-results" class="screen hidden">
-        <h2>Results</h2>
-        <p>Correct selections: <span id="task6-correct-count">0</span></p>
-        <p>Incorrect selections: <span id="task6-incorrect-count">0</span></p>
+        <h1>Task Results</h1>
+        <p>Correct identifications: <span id="task6-correct-count">0</span></p>
+        <p>Incorrect identifications: <span id="task6-incorrect-count">0</span></p>
         <p>Total score: <span id="task6-total-score">0</span></p>
-        <button id="task6NextRoundButton" class="button">Next Round</button>
+        <button id="completeTask6Button" class="task6-button" onclick="finishGame()">Complete Task</button>
     </div>
     </div>
     <script src="script.js"></script>
@@ -817,3 +818,4 @@
     </script>
 </body>
 </html>
+

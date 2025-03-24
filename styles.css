@@ -1238,78 +1238,616 @@ button:hover {
     }
 }
 
-#task-6-practice-instructions .grid-cell,
-#task-6-practice .grid-cell {
-    border: 2px solid #ccc;
-    cursor: pointer;
-}
-
-#task-6-practice-instructions .grid-shape,
-#task-6-practice .grid-shape {
-    opacity: 0.8;
-}
-
-#task-6-practice-instructions .grid-cell:hover .grid-shape,
-#task-6-practice .grid-cell:hover .grid-shape {
-    opacity: 1;
-}
-
-#task-6-grid, #task-6-response {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    width: 100vw;
-    position: relative;
-}
-
+#task-6-intro,
+#task-6-practice-instructions,
 #task-6-grid,
 #task-6-response,
 #task-6-practice-results,
-#task-6-results,
-#task-6-intro,
-#task-6-practice-instructions,
-#task-6-real-instructions {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+#task-6-real-instructions,
+#task-6-results {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 750px;
+    padding: 12px;
+    box-sizing: border-box;
+    background: white;
+    border-radius: 12px;
+    border: 2px solid #333;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#task-6-grid .grid-container,
+#task-6-response .grid-container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 15px;
+    margin: 20px auto;
+    max-width: 90vw;
+    width: 100%;
+    background-color: #f8f9fa;
     padding: 20px;
+    border-radius: 10px;
+    border: 2px solid #dee2e6;
+    box-sizing: border-box;
+    overflow: auto;
 }
 
-#task-6-grid,
-#task-6-response,
-#task-6-practice-results,
-#task-6-results,
-#task-6-intro,
-#task-6-practice-instructions,
-#task-6-real-instructions {
-    position: fixed;
-    top: 0;
-    left: 0;
+#task-6-grid .grid-cell,
+#task-6-response .grid-cell {
+    position: relative;
+    aspect-ratio: 1/1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+    max-width: 100%;
+    max-height: 100%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#task-6-grid .grid-shape,
+#task-6-response .grid-shape {
     width: 100%;
     height: 100%;
+    object-fit: contain;
+    max-width: 100%;
+    max-height: 100%;
+    padding: 5px;
+    transition: transform 0.2s ease;
+}
+
+#task-6-grid .grid-cell:hover .grid-shape,
+#task-6-response .grid-cell:hover .grid-shape {
+    transform: scale(1.05);
+}
+
+#task-6-response .grid-cell.selected {
+    background-color: #d1ecf1;
+    border: 3px solid #0d6efd;
+}
+
+#task6-timer {
+    text-align: center;
+    color: #dc3545;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #task-6-grid .grid-container,
+    #task-6-response .grid-container {
+        gap: 8px;
+        padding: 10px;
+    }
+
+    #task-6-grid .grid-cell,
+    #task-6-response .grid-cell {
+        padding: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    #task-6-grid .grid-container,
+    #task-6-response .grid-container {
+        gap: 5px;
+        padding: 5px;
+    }
+
+    #task-6-grid .grid-cell,
+    #task-6-response .grid-cell {
+        padding: 3px;
+    }
+}
+
+/* Make sure the screens have adequate space for the grid */
+#task-6-grid, 
+#task-6-response,
+#task-6-practice-results,
+#task-6-results,
+#task-6-intro,
+#task-6-practice-instructions,
+#task-6-real-instructions {
+    width: 95%;
+    max-width: 900px;
+    padding: 20px;
+    max-height: 95vh;
+    overflow-y: auto;
+}
+
+/* Smaller screens - adjust grid cell size */
+@media (max-height: 800px) {
+    #task-6-grid, 
+    #task-6-response,
+    #task-6-practice-results,
+    #task-6-results,
+    #task-6-intro,
+    #task-6-practice-instructions,
+    #task-6-real-instructions {
+        padding: 10px;
+        max-height: 90vh;
+    }
+    
+    #task-6-grid .grid-container,
+    #task-6-response .grid-container {
+        gap: 5px;
+        padding: 10px;
+    }
+}
+
+/* Task 6 Isolated Styling - Completely separate from all other styles */
+.task6-button {
+    min-width: 90px;
+    padding: 6px 14px;
+    font-size: 15px;
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 4px;
+}
+
+.task6-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+#task-6-intro,
+#task-6-practice-instructions,
+#task-6-grid,
+#task-6-response,
+#task-6-practice-results,
+#task-6-real-instructions,
+#task-6-results {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 800px;
+    padding: 15px;
+    box-sizing: border-box;
+    background: white;
+    border-radius: 12px;
+    border: 2px solid #333;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Specific styling for practice grid screens to ensure they fit */
+#task-6-grid:not(.task-real),
+#task-6-response:not(.task-real) {
+    padding: 10px;
+    max-height: 82vh;
+}
+
+/* Reduced padding for practice screens */
+#task-6-practice-instructions,
+#task-6-practice-results {
+    padding: 12px;
+}
+
+/* Make Task 6 headings more compact */
+#task-6-intro h1,
+#task-6-practice-instructions h1,
+#task-6-grid h1,
+#task-6-response h1,
+#task-6-practice-results h1,
+#task-6-real-instructions h1,
+#task-6-results h1 {
+    font-size: 22px;
+    margin: 0 0 8px 0;
+}
+
+/* Make paragraphs more compact */
+#task-6-intro p,
+#task-6-practice-instructions p,
+#task-6-grid p,
+#task-6-response p,
+#task-6-practice-results p,
+#task-6-real-instructions p,
+#task-6-results p {
+    margin: 6px 0;
+    line-height: 1.3;
+}
+
+/* The Task 6 styling should not reference or use any standard classes from the base styles */
+.task6-grid-container {
+    display: grid; 
+    gap: 5px;
+    margin: 5px auto;
+    max-width: 90vw;
+    width: 100%;
+    background-color: #f8f9fa;
+    padding: 5px;
+    border-radius: 10px;
+    border: 2px solid #dee2e6;
+    box-sizing: border-box;
+    overflow: visible;
+    aspect-ratio: 5/4; /* Add aspect ratio to maintain 5:4 grid proportions */
+}
+
+/* Practice mode specific grid container adjustments */
+.task6-grid-container.practice-mode {
+    gap: 3px;
+    padding: 3px; 
+    margin: 3px auto;
+    max-width: 90vw;
+    aspect-ratio: 3/2; /* Add aspect ratio for practice mode 3:2 grid */
+}
+
+/* Specific styling for practice mode cells */
+.task6-grid-container.practice-mode .task6-grid-cell {
+    max-width: 55%;
+    max-height: 55%;
+    transform: scale(0.75);
+    padding: 0;
+    border-width: 1px;
+}
+
+/* Specific styling for practice mode images */
+.task6-grid-container.practice-mode .task6-grid-image {
+    padding: 1px;
+}
+
+.task6-grid-cell {
+    position: relative;
+    aspect-ratio: 1/1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 2px;
+    padding: 1px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    box-sizing: border-box;
+    max-width: 100%; /* Changed from 65% to 100% */
+    max-height: 100%; /* Changed from 65% to 100% */
+    transform: scale(0.95); /* Adjusted scale for better fit */
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-#task-6-grid,
-#task-6-response,
-#task-6-practice-results,
-#task-6-results,
-#task-6-intro,
-#task-6-practice-instructions,
-#task-6-real-instructions {
-    z-index: 1000;
+.task6-grid-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    max-width: 100%;
+    max-height: 100%;
+    padding: 3px;
+    transition: transform 0.2s ease;
 }
 
-#task-6-grid,
-#task-6-response,
-#task-6-practice-results,
-#task-6-results,
-#task-6-intro,
-#task-6-practice-instructions,
-#task-6-real-instructions {
-    transition: opacity 0.3s ease-in-out;
+.task6-grid-cell:hover .task6-grid-image {
+    transform: scale(1.05);
+}
+
+.task6-grid-cell.selected {
+    background-color: #d1ecf1;
+    border: 3px solid #0d6efd;
+}
+
+.task6-timer {
+    text-align: center;
+    color: #dc3545;
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 1.25rem;
+}
+
+/* Responsive adjustments for Task 6 only */
+@media (max-width: 768px) {
+    .task6-grid-container {
+        gap: 8px;
+        padding: 10px;
+        max-width: 85vw;
+    }
+    
+    .task6-grid-cell {
+        padding: 4px;
+    }
+    
+    #task-6-intro,
+    #task-6-practice-instructions,
+    #task-6-grid,
+    #task-6-response,
+    #task-6-practice-results,
+    #task-6-real-instructions,
+    #task-6-results {
+        width: 95%;
+        padding: 12px;
+    }
+    
+    /* Smaller heading size on medium screens */
+    #task-6-intro h1,
+    #task-6-practice-instructions h1,
+    #task-6-grid h1,
+    #task-6-response h1,
+    #task-6-practice-results h1,
+    #task-6-real-instructions h1,
+    #task-6-results h1 {
+        font-size: 20px;
+        margin-bottom: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .task6-grid-container {
+        gap: 4px;
+        padding: 5px;
+        max-width: 95vw;
+    }
+    
+    .task6-grid-cell {
+        padding: 2px;
+        border-radius: 4px;
+    }
+    
+    .task6-grid-image {
+        padding: 2px;
+    }
+    
+    #task-6-intro,
+    #task-6-practice-instructions,
+    #task-6-grid,
+    #task-6-response,
+    #task-6-practice-results,
+    #task-6-real-instructions,
+    #task-6-results {
+        width: 98%;
+        padding: 10px;
+    }
+    
+    /* Even smaller heading size on small screens */
+    #task-6-intro h1,
+    #task-6-practice-instructions h1,
+    #task-6-grid h1,
+    #task-6-response h1,
+    #task-6-practice-results h1,
+    #task-6-real-instructions h1,
+    #task-6-results h1 {
+        font-size: 18px;
+        margin-bottom: 6px;
+    }
+    
+    #task-6-intro p,
+    #task-6-practice-instructions p,
+    #task-6-grid p,
+    #task-6-response p,
+    #task-6-practice-results p,
+    #task-6-real-instructions p,
+    #task-6-results p {
+        font-size: 14px;
+        margin: 6px 0;
+    }
+}
+
+@media (max-height: 800px) {
+    #task-6-intro,
+    #task-6-practice-instructions,
+    #task-6-grid,
+    #task-6-response,
+    #task-6-practice-results,
+    #task-6-real-instructions,
+    #task-6-results {
+        padding: 10px;
+        max-height: 90vh;
+    }
+    
+    .task6-grid-container {
+        gap: 5px;
+        padding: 8px;
+        margin: 5px auto;
+    }
+    
+    .task6-button {
+        padding: 6px 12px;
+        margin: 4px;
+    }
+}
+
+/* Special adjustments for mobile screens in landscape orientation */
+@media (max-height: 600px) {
+    #task-6-grid h1,
+    #task-6-response h1 {
+        font-size: 16px;
+        margin-bottom: 4px;
+    }
+    
+    #task-6-grid p,
+    #task-6-response p {
+        font-size: 13px;
+        margin: 3px 0;
+    }
+    
+    .task6-timer {
+        font-size: 1rem;
+        margin-bottom: 5px;
+    }
+    
+    .task6-grid-container {
+        margin: 4px auto;
+        padding: 6px;
+    }
+    
+    .task6-button {
+        padding: 4px 10px;
+        font-size: 14px;
+    }
+}
+
+/* Task 6 specific screen */
+#task-6-grid.screen,
+#task-6-response.screen {
+    height: 95vh;
+    max-height: 95vh;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 97vw;
+    max-width: 97vw;
+    overflow: hidden;
+}
+
+/* Specific styling for real game grid container to fit 5x4 grid */
+.task6-grid-container:not(.practice-mode) {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 4px;
+    padding: 8px;
+    margin: 4px auto;
+    width: 95%;
+    max-width: 85vw;
+    height: 70vh;
+    max-height: 70vh;
+    aspect-ratio: 5/4;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Adjust the real game cells */
+.task6-grid-container:not(.practice-mode) .task6-grid-cell {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    padding: 2px;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Adjust the real game images */
+.task6-grid-container:not(.practice-mode) .task6-grid-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 2px;
+}
+
+/* Practice mode specific grid container adjustments */
+.task6-grid-container.practice-mode {
+    gap: 2px;
+    padding: 2px; 
+    margin: 2px auto;
+    max-width: 85vw;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    overflow: hidden;
+    aspect-ratio: 3/2; /* Ensure 3:2 aspect ratio for practice mode */
+}
+
+/* Specific styling for practice mode cells */
+.task6-grid-container.practice-mode .task6-grid-cell {
+    max-width: 45%;
+    max-height: 45%;
+    transform: scale(0.65);
+    padding: 0;
+    border-width: 1px;
+    margin: auto;
+    overflow: hidden;
+}
+
+/* Specific styling for practice mode images */
+.task6-grid-container.practice-mode .task6-grid-image {
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Make Task 6 headings more compact */
+#task-6-grid h1,
+#task-6-response h1 {
+    font-size: 18px;
+    margin: 0 0 4px 0;
+}
+
+/* Make paragraphs more compact */
+#task-6-grid p,
+#task-6-response p {
+    margin: 3px 0;
+    line-height: 1.2;
+    font-size: 14px;
+}
+
+/* Timer styling for main task */
+#task6-timer {
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+/* Responsive adjustments for main task */
+@media (max-height: 800px) {
+    .task6-grid-container:not(.practice-mode) {
+        max-height: 60vh;
+    }
+    
+    #task-6-grid h1,
+    #task-6-response h1 {
+        font-size: 16px;
+    }
+    
+    #task-6-grid p,
+    #task-6-response p {
+        font-size: 13px;
+    }
+}
+
+@media (max-height: 600px) {
+    .task6-grid-container:not(.practice-mode) {
+        max-height: 55vh;
+    }
+    
+    #task-6-grid h1,
+    #task-6-response h1 {
+        font-size: 14px;
+    }
+    
+    #task-6-grid p,
+    #task-6-response p {
+        font-size: 12px;
+    }
+}
+
+/* Task 6 main screen container */
+#task-6-grid.screen:not(.practice-mode),
+#task-6-response.screen:not(.practice-mode) {
+    height: 95vh;
+    max-height: 95vh;
+    width: 95vw;
+    max-width: 95vw;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
 }
