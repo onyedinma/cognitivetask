@@ -5,6 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cognitive Task - Shape Counting</title>
     <link rel="stylesheet" href="styles.css">
+    <script>
+        // Global helper functions for Task 7
+        function debugSubmitTask7() {
+            console.log('Debug submit function called directly from HTML');
+            // Direct reference to the module
+            if (typeof Task7Module !== 'undefined') {
+                Task7Module.evaluateMainResponse();
+            } else {
+                console.error('Task7Module is not defined!');
+                alert('Error: Task7Module not found. Please refresh the page and try again.');
+            }
+        }
+        
+        function task7SubmitPracticeAnswer() {
+            console.log('Practice submit function called directly from HTML');
+            // Direct reference to the module
+            if (typeof Task7Module !== 'undefined') {
+                Task7Module.evaluatePracticeResponse();
+            } else {
+                console.error('Task7Module is not defined!');
+                alert('Error: Task7Module not found. Please refresh the page and try again.');
+            }
+        }
+
+        // Task 8 helper functions
+        function debugSubmitTask8() {
+            if (typeof Task8Module !== 'undefined') {
+                Task8Module.evaluateMainResponse();
+            } else {
+                console.error('Task8Module is not defined!');
+                alert('Error: Task8Module not found. Please refresh the page and try again.');
+            }
+        }
+        
+        function task8SubmitPracticeAnswer() {
+            if (typeof Task8Module !== 'undefined') {
+                Task8Module.evaluatePracticeResponse();
+            } else {
+                console.error('Task8Module is not defined!');
+                alert('Error: Task8Module not found. Please refresh the page and try again.');
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -796,6 +839,192 @@
         <p>Incorrect identifications: <span id="task6-incorrect-count">0</span></p>
         <p>Total score: <span id="task6-total-score">0</span></p>
         <button id="completeTask6Button" class="task6-button" onclick="finishGame()">Complete Task</button>
+    </div>
+
+    <!-- Task 7: Deductive Reasoning Task -->
+    <div id="task-7-intro" class="screen hidden">
+        <h1>Deductive Reasoning Task</h1>
+        <p>In this task, you will be asked to solve logical puzzles using four cards that will appear on the screen.</p>
+        <p>Among the four cards presented, you will be required to identify which two cards to turn to test the logical premise presented in each question.</p>
+        <p>In other words, in each game, there will be a simple rule, and all you have to do is work out which cards you need to turn over to see if the rule has been broken.</p>
+        <button id="task7ContinueButton" class="task7-button">Continue</button>
+    </div>
+
+    <div id="task-7-instructions" class="screen hidden">
+        <h1>Task Instructions</h1>
+        <p>For each question:</p>
+        <ol>
+            <li>Read the logical rule carefully</li>
+            <li>Look at the four cards presented</li>
+            <li>Select exactly two cards that you need to turn over to test if the rule is true or false</li>
+            <li>Click "Submit" when you've made your selection</li>
+        </ol>
+        <p>Let's start with a practice round to get familiar with the task.</p>
+        <button id="startTask7PracticeButton" class="task7-button">Start Practice</button>
+    </div>
+
+    <div id="task-7-practice" class="screen hidden">
+        <h1>Practice Round</h1>
+        <div id="task7-question-container">
+            <p id="task7-question-text">If a card has a circle on one side, then it has the color yellow on the other side.</p>
+            <p>Select the two cards you need to turn over to test this rule:</p>
+        </div>
+
+        <div id="task7-cards-container" class="cards-container">
+            <!-- Cards will be generated dynamically -->
+        </div>
+
+        <div id="task7-selection-info">
+            <p>Selected cards: <span id="task7-selected-count">0</span>/2</p>
+        </div>
+
+        <button id="task7SubmitButton" class="task7-button" onclick="task7SubmitPracticeAnswer()" disabled>Submit</button>
+        
+        <!-- Extra direct submit button for practice as fallback -->
+        <button id="task7DirectPracticeSubmitButton" class="task7-button" style="margin-top: 15px; background-color: #ff9800;" 
+                onclick="Task7Module.evaluatePracticeResponse();">
+            Direct Submit (Use if regular button doesn't work)
+        </button>
+    </div>
+
+    <div id="task-7-feedback" class="screen hidden">
+        <h1>Feedback</h1>
+        <div id="task7-feedback-container">
+            <p id="task7-result-text"></p>
+            <div id="task7-explanation"></div>
+        </div>
+        <button id="task7ContinueAfterFeedbackButton" class="task7-button">Continue</button>
+    </div>
+
+    <div id="task-7-real-instructions" class="screen hidden">
+        <h1>Main Task Instructions</h1>
+        <p>Now you'll complete the main task with several logical puzzles to solve.</p>
+        <p>Remember to select exactly two cards for each question that you need to turn over to test the rule.</p>
+        <p>Your performance will be recorded for each puzzle.</p>
+        <button id="startTask7RealButton" class="task7-button">Start Main Task</button>
+    </div>
+
+    <div id="task-7-main" class="screen hidden">
+        <h1>Deductive Reasoning Puzzle</h1>
+        <div id="task7-main-question-container">
+            <p id="task7-main-question-text"></p>
+            <p>Select the two cards you need to turn over to test this rule:</p>
+        </div>
+
+        <div id="task7-main-cards-container" class="cards-container">
+            <!-- Cards will be generated dynamically -->
+        </div>
+
+        <div id="task7-main-selection-info">
+            <p>Selected cards: <span id="task7-main-selected-count">0</span>/2</p>
+        </div>
+
+        <button id="task7MainSubmitButton" class="task7-button" onclick="debugSubmitTask7()" disabled>Submit</button>
+        
+        <!-- Extra direct submit button as fallback -->
+        <button id="task7DirectSubmitButton" class="task7-button" style="margin-top: 15px; background-color: #ff9800;" 
+                onclick="Task7Module.evaluateMainResponse();">
+            Direct Submit (Use if regular button doesn't work)
+        </button>
+    </div>
+
+    <div id="task-7-results" class="screen hidden">
+        <h1>Task Results</h1>
+        <p>You have completed the Deductive Reasoning Task.</p>
+        <div id="task7-results-container">
+            <p>Correct answers: <span id="task7-correct-count">0</span></p>
+            <p>Total puzzles: <span id="task7-total-count">0</span></p>
+            <p>Accuracy: <span id="task7-accuracy">0%</span></p>
+        </div>
+        <button id="completeTask7Button" class="task7-button" onclick="finishGame()">Complete Task</button>
+    </div>
+    
+    <!-- Task 8: Ecological Deductive Reasoning -->
+    <div id="task-8-intro" class="screen hidden">
+        <h1>Task 8: Ecological Deductive Reasoning</h1>
+        <p>In this task, you will be asked to solve logical puzzles using four cards that appear on the screen.</p>
+        <p>Among the four cards presented, you will be required to identify which two cards to turn to test the logical premise presented in each question.</p>
+        <p>In other words, in each game, there will be a simple rule, and all you have to do is work out which cards you need to turn over to see if the rule has been broken.</p>
+        <button id="task8ContinueButton" class="button">Continue</button>
+    </div>
+
+    <div id="task-8-instructions" class="screen hidden">
+        <h1>Instructions</h1>
+        <p>For each question, you will see a logical rule and four cards.</p>
+        <p>Your task is to select the two cards that need to be turned over to determine whether the rule is being followed or broken.</p>
+        <p>Click on a card to select it. Click again to deselect.</p>
+        <p>Let's start with a practice round.</p>
+        <button id="startTask8PracticeButton" class="button">Start Practice</button>
+    </div>
+
+    <div id="task-8-practice" class="screen hidden">
+        <h1>Practice Round</h1>
+        <p>Select the two cards that need to be turned over to test the rule:</p>
+        <p id="task8-practice-question-text">"If a person drinks an alcoholic drink, then they must be over the age of 21 years old."</p>
+        
+        <div id="task8-cards-container" class="cards-container">
+            <!-- Cards will be added dynamically by JavaScript -->
+        </div>
+        
+        <div class="task8-card-info">
+            <p>Selected cards: <span id="task8-selected-count">0</span>/2</p>
+        </div>
+
+        <button id="task8SubmitButton" class="task8-button" onclick="task8SubmitPracticeAnswer()" disabled>Submit</button>
+        
+        <!-- Extra direct submit button as fallback -->
+        <button id="task8DirectSubmitButton" class="task8-button" style="margin-top: 15px; background-color: #ff9800;" 
+                onclick="Task8Module.evaluatePracticeResponse();">
+            Direct Submit (Use if regular button doesn't work)
+        </button>
+    </div>
+
+    <div id="task-8-feedback" class="screen hidden">
+        <h1>Practice Feedback</h1>
+        <p id="task8-practice-result"></p>
+        <p id="task8-practice-explanation"></p>
+        <p>Now let's move on to the main task.</p>
+        <button id="task8ContinueAfterFeedbackButton" class="button">Continue</button>
+    </div>
+
+    <div id="task-8-real-instructions" class="screen hidden">
+        <h1>Main Task</h1>
+        <p>Great! Now you'll solve several similar puzzles.</p>
+        <p>Remember to select the two cards you need to turn over to test the rule.</p>
+        <button id="startTask8RealButton" class="button">Start Task</button>
+    </div>
+
+    <div id="task-8-main" class="screen hidden">
+        <h1>Ecological Deductive Reasoning Task</h1>
+        <p>Select the two cards that need to be turned over to test the rule:</p>
+        <p id="task8-main-question-text"></p>
+        
+        <div id="task8-main-cards-container" class="cards-container">
+            <!-- Cards will be added dynamically by JavaScript -->
+        </div>
+        
+        <div class="task8-card-info">
+            <p>Selected cards: <span id="task8-main-selected-count">0</span>/2</p>
+        </div>
+
+        <button id="task8MainSubmitButton" class="task8-button" onclick="debugSubmitTask8()" disabled>Submit</button>
+        
+        <!-- Extra direct submit button as fallback -->
+        <button id="task8DirectSubmitButton" class="task8-button" style="margin-top: 15px; background-color: #ff9800;" 
+                onclick="Task8Module.evaluateMainResponse();">
+            Direct Submit (Use if regular button doesn't work)
+        </button>
+    </div>
+
+    <div id="task-8-results" class="screen hidden">
+        <h1>Task Results</h1>
+        <p>You have completed the Ecological Deductive Reasoning Task.</p>
+        <div id="task8-results-container">
+            <p>Correct answers: <span id="task8-correct-count">0</span></p>
+            <p>Total puzzles: <span id="task8-total-count">0</span></p>
+            <p>Accuracy: <span id="task8-accuracy">0%</span></p>
+        </div>
+        <button id="completeTask8Button" class="task8-button" onclick="finishGame()">Complete Task</button>
     </div>
     </div>
     <script src="script.js"></script>

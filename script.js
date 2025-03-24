@@ -415,7 +415,7 @@ function handleSchemeSelection(scheme) {
             showScreen('task-6-intro');
             break;
         case '7':
-            // Task 7
+            // Deductive Reasoning Task
             showScreen('task-7-intro');
             break;
         case '8':
@@ -690,6 +690,39 @@ function exportCSV(results) {
                 final_positions: JSON.stringify(trial.finalPositions || []),
                 moved_shape_indices: JSON.stringify(trial.movedIndices || []),
                 selected_shape_indices: JSON.stringify(trial.selectedIndices || [])
+            };
+            
+            csvRows.push(Object.values(row).map(value => 
+                typeof value === 'string' && value.includes(',') ? 
+                `"${value}"` : value
+            ).join(','));
+        });
+    } else if (taskType === 'deductive_reasoning') {
+        // Deductive Reasoning task headers
+        csvHeader = [
+            'participant_id',
+            'counter_balance',
+            'task_type',
+            'puzzle_number',
+            'timestamp',
+            'question',
+            'selected_cards',
+            'correct_cards',
+            'is_correct'
+        ].join(',');
+        
+        // Process deductive reasoning trials
+        results.gameResults.forEach((trial, index) => {
+            const row = {
+                participant_id: results.studentId || 'unknown',
+                counter_balance: results.scheme || 'unknown',
+                task_type: 'deductive_reasoning',
+                puzzle_number: trial.puzzleIndex + 1,
+                timestamp: trial.timestamp,
+                question: trial.question,
+                selected_cards: JSON.stringify(trial.selectedCards || []),
+                correct_cards: JSON.stringify(trial.correctCards || []),
+                is_correct: trial.isCorrect
             };
             
             csvRows.push(Object.values(row).map(value => 
@@ -4084,4 +4117,895 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM fully loaded, fixing scheme buttons");
     fixSchemeButtons();
 });
+
+// Task 7: Deductive Reasoning Task Module
+const Task7Module = {
+    // Puzzle definitions based on the provided examples
+    practicePuzzle: {
+        question: "If a card has a circle on one side, then it has the color yellow on the other side.",
+        cards: [
+            { front: "shape-square", back: "color-red", type: "shape" },
+            { front: "shape-circle", back: "color-yellow", type: "shape" },
+            { front: "color-yellow", back: "color-yellow", type: "color" },
+            { front: "color-red", back: "color-red", type: "color" }
+        ],
+        correctCards: [1, 3],  // Circle and Red (0-indexed)
+        explanation: "You need to check the circle card (to see if it has yellow on the other side) and the red card (to make sure it doesn't have a circle on the other side)."
+    },
+    
+    mainPuzzles: [
+        {
+            question: "If a card has a circle on one side, then it has the color yellow on the other side.",
+            cards: [
+                { front: "shape-square", back: "color-red", type: "shape" },
+                { front: "shape-circle", back: "color-yellow", type: "shape" },
+                { front: "color-yellow", back: "color-yellow", type: "color" },
+                { front: "color-red", back: "color-red", type: "color" }
+            ],
+            correctCards: [1, 3],  // Circle and Red
+            explanation: "Correct answer: Circle and Red. You need to check the circle card (to see if it has yellow on the other side) and the red card (to make sure it doesn't have a circle on the other side)."
+        },
+        {
+            question: "If a card has the letter a vowel on one side, then it has an even number on the other side.",
+            cards: [
+                { front: "8", back: "8", type: "text" },
+                { front: "A", back: "A", type: "text" },
+                { front: "Z", back: "Z", type: "text" },
+                { front: "5", back: "5", type: "text" }
+            ],
+            correctCards: [1, 3],  // A and 5
+            explanation: "Correct answer: A and 5. You need to check the A card (vowel, to verify it has an even number on the other side) and the 5 card (odd number, to verify it doesn't have a vowel on the other side)."
+        },
+        {
+            question: "If a card has an even number on one side, then it has the color green on the other side.",
+            cards: [
+                { front: "3", back: "3", type: "text" },
+                { front: "8", back: "8", type: "text" },
+                { front: "color-green", back: "color-green", type: "color" },
+                { front: "color-blue", back: "color-blue", type: "color" }
+            ],
+            correctCards: [1, 3],  // 8 and Blue
+            explanation: "Correct answer: 8 and Blue. You need to check the 8 card (even number, to verify it has green on the other side) and the blue card (to verify it doesn't have an even number on the other side)."
+        },
+        {
+            question: "If a card has the digit \"5\" on one side, then it has a triangle on the other side.",
+            cards: [
+                { front: "5", back: "5", type: "text" },
+                { front: "shape-triangle", back: "shape-triangle", type: "shape" },
+                { front: "3", back: "3", type: "text" },
+                { front: "blue-circle", back: "blue-circle", type: "shape" }
+            ],
+            correctCards: [0, 3],  // 5 and Circle
+            explanation: "Correct answer: 5 and Circle. You need to check the 5 card (to verify it has a triangle on the other side) and the circle card (to verify it doesn't have a 5 on the other side)."
+        },
+        {
+            question: "If a card has a square on one side, then it has the color red on the other side.",
+            cards: [
+                { front: "shape-square", back: "shape-square", type: "shape" },
+                { front: "shape-circle", back: "shape-circle", type: "shape" },
+                { front: "color-red", back: "color-red", type: "color" },
+                { front: "color-yellow", back: "color-yellow", type: "color" }
+            ],
+            correctCards: [0, 3],  // Square and Yellow
+            explanation: "Correct answer: Square and Yellow. You need to check the square card (to verify it has red on the other side) and the yellow card (to verify it doesn't have a square on the other side)."
+        },
+        {
+            question: "If a card has a consonant on one side, then it has an odd number on the other side.",
+            cards: [
+                { front: "Z", back: "Z", type: "text" },
+                { front: "E", back: "E", type: "text" },
+                { front: "4", back: "4", type: "text" },
+                { front: "7", back: "7", type: "text" }
+            ],
+            correctCards: [0, 2],  // Z and 4
+            explanation: "Correct answer: Z and 4. You need to check the Z card (consonant, to verify it has an odd number on the other side) and the 4 card (even number, to verify it doesn't have a consonant on the other side)."
+        },
+        {
+            question: "If a card has the color blue on one side, then it has a circle on the other side.",
+            cards: [
+                { front: "color-blue", back: "color-blue", type: "color" },
+                { front: "color-green", back: "color-green", type: "color" },
+                { front: "shape-circle", back: "shape-circle", type: "shape" },
+                { front: "shape-triangle", back: "shape-triangle", type: "shape" }
+            ],
+            correctCards: [0, 3],  // Blue and Triangle
+            explanation: "Correct answer: Blue and Triangle. You need to check the blue card (to verify it has a circle on the other side) and the triangle card (to verify it doesn't have blue on the other side)."
+        }
+    ],
+    
+    state: {
+        isRealGame: false,
+        currentPuzzleIndex: 0,
+        selectedCards: [],
+        results: []
+    },
+    
+    // Initialize all event listeners for Task 7
+    initializeEventListeners: function() {
+        // Store 'this' reference for callbacks
+        const self = this;
+        
+        // Intro screen continue button
+        document.getElementById('task7ContinueButton')?.addEventListener('click', function() {
+            console.log('Task 7 continue button clicked');
+            transitionScreens('task-7-intro', 'task-7-instructions');
+        });
+        
+        // Instructions screen practice button
+        document.getElementById('startTask7PracticeButton')?.addEventListener('click', function() {
+            console.log('Task 7 practice button clicked');
+            self.startPractice();
+        });
+        
+        // Feedback continue button
+        document.getElementById('task7ContinueAfterFeedbackButton')?.addEventListener('click', function() {
+            console.log('Task 7 feedback continue button clicked');
+            transitionScreens('task-7-feedback', 'task-7-real-instructions');
+        });
+        
+        // Real game start button
+        document.getElementById('startTask7RealButton')?.addEventListener('click', function() {
+            console.log('Task 7 real game button clicked');
+            self.startRealGame();
+        });
+        
+        // Global helper function to fix main submit button
+        window.task7SubmitMainAnswer = function() {
+            console.log("Global task7SubmitMainAnswer called");
+            // Call the module method directly without relying on closure scope
+            Task7Module.evaluateMainResponse();
+        };
+        
+        // Global helper function to fix practice submit button
+        window.task7SubmitPracticeAnswer = function() {
+            console.log("Global task7SubmitPracticeAnswer called");
+            // Call the module method directly without relying on closure scope
+            Task7Module.evaluatePracticeResponse();
+        };
+        
+        // Note: Submit buttons for practice and main tasks are now handled
+        // in renderPracticePuzzle and renderMainPuzzle functions
+    },
+    
+    // Start practice round
+    startPractice: function() {
+        this.state.isRealGame = false;
+        this.state.selectedCards = [];
+        transitionScreens('task-7-instructions', 'task-7-practice');
+        
+        this.renderPracticePuzzle();
+    },
+    
+    // Render practice puzzle
+    renderPracticePuzzle: function() {
+        const container = document.getElementById('task7-cards-container');
+        container.innerHTML = '';
+        
+        // Reset submit button state
+        const submitButton = document.getElementById('task7SubmitButton');
+        submitButton.disabled = true;
+        
+        // The onclick attribute now handles the click event - no need for addEventListener
+        
+        // Store 'this' reference for callbacks
+        const self = this;
+        
+        // Create cards
+        this.practicePuzzle.cards.forEach(function(card, index) {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'task7-card';
+            cardElement.dataset.index = index;
+            
+            const contentElement = document.createElement('div');
+            contentElement.className = 'task7-card-content';
+            
+            // Add content based on card type
+            if (card.type === 'shape') {
+                const shapeElement = document.createElement('div');
+                shapeElement.className = card.front;
+                contentElement.appendChild(shapeElement);
+            } else if (card.type === 'color') {
+                contentElement.className = `task7-card-content ${card.front}`;
+            } else if (card.type === 'text') {
+                const textElement = document.createElement('span');
+                textElement.className = 'card-text';
+                textElement.textContent = card.front;
+                contentElement.appendChild(textElement);
+            }
+            
+            cardElement.appendChild(contentElement);        
+            container.appendChild(cardElement);
+            
+            // Add click handler with proper binding
+            cardElement.addEventListener('click', function() {
+                console.log(`Card ${index} clicked in practice`);
+                self.toggleCardSelection(index, 'practice');
+            });
+        });
+    },
+    
+    // Start real game
+    startRealGame: function() {
+        this.state.isRealGame = true;
+        this.state.currentPuzzleIndex = 0;
+        this.state.results = [];
+        
+        transitionScreens('task-7-real-instructions', 'task-7-main');
+        this.renderMainPuzzle();
+    },
+    
+    // Render main puzzle
+    renderMainPuzzle: function() {
+        const currentPuzzle = this.mainPuzzles[this.state.currentPuzzleIndex];
+        const container = document.getElementById('task7-main-cards-container');
+        const questionElement = document.getElementById('task7-main-question-text');
+        
+        this.state.selectedCards = [];
+        document.getElementById('task7-main-selected-count').textContent = '0';
+        
+        // Reset submit button state
+        const submitButton = document.getElementById('task7MainSubmitButton');
+        submitButton.disabled = true;
+        
+        // The onclick attribute now handles the click event - no need for addEventListener
+        
+        questionElement.textContent = currentPuzzle.question;
+        container.innerHTML = '';
+        
+        // Store 'this' reference for callbacks
+        const self = this;
+        
+        // Create cards
+        currentPuzzle.cards.forEach(function(card, index) {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'task7-card';
+            cardElement.dataset.index = index;
+            
+            const contentElement = document.createElement('div');
+            contentElement.className = 'task7-card-content';
+            
+            // Add content based on card type
+            if (card.type === 'shape') {
+                const shapeElement = document.createElement('div');
+                shapeElement.className = card.front;
+                contentElement.appendChild(shapeElement);
+            } else if (card.type === 'color') {
+                contentElement.className = `task7-card-content ${card.front}`;
+            } else if (card.type === 'text') {
+                const textElement = document.createElement('span');
+                textElement.className = 'card-text';
+                textElement.textContent = card.front;
+                contentElement.appendChild(textElement);
+            }
+            
+            cardElement.appendChild(contentElement);
+            container.appendChild(cardElement);
+            
+            // Add click handler with binding preserved
+            cardElement.addEventListener('click', function() {
+                console.log(`Card ${index} clicked in main task`);
+                self.toggleCardSelection(index, 'main');
+            });
+        });
+    },
+    
+    // Toggle card selection
+    toggleCardSelection: function(cardIndex, gameType) {
+        const prefix = gameType === 'practice' ? 'task7' : 'task7-main';
+        const cardsContainer = document.getElementById(`${prefix}-cards-container`);
+        const cards = cardsContainer.querySelectorAll('.task7-card');
+        const submitButton = document.getElementById(`${prefix}SubmitButton`);
+        const selectedCountElement = document.getElementById(`${prefix}-selected-count`);
+        
+        console.log(`Toggle card ${cardIndex} selection in ${gameType} mode`);
+        
+        // Toggle selected class
+        cards[cardIndex].classList.toggle('selected');
+        
+        // Update selected cards array
+        if (this.state.selectedCards.includes(cardIndex)) {
+            this.state.selectedCards = this.state.selectedCards.filter(i => i !== cardIndex);
+        } else {
+            // Only allow selecting two cards maximum
+            if (this.state.selectedCards.length < 2) {
+                this.state.selectedCards.push(cardIndex);
+                console.log(`Card ${cardIndex} selected. Selected cards: ${this.state.selectedCards.join(', ')}`);
+            } else {
+                // If already have 2 selected, deselect the first one
+                const firstSelected = this.state.selectedCards.shift();
+                cards[firstSelected].classList.remove('selected');
+                this.state.selectedCards.push(cardIndex);
+                console.log(`Card ${firstSelected} deselected, card ${cardIndex} selected. Selected cards: ${this.state.selectedCards.join(', ')}`);
+            }
+        }
+        
+        // Update selected count display
+        selectedCountElement.textContent = this.state.selectedCards.length;
+        
+        // Enable submit button if exactly two cards are selected
+        const shouldEnable = this.state.selectedCards.length === 2;
+        submitButton.disabled = !shouldEnable;
+        
+        console.log(`Submit button ${submitButton.disabled ? 'disabled' : 'enabled'} (selectedCards.length = ${this.state.selectedCards.length})`);
+        console.log(`Button element: id=${submitButton.id}, disabled=${submitButton.disabled}`);
+        
+        // Force button to be clickable when 2 cards are selected
+        if (shouldEnable) {
+            // Force button to be clickable
+            submitButton.removeAttribute('disabled');
+            console.log("Forcibly removed disabled attribute");
+        }
+    },
+    
+    // Evaluate practice response
+    evaluatePracticeResponse: function() {
+        const isCorrect = this.checkCorrectCards(this.practicePuzzle.correctCards);
+        const resultElement = document.getElementById('task7-result-text');
+        const explanationElement = document.getElementById('task7-explanation');
+        
+        if (isCorrect) {
+            resultElement.textContent = 'Correct! You selected the right cards.';
+            resultElement.className = 'correct-answer';
+        } else {
+            resultElement.textContent = 'Incorrect. You did not select the right cards.';
+            resultElement.className = 'incorrect-answer';
+        }
+        
+        explanationElement.textContent = this.practicePuzzle.explanation;
+        transitionScreens('task-7-practice', 'task-7-feedback');
+    },
+    
+    // Evaluate main response
+    evaluateMainResponse: function() {
+        const currentPuzzle = this.mainPuzzles[this.state.currentPuzzleIndex];
+        const isCorrect = this.checkCorrectCards(currentPuzzle.correctCards);
+        
+        // Store result
+        this.state.results.push({
+            puzzleIndex: this.state.currentPuzzleIndex,
+            question: currentPuzzle.question,
+            selectedCards: [...this.state.selectedCards],
+            correctCards: [...currentPuzzle.correctCards],
+            isCorrect: isCorrect,
+            timestamp: new Date().toISOString()
+        });
+        
+        // Add to global game results for export
+        if (!gameState.gameResults) {
+            gameState.gameResults = [];
+        }
+        
+        gameState.gameResults.push({
+            task: 'deductive_reasoning',
+            puzzleIndex: this.state.currentPuzzleIndex,
+            question: currentPuzzle.question,
+            selectedCards: [...this.state.selectedCards],
+            correctCards: [...currentPuzzle.correctCards],
+            isCorrect: isCorrect,
+            timestamp: new Date().toISOString()
+        });
+        
+        // Move to next puzzle or show results
+        this.state.currentPuzzleIndex++;
+        
+        if (this.state.currentPuzzleIndex < this.mainPuzzles.length) {
+            this.renderMainPuzzle();
+        } else {
+            this.showResults();
+        }
+    },
+    
+    // Check if selected cards match correct cards
+    checkCorrectCards: function(correctCards) {
+        if (this.state.selectedCards.length !== 2) return false;
+        
+        // Sort both arrays for comparison
+        const selectedSorted = [...this.state.selectedCards].sort((a, b) => a - b);
+        const correctSorted = [...correctCards].sort((a, b) => a - b);
+        
+        return selectedSorted[0] === correctSorted[0] && selectedSorted[1] === correctSorted[1];
+    },
+    
+    // Show final results
+    showResults: function() {
+        const correctCount = this.state.results.filter(result => result.isCorrect).length;
+        const totalCount = this.state.results.length;
+        const accuracy = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+        
+        document.getElementById('task7-correct-count').textContent = correctCount;
+        document.getElementById('task7-total-count').textContent = totalCount;
+        document.getElementById('task7-accuracy').textContent = `${accuracy}%`;
+        
+        transitionScreens('task-7-main', 'task-7-results');
+        
+        // Setup finish button to export results
+        const finishButton = document.getElementById('completeTask7Button');
+        if (finishButton) {
+            const newFinishButton = finishButton.cloneNode(true);
+            finishButton.parentNode.replaceChild(newFinishButton, finishButton);
+            
+            newFinishButton.addEventListener('click', () => {
+                // Export results when finishing the task
+                exportCSV({
+                    studentId: gameState.studentId,
+                    scheme: gameState.scheme,
+                    gameResults: gameState.gameResults.filter(result => result.task === 'deductive_reasoning')
+                });
+                finishGame();
+            });
+        }
+    },
+};
+
+// Add Task 7 module initialization to the main init function
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing code ...
+    
+    // Initialize Task 7 module
+    Task7Module.initializeEventListeners();
+});
+
+// Ensure submit buttons have onclick handlers
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Setting up direct click handlers for Task 7 submit buttons");
+    
+    // Practice button
+    const practiceSubmitButton = document.getElementById('task7SubmitButton');
+    if (practiceSubmitButton) {
+        practiceSubmitButton.onclick = function() {
+            console.log("Practice submit button clicked via direct handler");
+            task7SubmitPracticeAnswer();
+        };
+    }
+    
+    // Main task button
+    const mainSubmitButton = document.getElementById('task7MainSubmitButton');
+    if (mainSubmitButton) {
+        mainSubmitButton.onclick = function() {
+            console.log("Main task submit button clicked via direct handler");
+            debugSubmitTask7();
+        };
+    }
+});
+
+// Global handler functions that match the HTML onclick attributes
+window.debugSubmitTask7 = function() {
+    console.log("debugSubmitTask7 called from HTML onclick");
+    if (typeof Task7Module !== 'undefined') {
+        Task7Module.evaluateMainResponse();
+    } else {
+        console.error('Task7Module is not defined!');
+        alert('Error: Task7Module not found. Please refresh the page and try again.');
+    }
+};
+
+// Task 8: Ecological Deductive Reasoning Task Module
+const Task8Module = {
+    // Puzzle definitions based on the provided examples
+    practicePuzzle: {
+        question: "If a person drinks an alcoholic drink, then they must be over the age of 21 years old.",
+        cards: [
+            { front: "16", back: "16", type: "text" },
+            { front: "beer", back: "beer", type: "drink", image: "imageslas/beer.jpg" },
+            { front: "25", back: "25", type: "text" },
+            { front: "juice", back: "juice", type: "drink", image: "imageslas/juice.jpg" }
+        ],
+        correctCards: [0, 1],  // 16 and beer (0-indexed)
+        explanation: "You need to check the 16 card (to verify this person is not drinking alcohol) and the beer card (to verify the person drinking it is at least 21)."
+    },
+    
+    mainPuzzles: [
+        {
+            question: "If a person drinks an alcoholic drink, then they must be over the age of 21 years old.",
+            cards: [
+                { front: "16", back: "16", type: "text" },
+                { front: "beer", back: "beer", type: "drink", image: "imageslas/beer.jpg" },
+                { front: "25", back: "25", type: "text" },
+                { front: "juice", back: "juice", type: "drink", image: "imageslas/juice.jpg" }
+            ],
+            correctCards: [0, 1],  // 16 and beer
+            explanation: "Correct answer: 16 and beer. You need to check the 16 card (to verify this person is not drinking alcohol) and the beer card (to verify the person drinking it is at least 21)."
+        },
+        {
+            question: "If Mary and Jane always hang out together, then they must be friends.",
+            cards: [
+                { front: "Mary and Jane hang out", back: "Mary and Jane hang out", type: "text" },
+                { front: "Mary and Jane do not hang out", back: "Mary and Jane do not hang out", type: "text" },
+                { front: "Mary and Jane are friends", back: "Mary and Jane are friends", type: "text" },
+                { front: "Mary and Jane are not friends", back: "Mary and Jane are not friends", type: "text" }
+            ],
+            correctCards: [0, 3],  // "Mary and Jane hang out" and "Mary and Jane are not friends"
+            explanation: "Correct answer: 'Mary and Jane hang out' and 'Mary and Jane are not friends'. You need to check if they hang out (to verify they are friends) and if they are not friends (to verify they don't hang out)."
+        },
+        {
+            question: "If Amy treats sick children in the hospital, then she must be a doctor.",
+            cards: [
+                { front: "Doctor", back: "Doctor", type: "text" },
+                { front: "Teacher", back: "Teacher", type: "text" },
+                { front: "Treats children", back: "Treats children", type: "image", image: "imageslas/doctor-patient.jpg" },
+                { front: "Teaching", back: "Teaching", type: "image", image: "imageslas/teacher.jpg" }
+            ],
+            correctCards: [1, 2],  // Teacher and Treats children
+            explanation: "Correct answer: Teacher and 'Treats children'. You need to check if someone treating children is a doctor and if a teacher might also be treating children."
+        },
+        {
+            question: "If an animal barks, then it must be a dog.",
+            cards: [
+                { front: "Barks", back: "Barks", type: "image", image: "imageslas/dog-barking.jpg" },
+                { front: "Doesn't bark", back: "Doesn't bark", type: "image", image: "imageslas/cat.jpg" },
+                { front: "Dog", back: "Dog", type: "text" },
+                { front: "Cat", back: "Cat", type: "text" }
+            ],
+            correctCards: [0, 3],  // Barks and Cat
+            explanation: "Correct answer: 'Barks' and Cat. You need to check if a barking animal is a dog and if a cat might also bark."
+        }
+    ],
+    
+    state: {
+        isRealGame: false,
+        currentPuzzleIndex: 0,
+        selectedCards: [],
+        results: []
+    },
+    
+    // Initialize all event listeners for Task 8
+    initializeEventListeners: function() {
+        // Store 'this' reference for callbacks
+        const self = this;
+        
+        // Intro screen continue button
+        document.getElementById('task8ContinueButton')?.addEventListener('click', function() {
+            console.log('Task 8 continue button clicked');
+            transitionScreens('task-8-intro', 'task-8-instructions');
+        });
+        
+        // Instructions screen practice button
+        document.getElementById('startTask8PracticeButton')?.addEventListener('click', function() {
+            console.log('Task 8 practice button clicked');
+            self.startPractice();
+        });
+        
+        // Feedback continue button
+        document.getElementById('task8ContinueAfterFeedbackButton')?.addEventListener('click', function() {
+            console.log('Task 8 feedback continue button clicked');
+            transitionScreens('task-8-feedback', 'task-8-real-instructions');
+        });
+        
+        // Real game start button
+        document.getElementById('startTask8RealButton')?.addEventListener('click', function() {
+            console.log('Task 8 real game button clicked');
+            self.startRealGame();
+        });
+        
+        // Global helper function to fix main submit button
+        window.task8SubmitMainAnswer = function() {
+            console.log("Global task8SubmitMainAnswer called");
+            // Call the module method directly without relying on closure scope
+            Task8Module.evaluateMainResponse();
+        };
+        
+        // Global helper function to fix practice submit button
+        window.task8SubmitPracticeAnswer = function() {
+            console.log("Global task8SubmitPracticeAnswer called");
+            // Call the module method directly without relying on closure scope
+            Task8Module.evaluatePracticeResponse();
+        };
+    },
+    
+    // Start practice round
+    startPractice: function() {
+        this.state.isRealGame = false;
+        this.state.selectedCards = [];
+        transitionScreens('task-8-instructions', 'task-8-practice');
+        
+        this.renderPracticePuzzle();
+    },
+    
+    // Render practice puzzle
+    renderPracticePuzzle: function() {
+        const container = document.getElementById('task8-cards-container');
+        container.innerHTML = '';
+        
+        // Reset submit button state
+        const submitButton = document.getElementById('task8SubmitButton');
+        submitButton.disabled = true;
+        
+        // Store 'this' reference for callbacks
+        const self = this;
+        
+        // Create cards
+        this.practicePuzzle.cards.forEach(function(card, index) {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'task8-card';
+            cardElement.dataset.index = index;
+            
+            const contentElement = document.createElement('div');
+            contentElement.className = 'task8-card-content';
+            
+            // Add content based on card type
+            if (card.type === 'text') {
+                const textElement = document.createElement('span');
+                textElement.className = 'card-text';
+                textElement.textContent = card.front;
+                contentElement.appendChild(textElement);
+            } else if (card.type === 'drink' || card.type === 'image') {
+                if (card.image) {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = card.image;
+                    imgElement.alt = card.front;
+                    imgElement.className = 'card-image';
+                    contentElement.appendChild(imgElement);
+                } else {
+                    const textElement = document.createElement('span');
+                    textElement.className = 'card-text';
+                    textElement.textContent = card.front;
+                    contentElement.appendChild(textElement);
+                }
+            }
+            
+            cardElement.appendChild(contentElement);        
+            container.appendChild(cardElement);
+            
+            // Add click handler with proper binding
+            cardElement.addEventListener('click', function() {
+                console.log(`Card ${index} clicked in practice`);
+                self.toggleCardSelection(index, 'practice');
+            });
+        });
+    },
+    
+    // Start real game
+    startRealGame: function() {
+        this.state.isRealGame = true;
+        this.state.currentPuzzleIndex = 0;
+        this.state.results = [];
+        
+        transitionScreens('task-8-real-instructions', 'task-8-main');
+        this.renderMainPuzzle();
+    },
+    
+    // Render main puzzle
+    renderMainPuzzle: function() {
+        const currentPuzzle = this.mainPuzzles[this.state.currentPuzzleIndex];
+        const container = document.getElementById('task8-main-cards-container');
+        const questionElement = document.getElementById('task8-main-question-text');
+        
+        this.state.selectedCards = [];
+        document.getElementById('task8-main-selected-count').textContent = '0';
+        
+        // Reset submit button state
+        const submitButton = document.getElementById('task8MainSubmitButton');
+        submitButton.disabled = true;
+        
+        questionElement.textContent = currentPuzzle.question;
+        container.innerHTML = '';
+        
+        // Store 'this' reference for callbacks
+        const self = this;
+        
+        // Create cards
+        currentPuzzle.cards.forEach(function(card, index) {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'task8-card';
+            cardElement.dataset.index = index;
+            
+            const contentElement = document.createElement('div');
+            contentElement.className = 'task8-card-content';
+            
+            // Add content based on card type
+            if (card.type === 'text') {
+                const textElement = document.createElement('span');
+                textElement.className = 'card-text';
+                textElement.textContent = card.front;
+                contentElement.appendChild(textElement);
+            } else if (card.type === 'drink' || card.type === 'image') {
+                if (card.image) {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = card.image;
+                    imgElement.alt = card.front;
+                    imgElement.className = 'card-image';
+                    contentElement.appendChild(imgElement);
+                } else {
+                    const textElement = document.createElement('span');
+                    textElement.className = 'card-text';
+                    textElement.textContent = card.front;
+                    contentElement.appendChild(textElement);
+                }
+            }
+            
+            cardElement.appendChild(contentElement);
+            container.appendChild(cardElement);
+            
+            // Add click handler with binding preserved
+            cardElement.addEventListener('click', function() {
+                console.log(`Card ${index} clicked in main task`);
+                self.toggleCardSelection(index, 'main');
+            });
+        });
+    },
+    
+    // Toggle card selection
+    toggleCardSelection: function(cardIndex, gameType) {
+        const prefix = gameType === 'practice' ? 'task8' : 'task8-main';
+        const cardsContainer = document.getElementById(`${prefix}-cards-container`);
+        const cards = cardsContainer.querySelectorAll('.task8-card');
+        const submitButton = document.getElementById(`${prefix}SubmitButton`);
+        const selectedCountElement = document.getElementById(`${prefix}-selected-count`);
+        
+        console.log(`Toggle card ${cardIndex} selection in ${gameType} mode`);
+        
+        // Find the clicked card using the data-index attribute
+        const selectedCard = Array.from(cards).find(card => parseInt(card.dataset.index) === cardIndex);
+        
+        if (!selectedCard) {
+            console.error(`Card with index ${cardIndex} not found`);
+            return;
+        }
+        
+        // Toggle selected state
+        const isSelected = selectedCard.classList.toggle('selected');
+        
+        // Update selectedCards array
+        if (isSelected) {
+            // Add to selected cards if not already there
+            if (!this.state.selectedCards.includes(cardIndex)) {
+                this.state.selectedCards.push(cardIndex);
+            }
+        } else {
+            // Remove from selected cards
+            this.state.selectedCards = this.state.selectedCards.filter(idx => idx !== cardIndex);
+        }
+        
+        // Update selected count display
+        selectedCountElement.textContent = this.state.selectedCards.length;
+        
+        // Enable/disable submit button based on selection count
+        submitButton.disabled = this.state.selectedCards.length !== 2;
+    },
+    
+    // Evaluate practice response
+    evaluatePracticeResponse: function() {
+        console.log('Evaluating practice response');
+        
+        const resultElement = document.getElementById('task8-practice-result');
+        const explanationElement = document.getElementById('task8-practice-explanation');
+        
+        // Check if selected cards match correct cards
+        const isCorrect = this.checkCorrectCards(this.practicePuzzle.correctCards);
+        
+        if (isCorrect) {
+            resultElement.textContent = 'Correct! You have selected the right cards.';
+            resultElement.className = 'correct-answer';
+        } else {
+            resultElement.textContent = 'Incorrect. You did not select the right cards.';
+            resultElement.className = 'incorrect-answer';
+        }
+        
+        explanationElement.textContent = this.practicePuzzle.explanation;
+        transitionScreens('task-8-practice', 'task-8-feedback');
+    },
+    
+    // Evaluate main response
+    evaluateMainResponse: function() {
+        const currentPuzzle = this.mainPuzzles[this.state.currentPuzzleIndex];
+        const isCorrect = this.checkCorrectCards(currentPuzzle.correctCards);
+        
+        // Store result
+        this.state.results.push({
+            puzzleIndex: this.state.currentPuzzleIndex,
+            question: currentPuzzle.question,
+            selectedCards: [...this.state.selectedCards],
+            correctCards: [...currentPuzzle.correctCards],
+            isCorrect: isCorrect,
+            timestamp: new Date().toISOString()
+        });
+        
+        // Add to global game results for export
+        if (!gameState.gameResults) {
+            gameState.gameResults = [];
+        }
+        
+        gameState.gameResults.push({
+            task: 'ecological_deductive_reasoning',
+            puzzleIndex: this.state.currentPuzzleIndex,
+            question: currentPuzzle.question,
+            selectedCards: [...this.state.selectedCards],
+            correctCards: [...currentPuzzle.correctCards],
+            isCorrect: isCorrect,
+            timestamp: new Date().toISOString()
+        });
+        
+        // Move to next puzzle or show results
+        this.state.currentPuzzleIndex++;
+        
+        if (this.state.currentPuzzleIndex < this.mainPuzzles.length) {
+            this.renderMainPuzzle();
+        } else {
+            this.showResults();
+        }
+    },
+    
+    // Check if selected cards match correct cards
+    checkCorrectCards: function(correctCards) {
+        if (this.state.selectedCards.length !== 2) return false;
+        
+        // Sort both arrays for comparison
+        const selectedSorted = [...this.state.selectedCards].sort((a, b) => a - b);
+        const correctSorted = [...correctCards].sort((a, b) => a - b);
+        
+        return selectedSorted[0] === correctSorted[0] && selectedSorted[1] === correctSorted[1];
+    },
+    
+    // Show final results
+    showResults: function() {
+        const correctCount = this.state.results.filter(result => result.isCorrect).length;
+        const totalCount = this.state.results.length;
+        const accuracy = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+        
+        document.getElementById('task8-correct-count').textContent = correctCount;
+        document.getElementById('task8-total-count').textContent = totalCount;
+        document.getElementById('task8-accuracy').textContent = `${accuracy}%`;
+        
+        transitionScreens('task-8-main', 'task-8-results');
+        
+        // Setup finish button to export results
+        const finishButton = document.getElementById('completeTask8Button');
+        if (finishButton) {
+            const newFinishButton = finishButton.cloneNode(true);
+            finishButton.parentNode.replaceChild(newFinishButton, finishButton);
+            
+            newFinishButton.addEventListener('click', () => {
+                // Export results when finishing the task
+                exportCSV({
+                    studentId: gameState.studentId,
+                    scheme: gameState.scheme,
+                    gameResults: gameState.gameResults.filter(result => result.task === 'ecological_deductive_reasoning')
+                });
+                finishGame();
+            });
+        }
+    },
+};
+
+// Add Task 8 module initialization to the main init function
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing code ...
+    
+    // Initialize Task 8 module
+    Task8Module.initializeEventListeners();
+});
+
+// Ensure submit buttons have onclick handlers for Task 8
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Setting up direct click handlers for Task 8 submit buttons");
+    
+    // Practice button
+    const practiceSubmitButton = document.getElementById('task8SubmitButton');
+    if (practiceSubmitButton) {
+        practiceSubmitButton.onclick = function() {
+            console.log("Practice submit button clicked via direct handler");
+            task8SubmitPracticeAnswer();
+        };
+    }
+    
+    // Main task button
+    const mainSubmitButton = document.getElementById('task8MainSubmitButton');
+    if (mainSubmitButton) {
+        mainSubmitButton.onclick = function() {
+            console.log("Main task submit button clicked via direct handler");
+            debugSubmitTask8();
+        };
+    }
+});
+
+// Global handler function for Task 8
+window.debugSubmitTask8 = function() {
+    console.log("debugSubmitTask8 called from HTML onclick");
+    if (typeof Task8Module !== 'undefined') {
+        Task8Module.evaluateMainResponse();
+    } else {
+        console.error('Task8Module is not defined!');
+        alert('Error: Task8Module not found. Please refresh the page and try again.');
+    }
+};
 

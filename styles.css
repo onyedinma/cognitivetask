@@ -1851,3 +1851,192 @@ button:hover {
     align-items: center;
     overflow: hidden;
 }
+
+/* Task 7 Styles: Deductive Reasoning Task */
+#task-7-intro,
+#task-7-instructions,
+#task-7-practice,
+#task-7-feedback,
+#task-7-real-instructions,
+#task-7-main,
+#task-7-results {
+    max-width: 800px;
+    padding: 20px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.task7-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.task7-button:hover {
+    background-color: #3e8e41;
+}
+
+.task7-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.task7-card {
+    width: 100px;
+    height: 150px;
+    border: 2px solid #ccc;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: white;
+}
+
+.task7-card.selected {
+    border: 4px solid #4CAF50;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.task7-card-content {
+    width: 80%;
+    height: 80%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shape-square {
+    width: 50px;
+    height: 50px;
+    background-color: black;
+}
+
+.shape-circle {
+    width: 50px;
+    height: 50px;
+    background-color: black;
+    border-radius: 50%;
+}
+
+.color-yellow {
+    background-color: #FFEB3B;
+}
+
+.color-red {
+    background-color: #F44336;
+}
+
+.color-green {
+    background-color: #4CAF50;
+}
+
+.color-blue {
+    background-color: #2196F3;
+}
+
+#task7-explanation {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    text-align: left;
+}
+
+#task7-selection-info,
+#task7-main-selection-info {
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+.correct-answer {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.incorrect-answer {
+    color: #F44336;
+    font-weight: bold;
+}
+
+/* Task 8 styles (Ecological Deductive Reasoning) */
+.task8-card {
+    width: 120px;
+    height: 170px;
+    border: 2px solid #ccc;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: white;
+    position: relative;
+}
+
+.task8-card.selected {
+    border: 4px solid #4CAF50;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.task8-card-content {
+    width: 90%;
+    height: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 5px;
+}
+
+.task8-card .card-text {
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.task8-card .card-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.task8-button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.task8-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.task8-card-info {
+    margin: 20px 0;
+    font-weight: bold;
+}
