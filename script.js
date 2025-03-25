@@ -1729,36 +1729,88 @@ function animateObjects(sequence) {
     // Clear any existing object span timers before starting a new animation
     TimerManager.clearCategory('objectSpan');
     
+    // Update debug info
+    const debugEl = document.getElementById('object-debug');
+    if (debugEl) {
+        debugEl.textContent = `Debug: Starting animation with ${sequence.length} objects`;
+    }
+    
     let index = 0;
     const objectDisplay = document.querySelector('.object-display');
+    if (!objectDisplay) {
+        console.error('Object display container not found');
+        if (debugEl) {
+            debugEl.textContent = 'ERROR: Object display container not found';
+            debugEl.style.color = 'red';
+        }
+        return;
+    }
+    
+    // Ensure the game area is visible and properly styled
+    const gameArea = document.getElementById('object-game-area');
+    if (gameArea) {
+        gameArea.classList.remove('hidden');
+        showScreen('object-game-area');
+    } else {
+        if (debugEl) {
+            debugEl.textContent = 'ERROR: Game area not found';
+            debugEl.style.color = 'red';
+        }
+    }
+    
     objectDisplay.innerHTML = ''; // Clear any previous content
     
     console.log('Starting object animation with sequence:', sequence);
     
+    // Add a visible status indicator for debugging
+    const statusElement = document.createElement('div');
+    statusElement.style.position = 'absolute';
+    statusElement.style.bottom = '10px';
+    statusElement.style.left = '10px';
+    statusElement.style.color = '#333';
+    statusElement.style.fontSize = '12px';
+    statusElement.textContent = 'Loading images...';
+    objectDisplay.appendChild(statusElement);
+    
     // Preload all images first
     const imagesToPreload = sequence.map(digit => OBJECT_SPAN_CONFIG.objectMapping[digit].image);
     let imagesLoaded = 0;
-    
-    // Create a promise that resolves when all images are loaded
-    console.log('Preloading images for sequence:', imagesToPreload);
+    let hasErrors = false;
     
     // Initialize array to track preloaded images
     const preloadedImages = [];
     
+    console.log('Preloading images for sequence:', imagesToPreload);
+    if (debugEl) {
+        debugEl.textContent = `Debug: Preloading ${imagesToPreload.length} images`;
+    }
+    
     // Preload each image in the sequence
-    imagesToPreload.forEach(imageSrc => {
+    imagesToPreload.forEach((imageSrc, idx) => {
         const img = new Image();
         
         img.onload = function() {
             imagesLoaded++;
             console.log(`Image loaded (${imagesLoaded}/${imagesToPreload.length}): ${imageSrc}`);
             preloadedImages.push(img);
+            statusElement.textContent = `Loading: ${imagesLoaded}/${imagesToPreload.length}`;
+            
+            if (debugEl) {
+                debugEl.textContent = `Debug: Loaded ${imagesLoaded}/${imagesToPreload.length} images`;
+            }
             
             // Start animation once all images are loaded
             if (imagesLoaded === imagesToPreload.length) {
                 console.log('All images preloaded, starting animation with delay');
+                statusElement.textContent = 'Starting sequence...';
+                
+                if (debugEl) {
+                    debugEl.textContent = `Debug: All images loaded, starting sequence`;
+                }
+                
                 // Start with a delay to ensure everything is ready
                 TimerManager.setTimeout(() => {
+                    objectDisplay.removeChild(statusElement);
                     showNextObject();
                 }, 500, 'objectSpan_initialDelay');
             }
@@ -1766,14 +1818,26 @@ function animateObjects(sequence) {
         
         img.onerror = function() {
             console.error(`Failed to load image: ${imageSrc}`);
+            hasErrors = true;
             imagesLoaded++;
+            statusElement.textContent = `Error loading image ${idx+1}`;
+            
+            if (debugEl) {
+                debugEl.textContent = `ERROR: Failed to load image: ${imageSrc}`;
+                debugEl.style.color = 'red';
+            }
             
             // Continue even if some images fail to load
             if (imagesLoaded === imagesToPreload.length) {
-                console.log('All images attempted to load (some may have failed), starting animation');
+                console.log('Images attempted to load with errors, starting animation');
+                // If there were errors, show a warning for a moment
+                statusElement.textContent = 'Some images failed to load';
+                statusElement.style.color = 'red';
+                
                 TimerManager.setTimeout(() => {
+                    objectDisplay.removeChild(statusElement);
                     showNextObject();
-                }, 500, 'objectSpan_initialDelay');
+                }, 1000, 'objectSpan_initialDelay');
             }
         };
         
@@ -1800,21 +1864,34 @@ function animateObjects(sequence) {
         const imgElement = new Image();
         imgElement.src = objectData.image;
         imgElement.alt = objectData.name;
-        imgElement.style.maxWidth = '100%';
-        imgElement.style.maxHeight = '100%';
+        imgElement.style.maxWidth = '80%';
+        imgElement.style.maxHeight = '80%';
+        imgElement.style.objectFit = 'contain';
         
-        // Clear previous content and add the new image
+        // Add a label below the image for debugging
+        const labelElement = document.createElement('div');
+        labelElement.textContent = objectData.name;
+        labelElement.style.marginTop = '10px';
+        labelElement.style.fontSize = '16px';
+        
+        // Clear previous content and add the new image with label
         objectDisplay.innerHTML = '';
-        objectDisplay.appendChild(imgElement);
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.alignItems = 'center';
+        container.appendChild(imgElement);
+        container.appendChild(labelElement);
+        objectDisplay.appendChild(container);
         
         // Wait for display time, then hide
         TimerManager.setTimeout(() => {
             console.log(`Hiding object ${objectData.name}`);
             objectDisplay.innerHTML = ''; // Clear the display
                     
-                    // Wait during blank time before showing next object
+            // Wait during blank time before showing next object
             TimerManager.setTimeout(() => {
-                        index++;
+                index++;
                 showNextObject();
             }, OBJECT_SPAN_CONFIG.blankTime, 'objectSpan_blankTime_' + index);
             
@@ -2300,32 +2377,36 @@ function startTask4bPractice() {
 
 // Object Span Game Configuration
 const OBJECT_SPAN_CONFIG = {
-    displayTime: 1500,  // Increased from 1000ms to 1500ms for better visibility
-    blankTime: 750,     // Increased from 500ms to 750ms for better separation
-    startObjects: 3,
-    maxObjects: 9,
+    displayTime: 1500,  // 1.5 seconds to show each object
+    blankTime: 750,     // 0.75 seconds between objects
+    minSpan: 3,         // Starting span length
+    maxSpan: 10,        // Maximum span length
+    attemptsPerSpan: 2, // Number of attempts allowed at each span length
+    mainTaskRounds: 5,  // Number of rounds in the main task
     objectMapping: {
         1: { name: 'bread', image: 'images/Bread.png' },
         2: { name: 'car', image: 'images/Car.png' },
-        3: { name: 'pot', image: 'images/Pot.png' },
-        4: { name: 'money', image: 'images/Money.png' },
-        5: { name: 'book', image: 'images/Book.png' },
-        6: { name: 'chair', image: 'images/Chair.png' },
-        7: { name: 'shoe', image: 'images/Shoe.png' },
-        8: { name: 'bag', image: 'images/Bag.png' },
-        9: { name: 'computer', image: 'images/Computer.png' }
+        3: { name: 'book', image: 'images/Book.png' },
+        4: { name: 'bag', image: 'images/Bag.png' },
+        5: { name: 'chair', image: 'images/Chair.png' },
+        6: { name: 'computer', image: 'images/Computer.png' },
+        7: { name: 'money', image: 'images/Money.png' },
+        8: { name: 'pot', image: 'images/Pot.png' },
+        9: { name: 'shoe', image: 'images/Shoe.png' }
     }
 };
 
 // Object Span Game State
 const objectSpanState = {
-    sequence: [],
-    isBackward: false,
-    currentLevel: OBJECT_SPAN_CONFIG.startObjects,
-    successes: 0,
-    failures: 0,
-    isRealGame: false,
-    results: []
+    sequence: [],           // Current sequence being shown
+    isRealGame: false,     // Whether we're in the real game or practice
+    currentSpan: 3,        // Current span length
+    currentAttempt: 1,     // Current attempt at this span length (1 or 2)
+    currentRound: 0,       // Current round in main task (1-5)
+    maxSpanReached: 3,     // Maximum span length successfully reached
+    results: [],           // Store all results
+    practiceAttempts: 0,   // Number of practice attempts
+    readyForMainTask: false // Whether participant has indicated readiness for main task
 };
 
 // Event listeners for Object Span game
@@ -2373,46 +2454,25 @@ document.getElementById('finishObjectSpanButton')?.addEventListener('click', fun
 function startObjectSpanPractice() {
     console.log('Starting object span practice');
     
-    // Clear any existing timers
-    TimerManager.clearAll();
+    // Reset practice state
+    objectSpanState.isRealGame = false;
+    objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan;
+    objectSpanState.currentAttempt = 1;
+    objectSpanState.practiceAttempts = 0;
+    objectSpanState.readyForMainTask = false;
+    objectSpanState.results = [];
     
-    // Set game flags
-    gameState.isPatternGame = false;
-    gameState.isRealGame = false;
-    gameState.isBackward = false;
-    gameState.currentRound = 0;
-    gameState.correctCounts = null;
-    
-    // Reset object span state to starting level
-    objectSpanState.currentLevel = OBJECT_SPAN_CONFIG.startObjects;
-    objectSpanState.isBackward = false;
-    
-    // Hide all screens
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(screen => screen.classList.add('hidden'));
-    
-    // Show object game area
-    const objectGameArea = document.getElementById('object-game-area');
-    if (objectGameArea) {
-        objectGameArea.classList.remove('hidden');
-        objectGameArea.style.display = 'flex';
-    } else {
-        console.error('Object game area not found');
-        return;
+    // Update debug info
+    const debugEl = document.getElementById('object-debug');
+    if (debugEl) {
+        debugEl.textContent = `Debug: Practice starting with span ${objectSpanState.currentSpan}`;
     }
     
-    // Generate a sequence of random objects
-    const sequence = generateObjectSequence(OBJECT_SPAN_CONFIG.startObjects);
-    objectSpanState.sequence = sequence;
+    // Show game area
+    showScreen('object-game-area');
     
-    // Log the sequence (for debugging)
-    console.log("Object Sequence:", sequence.map(d => OBJECT_SPAN_CONFIG.objectMapping[d].name).join(' '));
-    
-    // Start animating the objects with delay to ensure everything is ready
-    setTimeout(() => {
-        // Start the animation
-        animateObjects(sequence);
-    }, 300);
+    // Start sequence with minimum span length
+    startObjectSequence();
 }
 
 function startObjectSpanBackwardPractice() {
@@ -2472,10 +2532,25 @@ function startObjectSpanRealGame() {
 }
 
 function startObjectSequence() {
-    // Generate a sequence of digits from 1-9 of the current level length
+    console.log('Starting object sequence with span:', objectSpanState.currentSpan);
+    
+    // Clear any existing content in the display
+    const objectDisplay = document.querySelector('.object-display');
+    if (objectDisplay) {
+        objectDisplay.innerHTML = '';
+    }
+    
+    // Make sure game area is visible
+    const gameArea = document.getElementById('object-game-area');
+    if (gameArea) {
+        gameArea.classList.remove('hidden');
+    }
+    
+    // Generate a sequence of digits from 1-9 of the current span length
     const objectSequence = [];
-    for (let i = 0; i < objectSpanState.currentLevel; i++) {
-        // Generate random number from 1-9
+    // Use currentSpan instead of currentLevel
+    for (let i = 0; i < objectSpanState.currentSpan; i++) {
+        // Use all digits 1-9 since we have all 9 images
         const objectDigit = Math.floor(Math.random() * 9) + 1;
         objectSequence.push(objectDigit);
     }
@@ -2487,74 +2562,109 @@ function startObjectSequence() {
     // Show the game area and animate the digits
     showScreen('object-game-area');
     
-    // Start the animation
-    animateObjects(objectSequence);
+    // Force the game area to be visible before animation
+    setTimeout(() => {
+        // Start the animation
+        animateObjects(objectSequence);
+    }, 100);
 }
 
 function submitObjectSpanResponse() {
-    const userResponse = document.getElementById('object-response').value.trim().toLowerCase();
+    const response = document.getElementById('object-response').value.trim().toLowerCase();
+    const expectedSequence = objectSpanState.sequence.map(index => 
+        OBJECT_SPAN_CONFIG.objectMapping[index].name
+    ).join(' ');
     
-    // Convert the sequence to object names
-    const correctSequence = objectSpanState.sequence.map(digit => 
-        OBJECT_SPAN_CONFIG.objectMapping[digit].name
-    );
+    const isCorrect = response === expectedSequence;
     
-    // If backward, reverse the correct sequence
-    const expectedResponse = objectSpanState.isBackward ? 
-        [...correctSequence].reverse().join(' ') : 
-        correctSequence.join(' ');
+    if (objectSpanState.isRealGame) {
+        handleMainTaskResponse(isCorrect);
+    } else {
+        handlePracticeResponse(isCorrect);
+    }
+}
+
+function handlePracticeResponse(isCorrect) {
+    objectSpanState.practiceAttempts++;
     
-    // Check if response is correct
-    const isCorrect = userResponse === expectedResponse;
+    // Show feedback
+    const feedbackScreen = document.getElementById('object-span-practice-feedback');
+    const feedbackText = document.getElementById('practice-feedback-text');
+    const scoreText = document.getElementById('practice-score');
     
-    // Store result
-    const result = {
-        level: objectSpanState.currentLevel,
-        userResponse: userResponse,
-        correctResponse: expectedResponse,
-        isCorrect: isCorrect,
-        isBackward: objectSpanState.isBackward,
-        timestamp: new Date().toISOString()
-    };
-    objectSpanState.results.push(result);
-    
-    // Update success/failure count
     if (isCorrect) {
-        objectSpanState.successes++;
-        if (objectSpanState.successes >= 2) {
-            // Two consecutive successes at this level, move to next level
-            objectSpanState.successes = 0;
-            objectSpanState.failures = 0;
-            objectSpanState.currentLevel++;
+        feedbackText.textContent = 'Correct! Well done!';
+        feedbackText.className = 'feedback-correct';
+    } else {
+        feedbackText.textContent = 'Incorrect. Keep practicing!';
+        feedbackText.className = 'feedback-incorrect';
+    }
+    
+    scoreText.textContent = `Practice attempts: ${objectSpanState.practiceAttempts}`;
+    
+    // Show feedback screen
+    showScreen('object-span-practice-feedback');
+}
+
+function handleMainTaskResponse(isCorrect) {
+    // Store result
+    objectSpanState.results.push({
+        round: objectSpanState.currentRound,
+        span: objectSpanState.currentSpan,
+        attempt: objectSpanState.currentAttempt,
+        isCorrect: isCorrect,
+        timestamp: new Date().toISOString()
+    });
+    
+    if (isCorrect) {
+        // If this was the first attempt at this span length
+        if (objectSpanState.currentAttempt === 1) {
+            // Move to next span length
+            objectSpanState.currentSpan++;
+            objectSpanState.currentAttempt = 1;
+            objectSpanState.maxSpanReached = Math.max(objectSpanState.maxSpanReached, objectSpanState.currentSpan - 1);
+            
+            if (objectSpanState.currentSpan > OBJECT_SPAN_CONFIG.maxSpan) {
+                // Reached maximum span, end task
+                showFinalResults();
+            } else {
+                // Continue with next span length
+                startObjectSequence();
         }
     } else {
-        objectSpanState.failures++;
-        if (objectSpanState.failures >= 2) {
-            // Two consecutive failures at this level, end game
-            if (objectSpanState.isRealGame) {
-                if (objectSpanState.isBackward) {
-                    // End of backward real game
-                    showScreen('object-span-complete');
-                    return;
+            // Second successful attempt, move to next span
+            objectSpanState.currentSpan++;
+            objectSpanState.currentAttempt = 1;
+            objectSpanState.maxSpanReached = Math.max(objectSpanState.maxSpanReached, objectSpanState.currentSpan - 1);
+            
+            if (objectSpanState.currentSpan > OBJECT_SPAN_CONFIG.maxSpan) {
+                // Reached maximum span, end task
+                showFinalResults();
                 } else {
-                    // End of forward real game, start backward
-                    completeBackwardObjectSpanPractice();
-                    return;
-                }
+                // Continue with next span length
+                startObjectSequence();
             }
         }
-    }
-    
-    // Show results in the real game only if it's not correct
-    if (objectSpanState.isRealGame && !isCorrect) {
-        showObjectSpanResults(result);
-    } else if (!objectSpanState.isRealGame) {
-        // Always show results in practice mode
-        showObjectSpanResults(result);
     } else {
-        // Real game and correct response, continue to next sequence
+        // If this was the first attempt
+        if (objectSpanState.currentAttempt === 1) {
+            // Give second attempt at same span length
+            objectSpanState.currentAttempt = 2;
         startObjectSequence();
+        } else {
+            // Failed both attempts, end task
+            showFinalResults();
+        }
     }
+}
+
+function showFinalResults() {
+    document.getElementById('max-span-reached').textContent = objectSpanState.maxSpanReached;
+    
+    const correctSequences = objectSpanState.results.filter(r => r.isCorrect).length;
+    document.getElementById('total-correct-sequences').textContent = correctSequences;
+    
+    showScreen('object-span-results');
 }
 
 function showObjectSpanResults(result) {
@@ -5008,4 +5118,97 @@ window.debugSubmitTask8 = function() {
         alert('Error: Task8Module not found. Please refresh the page and try again.');
     }
 };
+
+// Add to the DOMContentLoaded event listener section
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing code ...
+
+    // Object Span Task event listeners
+    document.getElementById('startObjectSpanButton')?.addEventListener('click', function() {
+        startObjectSpanPractice();
+    });
+
+    document.getElementById('continuePracticeButton')?.addEventListener('click', function() {
+        startObjectSequence();
+    });
+
+    document.getElementById('readyForMainTaskButton')?.addEventListener('click', function() {
+        objectSpanState.readyForMainTask = true;
+        showScreen('object-span-main-instructions');
+    });
+
+    document.getElementById('startObjectSpanMainButton')?.addEventListener('click', function() {
+        objectSpanState.isRealGame = true;
+        objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan;
+        objectSpanState.currentAttempt = 1;
+        objectSpanState.currentRound = 1;
+        objectSpanState.maxSpanReached = OBJECT_SPAN_CONFIG.minSpan - 1;
+        objectSpanState.results = [];
+        startObjectSequence();
+    });
+
+    document.getElementById('submitObjectResponseButton')?.addEventListener('click', function() {
+        submitObjectSpanResponse();
+    });
+
+    // Add keypress event listener for the response input
+    document.getElementById('object-response')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            submitObjectSpanResponse();
+        }
+    });
+});
+
+// Creates a visual reference guide for object names
+function createObjectReferenceGuide() {
+    const referenceContainer = document.createElement('div');
+    referenceContainer.className = 'object-reference-guide';
+    referenceContainer.style.display = 'flex';
+    referenceContainer.style.flexWrap = 'wrap';
+    referenceContainer.style.justifyContent = 'center';
+    referenceContainer.style.marginTop = '20px';
+    referenceContainer.style.gap = '10px';
+    
+    const heading = document.createElement('h3');
+    heading.textContent = 'Object Name Reference:';
+    heading.style.width = '100%';
+    heading.style.textAlign = 'center';
+    heading.style.marginBottom = '10px';
+    referenceContainer.appendChild(heading);
+    
+    Object.values(OBJECT_SPAN_CONFIG.objectMapping).forEach(obj => {
+        const itemDiv = document.createElement('div');
+        itemDiv.style.display = 'flex';
+        itemDiv.style.flexDirection = 'column';
+        itemDiv.style.alignItems = 'center';
+        itemDiv.style.margin = '5px';
+        
+        const img = document.createElement('img');
+        img.src = obj.image;
+        img.alt = obj.name;
+        img.style.width = '40px';
+        img.style.height = '40px';
+        img.style.objectFit = 'contain';
+        
+        const name = document.createElement('span');
+        name.textContent = obj.name;
+        name.style.fontSize = '12px';
+        name.style.marginTop = '5px';
+        
+        itemDiv.appendChild(img);
+        itemDiv.appendChild(name);
+        referenceContainer.appendChild(itemDiv);
+    });
+    
+    return referenceContainer;
+}
+
+// Add the object reference guide to the response screen
+document.addEventListener('DOMContentLoaded', function() {
+    const responseScreen = document.getElementById('object-span-response');
+    if (responseScreen) {
+        const guide = createObjectReferenceGuide();
+        responseScreen.appendChild(guide);
+    }
+});
 

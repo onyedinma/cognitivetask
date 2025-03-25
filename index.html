@@ -649,12 +649,12 @@
 
         <!-- Working Memory Capacity (Ecological) Intro -->
         <div id="object-span-intro" class="screen hidden">
-            <h2>Working Memory Capacity Task</h2>
-            <p>In this task, you will see a series of objects one at a time. Your job is to <span class="important">remember the sequence</span> of objects you saw.</p>
-            <p>After each sequence, you will be asked to type the names of all objects you saw in the <span class="important">same order</span> they were presented.</p>
-            <p>For the next part, you'll need to report the objects in the <span class="important">REVERSE order</span>.</p>
-            <p>Click 'continue' to see an example.</p>
-            <button id="objectSpanIntroButton" onclick="console.log('Object Intro button clicked directly'); directObjectSpanExample();">continue</button>
+            <h1>Object Span Task</h1>
+            <p>In this task, you will be shown a series of objects one at a time.</p>
+            <p>Your task is to remember the objects in the order they appeared.</p>
+            <p>After the objects are shown, you'll be asked to recall them.</p>
+            <p>You will start with practice trials to help you understand the task.</p>
+            <button id="startObjectSpanButton" class="button">Start Practice</button>
         </div>
 
         <!-- Object Span Example Screen -->
@@ -694,82 +694,50 @@
             <button id="startObjectSpanBackwardButton" onclick="console.log('Backward button clicked directly'); directStartObjectSpanBackwardPractice();">continue</button>
         </div>
 
-        <!-- Object Span Game Area -->
+        <!-- Object Game Area -->
         <div id="object-game-area" class="screen hidden">
-            <div class="object-display"></div>
+            <div class="object-display-container">
+                <div class="object-display">
+                    <!-- Objects will be displayed here -->
+                </div>
+            </div>
+            <div id="object-debug" style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px; font-size: 12px; max-width: 300px; z-index: 1000;">
+                Debug: Waiting for object display...
+            </div>
         </div>
 
         <!-- Object Span Response Form -->
         <div id="object-span-response" class="screen hidden">
-            <h2>Please type in the names of the objects in the correct order and press enter.</h2>
-            <p>Separate each object name with a space.</p>
-            
-            <div class="response-input">
-                <input type="text" id="object-response" autocomplete="off">
-            </div>
-            
-            <button id="submitObjectResponseButton">Submit</button>
-            
-            <div class="object-names-reference">
-                <h3>Object Names Reference:</h3>
-                <div class="object-reference-grid">
-                    <div class="object-reference-item">
-                        <img src="images/Bread.png" alt="Bread" class="reference-image">
-                        <p>bread</p>
-                    </div>
-                    <div class="object-reference-item">
-                        <img src="images/Car.png" alt="Car" class="reference-image">
-                        <p>car</p>
-                    </div>
-                    <div class="object-reference-item">
-                        <img src="images/Pot.png" alt="Pot" class="reference-image">
-                        <p>pot</p>
-                    </div>
-                    <div class="object-reference-item">
-                        <img src="images/Money.png" alt="Money" class="reference-image">
-                        <p>money</p>
-                    </div>
-                    <div class="object-reference-item">
-                        <img src="images/Book.png" alt="Book" class="reference-image">
-                        <p>book</p>
-                    </div>
-                    <div class="object-reference-item">
-                        <img src="images/Chair.png" alt="Chair" class="reference-image">
-                        <p>chair</p>
-                    </div>
-                    <div class="object-reference-item">
-                        <img src="images/Shoe.png" alt="Shoe" class="reference-image">
-                        <p>shoe</p>
-                    </div>
-                    <div class="object-reference-item">
-                        <img src="images/Bag.png" alt="Bag" class="reference-image">
-                        <p>bag</p>
-                    </div>
-                    <div class="object-reference-item">
-                        <img src="images/Computer.png" alt="Computer" class="reference-image">
-                        <p>computer</p>
-                    </div>
-                </div>
+            <h2>Enter the objects in the order they appeared</h2>
+            <p>Type the names of the objects separated by spaces (e.g., "bread car pot")</p>
+            <input type="text" id="object-response" class="response-input" style="width: 80%; max-width: 500px; padding: 10px; margin: 20px;">
+            <button id="submitObjectResponseButton" class="button">Submit</button>
+        </div>
+
+        <div id="object-span-practice-feedback" class="screen hidden">
+            <h2>Practice Feedback</h2>
+            <p id="practice-feedback-text"></p>
+            <p id="practice-score"></p>
+            <div class="practice-controls">
+                <button id="continuePracticeButton" class="button">Continue Practice</button>
+                <button id="readyForMainTaskButton" class="button">I'm Ready for Main Task</button>
             </div>
         </div>
 
-        <!-- Object Span Results -->
+        <div id="object-span-main-instructions" class="screen hidden">
+            <h1>Main Task</h1>
+            <p>Great! Now you'll begin the main task.</p>
+            <p>The task will get progressively harder, starting with sequences of 3 objects.</p>
+            <p>You'll have two attempts at each sequence length.</p>
+            <p>The task will end when you cannot correctly recall a sequence after two attempts.</p>
+            <button id="startObjectSpanMainButton" class="button">Start Main Task</button>
+        </div>
+
         <div id="object-span-results" class="screen hidden">
-            <h2>Your response was:</h2>
-            <p class="user-answer">You typed: <span id="user-object-response"></span></p>
-            <p class="correct-answer">Correct response: <span id="correct-object-response"></span></p>
-            
-            <p id="object-span-result-feedback" class="result-feedback"></p>
-            
-            <button id="nextObjectSpanButton">continue</button>
-        </div>
-
-        <!-- Object Span Complete -->
-        <div id="object-span-complete" class="screen hidden">
-            <h2>Great work!</h2>
-            <p>You have completed the Object Span task.</p>
-            <p>Click 'finish' to continue.</p>
-            <button id="finishObjectSpanButton">Finish</button>
+            <h1>Task Complete</h1>
+            <p>Maximum span reached: <span id="max-span-reached">0</span></p>
+            <p>Total correct sequences: <span id="total-correct-sequences">0</span></p>
+            <button id="finishObjectSpanButton" class="button">Complete Task</button>
         </div>
 
         <!-- Object Span Real Game Instructions -->
