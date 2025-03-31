@@ -646,6 +646,7 @@ function exportCSV(results) {
         });
     } else if (taskType === 'spatial_working_memory') {
         // Spatial Working Memory task headers
+        
         csvHeader = [
             'participant_id',
             'counter_balance',
@@ -1726,177 +1727,46 @@ function startCountingSequence() {
 
 // Animate the counting objects
 function animateObjects(sequence) {
-    // Clear any existing object span timers before starting a new animation
-    TimerManager.clearCategory('objectSpan');
+    // Clear any existing timers
+    TimerManager.clearAll();
     
-    // Update debug info
-    const debugEl = document.getElementById('object-debug');
-    if (debugEl) {
-        debugEl.textContent = `Debug: Starting animation with ${sequence.length} objects`;
-    }
-    
-    let index = 0;
-    const objectDisplay = document.querySelector('.object-display');
-    if (!objectDisplay) {
-        console.error('Object display container not found');
-        if (debugEl) {
-            debugEl.textContent = 'ERROR: Object display container not found';
-            debugEl.style.color = 'red';
-        }
-        return;
-    }
-    
-    // Ensure the game area is visible and properly styled
+    // Show the game area
     const gameArea = document.getElementById('object-game-area');
     if (gameArea) {
         gameArea.classList.remove('hidden');
-        showScreen('object-game-area');
-    } else {
-        if (debugEl) {
-            debugEl.textContent = 'ERROR: Game area not found';
-            debugEl.style.color = 'red';
-        }
     }
     
-    objectDisplay.innerHTML = ''; // Clear any previous content
-    
-    console.log('Starting object animation with sequence:', sequence);
-    
-    // Add a visible status indicator for debugging
-    const statusElement = document.createElement('div');
-    statusElement.style.position = 'absolute';
-    statusElement.style.bottom = '10px';
-    statusElement.style.left = '10px';
-    statusElement.style.color = '#333';
-    statusElement.style.fontSize = '12px';
-    statusElement.textContent = 'Loading images...';
-    objectDisplay.appendChild(statusElement);
-    
-    // Preload all images first
-    const imagesToPreload = sequence.map(digit => OBJECT_SPAN_CONFIG.objectMapping[digit].image);
-    let imagesLoaded = 0;
-    let hasErrors = false;
-    
-    // Initialize array to track preloaded images
-    const preloadedImages = [];
-    
-    console.log('Preloading images for sequence:', imagesToPreload);
-    if (debugEl) {
-        debugEl.textContent = `Debug: Preloading ${imagesToPreload.length} images`;
+    // Clear any existing content
+    const objectDisplay = document.querySelector('.object-display');
+    if (objectDisplay) {
+        objectDisplay.innerHTML = '';
     }
     
-    // Preload each image in the sequence
-    imagesToPreload.forEach((imageSrc, idx) => {
-        const img = new Image();
+    // Show each object in sequence
+    sequence.forEach((objectDigit, index) => {
+        // Show blank screen between objects
+        setTimeout(() => {
+            objectDisplay.innerHTML = '';
+        }, index * (OBJECT_SPAN_CONFIG.displayTime + OBJECT_SPAN_CONFIG.blankTime), 'objectSpan_blankTime_' + index);
         
-        img.onload = function() {
-            imagesLoaded++;
-            console.log(`Image loaded (${imagesLoaded}/${imagesToPreload.length}): ${imageSrc}`);
-            preloadedImages.push(img);
-            statusElement.textContent = `Loading: ${imagesLoaded}/${imagesToPreload.length}`;
-            
-            if (debugEl) {
-                debugEl.textContent = `Debug: Loaded ${imagesLoaded}/${imagesToPreload.length} images`;
+        // Show the object
+        setTimeout(() => {
+            const objectData = OBJECT_SPAN_CONFIG.objectMapping[objectDigit];
+            if (objectData) {
+                const img = document.createElement('img');
+                img.src = objectData.image;
+                img.alt = objectData.name;
+                img.className = 'object-image';
+                objectDisplay.appendChild(img);
             }
-            
-            // Start animation once all images are loaded
-            if (imagesLoaded === imagesToPreload.length) {
-                console.log('All images preloaded, starting animation with delay');
-                statusElement.textContent = 'Starting sequence...';
-                
-                if (debugEl) {
-                    debugEl.textContent = `Debug: All images loaded, starting sequence`;
-                }
-                
-                // Start with a delay to ensure everything is ready
-                TimerManager.setTimeout(() => {
-                    objectDisplay.removeChild(statusElement);
-                    showNextObject();
-                }, 500, 'objectSpan_initialDelay');
-            }
-        };
-        
-        img.onerror = function() {
-            console.error(`Failed to load image: ${imageSrc}`);
-            hasErrors = true;
-            imagesLoaded++;
-            statusElement.textContent = `Error loading image ${idx+1}`;
-            
-            if (debugEl) {
-                debugEl.textContent = `ERROR: Failed to load image: ${imageSrc}`;
-                debugEl.style.color = 'red';
-            }
-            
-            // Continue even if some images fail to load
-            if (imagesLoaded === imagesToPreload.length) {
-                console.log('Images attempted to load with errors, starting animation');
-                // If there were errors, show a warning for a moment
-                statusElement.textContent = 'Some images failed to load';
-                statusElement.style.color = 'red';
-                
-                TimerManager.setTimeout(() => {
-                    objectDisplay.removeChild(statusElement);
-                    showNextObject();
-                }, 1000, 'objectSpan_initialDelay');
-            }
-        };
-        
-        img.src = imageSrc;
+        }, index * (OBJECT_SPAN_CONFIG.displayTime + OBJECT_SPAN_CONFIG.blankTime) + OBJECT_SPAN_CONFIG.blankTime, 'objectSpan_displayTime_' + index);
     });
     
-    function showNextObject() {
-        if (index >= sequence.length) {
-            // End of sequence, show response form
-            TimerManager.setTimeout(() => {
-                showScreen('object-span-response');
-                document.getElementById('object-response').value = '';
-                document.getElementById('object-response').focus();
-            }, OBJECT_SPAN_CONFIG.blankTime, 'objectSpan_showResponse');
-            return;
-        }
-        
-        const objectDigit = sequence[index];
-        const objectData = OBJECT_SPAN_CONFIG.objectMapping[objectDigit];
-        
-        console.log(`Showing object ${objectData.name} (${index + 1}/${sequence.length})`);
-        
-        // Create a new image element for better control
-        const imgElement = new Image();
-        imgElement.src = objectData.image;
-        imgElement.alt = objectData.name;
-        imgElement.style.maxWidth = '80%';
-        imgElement.style.maxHeight = '80%';
-        imgElement.style.objectFit = 'contain';
-        
-        // Add a label below the image for debugging
-        const labelElement = document.createElement('div');
-        labelElement.textContent = objectData.name;
-        labelElement.style.marginTop = '10px';
-        labelElement.style.fontSize = '16px';
-        
-        // Clear previous content and add the new image with label
-        objectDisplay.innerHTML = '';
-        const container = document.createElement('div');
-        container.style.display = 'flex';
-        container.style.flexDirection = 'column';
-        container.style.alignItems = 'center';
-        container.appendChild(imgElement);
-        container.appendChild(labelElement);
-        objectDisplay.appendChild(container);
-        
-        // Wait for display time, then hide
-        TimerManager.setTimeout(() => {
-            console.log(`Hiding object ${objectData.name}`);
-            objectDisplay.innerHTML = ''; // Clear the display
-                    
-            // Wait during blank time before showing next object
-            TimerManager.setTimeout(() => {
-                index++;
-                showNextObject();
-            }, OBJECT_SPAN_CONFIG.blankTime, 'objectSpan_blankTime_' + index);
-            
-        }, OBJECT_SPAN_CONFIG.displayTime, 'objectSpan_displayTime_' + index);
-    }
+    // After showing all objects, show the response screen
+    const totalTime = sequence.length * (OBJECT_SPAN_CONFIG.displayTime + OBJECT_SPAN_CONFIG.blankTime);
+    setTimeout(() => {
+        showObjectSpanResponse();
+    }, totalTime + 500); // Add a small delay after the last object
 }
 
 // Submit answers for counting game
@@ -2379,10 +2249,11 @@ function startTask4bPractice() {
 const OBJECT_SPAN_CONFIG = {
     displayTime: 1500,  // 1.5 seconds to show each object
     blankTime: 750,     // 0.75 seconds between objects
+    startObjects: 3,    // Starting span length
     minSpan: 3,         // Starting span length
     maxSpan: 10,        // Maximum span length
     attemptsPerSpan: 2, // Number of attempts allowed at each span length
-    mainTaskRounds: 5,  // Number of rounds in the main task
+    mainTaskRounds: 8,  // Number of rounds in the main task (from 3 to 10 objects)
     objectMapping: {
         1: { name: 'bread', image: 'images/Bread.png' },
         2: { name: 'car', image: 'images/Car.png' },
@@ -2399,14 +2270,17 @@ const OBJECT_SPAN_CONFIG = {
 // Object Span Game State
 const objectSpanState = {
     sequence: [],           // Current sequence being shown
-    isRealGame: false,     // Whether we're in the real game or practice
-    currentSpan: 3,        // Current span length
-    currentAttempt: 1,     // Current attempt at this span length (1 or 2)
-    currentRound: 0,       // Current round in main task (1-5)
-    maxSpanReached: 3,     // Maximum span length successfully reached
-    results: [],           // Store all results
-    practiceAttempts: 0,   // Number of practice attempts
-    readyForMainTask: false // Whether participant has indicated readiness for main task
+    isRealGame: false,      // Whether we're in the real game or practice
+    currentSpan: 3,         // Current span length (start with 3)
+    currentAttempt: 1,      // Current attempt at this span length (1 or 2)
+    currentRound: 1,        // Current round in main task (1-8)
+    maxSpanReached: 0,      // Maximum span length successfully reached (our final score)
+    results: [],            // Store all results
+    practiceAttempts: 0,    // Number of practice attempts
+    readyForMainTask: false, // Whether participant has indicated readiness for main task
+    lastAttemptTime: 0,     // Timestamp of last attempt to prevent double counting
+    lastResponse: '',       // Store the last response for display in feedback
+    isBackward: false       // Whether we're in backward recall mode
 };
 
 // Event listeners for Object Span game
@@ -2419,6 +2293,9 @@ document.getElementById('objectSpanGoBackButton')?.addEventListener('click', fun
 });
 
 document.getElementById('startObjectSpanPracticeButton')?.addEventListener('click', function() {
+    console.log('Starting object span practice from button click');
+    // Ensure we reset the practice attempts counter to 0
+    objectSpanState.practiceAttempts = 0;
     startObjectSpanPractice();
 });
 
@@ -2523,9 +2400,10 @@ function startObjectSpanBackwardPractice() {
 function startObjectSpanRealGame() {
     objectSpanState.isRealGame = true;
     objectSpanState.isBackward = false;
-    objectSpanState.currentLevel = OBJECT_SPAN_CONFIG.startObjects;
-    objectSpanState.successes = 0;
-    objectSpanState.failures = 0;
+    objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan; // Start with minSpan (3)
+    objectSpanState.currentAttempt = 1;
+    objectSpanState.currentRound = 1;
+    objectSpanState.maxSpanReached = 0;
     objectSpanState.results = [];
     
     startObjectSequence();
@@ -2533,6 +2411,9 @@ function startObjectSpanRealGame() {
 
 function startObjectSequence() {
     console.log('Starting object sequence with span:', objectSpanState.currentSpan);
+    
+    // Clear any existing timers that might be preventing progress
+    TimerManager.clearAll();
     
     // Clear any existing content in the display
     const objectDisplay = document.querySelector('.object-display');
@@ -2544,6 +2425,12 @@ function startObjectSequence() {
     const gameArea = document.getElementById('object-game-area');
     if (gameArea) {
         gameArea.classList.remove('hidden');
+    }
+    
+    // Update debug element with current state
+    const debugEl = document.getElementById('object-debug');
+    if (debugEl) {
+        debugEl.textContent = `Debug: Generating sequence span=${objectSpanState.currentSpan}, attempt=${objectSpanState.currentAttempt}, round=${objectSpanState.currentRound}`;
     }
     
     // Generate a sequence of digits from 1-9 of the current span length
@@ -2562,45 +2449,149 @@ function startObjectSequence() {
     // Show the game area and animate the digits
     showScreen('object-game-area');
     
-    // Force the game area to be visible before animation
+    // Update debug again to confirm we're starting animation
+    if (debugEl) {
+        debugEl.textContent = `Debug: Starting animation for ${objectSequence.length} objects`;
+    }
+    
+    // Force the game area to be visible before animation with a slightly longer delay
     setTimeout(() => {
-        // Start the animation
-        animateObjects(objectSequence);
-    }, 100);
+        try {
+    // Start the animation
+    animateObjects(objectSequence);
+        } catch (error) {
+            console.error("Error starting animation:", error);
+            if (debugEl) {
+                debugEl.textContent = `ERROR: ${error.message}`;
+                debugEl.style.color = 'red';
+            }
+        }
+    }, 300);
 }
 
 function submitObjectSpanResponse() {
-    const response = document.getElementById('object-response').value.trim().toLowerCase();
+    // Debug info
+    console.log('Submit object span response called');
+    
+    // Get the input element
+    const responseInput = document.getElementById('object-response');
+    
+    // Make sure we have the input element and it has a value
+    if (!responseInput) {
+        console.error('Response input element not found!');
+        return;
+    }
+    
+    console.log('Current state:', {
+        isRealGame: objectSpanState.isRealGame,
+        currentSpan: objectSpanState.currentSpan,
+        currentAttempt: objectSpanState.currentAttempt,
+        practiceAttempts: objectSpanState.practiceAttempts
+    });
+    
+    // Get user's response and normalize it (trim whitespace, lowercase)
+    const response = responseInput.value.trim().toLowerCase();
+    console.log('Raw input value:', responseInput.value);
+    console.log('Processed response value:', response);
+    
+    // Safety check - don't proceed if response is empty
+    if (response.trim() === '') {
+        // Remove the alert popup
+        return false;
+    }
+    
+    // Get expected sequence of object names
     const expectedSequence = objectSpanState.sequence.map(index => 
         OBJECT_SPAN_CONFIG.objectMapping[index].name
     ).join(' ');
     
-    const isCorrect = response === expectedSequence;
+    console.log('Expected sequence:', expectedSequence);
+    console.log('User response:', response);
+    
+    // More flexible comparison:
+    // 1. Normalize both strings by removing extra spaces
+    // 2. Compare the normalized strings
+    const normalizedExpected = expectedSequence.replace(/\s+/g, ' ').trim();
+    const normalizedResponse = response.replace(/\s+/g, ' ').trim();
+    
+    let isCorrect = false;
+    
+    // First try exact match
+    if (normalizedResponse === normalizedExpected) {
+        isCorrect = true;
+    } 
+    // Then try checking if all the object names are present in the right order
+    else {
+        const expectedObjects = normalizedExpected.split(' ');
+        const responseObjects = normalizedResponse.split(' ');
+        
+        // Only consider it correct if the number of objects matches
+        if (expectedObjects.length === responseObjects.length) {
+            isCorrect = true;
+            // Check each object
+            for (let i = 0; i < expectedObjects.length; i++) {
+                if (expectedObjects[i] !== responseObjects[i]) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+        }
+    }
+    
+    console.log('Is correct:', isCorrect);
+    
+    // Show which objects were incorrect (for debugging)
+    if (!isCorrect) {
+        const expectedObjects = normalizedExpected.split(' ');
+        const responseObjects = normalizedResponse.split(' ');
+        
+        console.log('Expected vs Response:');
+        for (let i = 0; i < Math.max(expectedObjects.length, responseObjects.length); i++) {
+            const expected = expectedObjects[i] || 'missing';
+            const response = responseObjects[i] || 'missing';
+            const match = expected === response ? '✓' : '✗';
+            console.log(`Object ${i+1}: ${expected} vs ${response} ${match}`);
+        }
+    }
+    
+    // Store the response for display in feedback
+    objectSpanState.lastResponse = response;
     
     if (objectSpanState.isRealGame) {
         handleMainTaskResponse(isCorrect);
     } else {
+        // Force reset the input field to prevent double submissions
+        responseInput.value = '';
         handlePracticeResponse(isCorrect);
     }
 }
 
 function handlePracticeResponse(isCorrect) {
-    objectSpanState.practiceAttempts++;
+    // We're simply going to reset the counter in the feedback display
+    // rather than incrementing it to ensure consistency
     
     // Show feedback
     const feedbackScreen = document.getElementById('object-span-practice-feedback');
     const feedbackText = document.getElementById('practice-feedback-text');
     const scoreText = document.getElementById('practice-score');
     
+    // Get the user's response from stored state
+    const userResponse = objectSpanState.lastResponse || '(no response)';
+    const expectedSequence = objectSpanState.sequence.map(index => 
+        OBJECT_SPAN_CONFIG.objectMapping[index].name
+    ).join(' ');
+    
     if (isCorrect) {
         feedbackText.textContent = 'Correct! Well done!';
         feedbackText.className = 'feedback-correct';
     } else {
-        feedbackText.textContent = 'Incorrect. Keep practicing!';
+        feedbackText.innerHTML = `Incorrect. Keep practicing!<br><br>Your answer: "${userResponse}"<br>Expected: "${expectedSequence}"`;
         feedbackText.className = 'feedback-incorrect';
     }
     
-    scoreText.textContent = `Practice attempts: ${objectSpanState.practiceAttempts}`;
+    // Display the actual practice number (start from 1 not 0)
+    objectSpanState.practiceAttempts = 1; 
+    scoreText.textContent = `Practice attempt: ${objectSpanState.practiceAttempts}`;
     
     // Show feedback screen
     showScreen('object-span-practice-feedback');
@@ -2616,6 +2607,12 @@ function handleMainTaskResponse(isCorrect) {
         timestamp: new Date().toISOString()
     });
     
+    // Update debug info
+    const debugEl = document.getElementById('object-debug');
+    if (debugEl) {
+        debugEl.textContent = `Debug: Round ${objectSpanState.currentRound}/${OBJECT_SPAN_CONFIG.mainTaskRounds}, Span ${objectSpanState.currentSpan}, Attempt ${objectSpanState.currentAttempt}`;
+    }
+    
     if (isCorrect) {
         // If this was the first attempt at this span length
         if (objectSpanState.currentAttempt === 1) {
@@ -2624,36 +2621,57 @@ function handleMainTaskResponse(isCorrect) {
             objectSpanState.currentAttempt = 1;
             objectSpanState.maxSpanReached = Math.max(objectSpanState.maxSpanReached, objectSpanState.currentSpan - 1);
             
+            // Check if we've reached the maximum span
             if (objectSpanState.currentSpan > OBJECT_SPAN_CONFIG.maxSpan) {
                 // Reached maximum span, end task
                 showFinalResults();
-            } else {
+                return;
+            }
+            
+            // Check if we've completed all rounds
+            objectSpanState.currentRound++;
+            if (objectSpanState.currentRound > OBJECT_SPAN_CONFIG.mainTaskRounds) {
+                // Completed all rounds, end task
+                showFinalResults();
+                    return;
+                } else {
                 // Continue with next span length
                 startObjectSequence();
-        }
-    } else {
+            }
+        } else {
             // Second successful attempt, move to next span
             objectSpanState.currentSpan++;
             objectSpanState.currentAttempt = 1;
             objectSpanState.maxSpanReached = Math.max(objectSpanState.maxSpanReached, objectSpanState.currentSpan - 1);
             
+            // Check if we've reached the maximum span
             if (objectSpanState.currentSpan > OBJECT_SPAN_CONFIG.maxSpan) {
                 // Reached maximum span, end task
                 showFinalResults();
-                } else {
+                    return;
+                }
+            
+            // Check if we've completed all rounds
+            objectSpanState.currentRound++;
+            if (objectSpanState.currentRound > OBJECT_SPAN_CONFIG.mainTaskRounds) {
+                // Completed all rounds, end task
+                showFinalResults();
+                return;
+            } else {
                 // Continue with next span length
                 startObjectSequence();
             }
         }
     } else {
-        // If this was the first attempt
-        if (objectSpanState.currentAttempt === 1) {
+        // If this was the first attempt and we haven't exceeded rounds
+        if (objectSpanState.currentAttempt === 1 && objectSpanState.currentRound <= OBJECT_SPAN_CONFIG.mainTaskRounds) {
             // Give second attempt at same span length
             objectSpanState.currentAttempt = 2;
-        startObjectSequence();
+            startObjectSequence();
         } else {
-            // Failed both attempts, end task
+            // Failed both attempts or exceeded rounds, end task
             showFinalResults();
+            return;
         }
     }
 }
@@ -2663,6 +2681,38 @@ function showFinalResults() {
     
     const correctSequences = objectSpanState.results.filter(r => r.isCorrect).length;
     document.getElementById('total-correct-sequences').textContent = correctSequences;
+    
+    // Remove any existing dynamically added elements first
+    const resultsContainer = document.getElementById('object-span-results');
+    if (resultsContainer) {
+        // Remove all paragraphs that don't have an ID (the dynamically added ones)
+        const dynamicParagraphs = resultsContainer.querySelectorAll('p:not([id])');
+        dynamicParagraphs.forEach(p => p.remove());
+        
+        // Add information about rounds completed
+        const roundsCompletedEl = document.createElement('p');
+        roundsCompletedEl.textContent = `Rounds completed: ${objectSpanState.currentRound - 1}/${OBJECT_SPAN_CONFIG.mainTaskRounds}`;
+        
+        const totalTrialsEl = document.createElement('p');
+        totalTrialsEl.textContent = `Total trials: ${objectSpanState.results.length}`;
+        
+        // Add a final score element based on max span reached
+        const finalScoreEl = document.createElement('p');
+        finalScoreEl.textContent = `Final Score: ${objectSpanState.maxSpanReached}`;
+        finalScoreEl.classList.add('important');
+        
+        // Insert these elements after the existing content but before the button
+        const finishButton = document.getElementById('finishObjectSpanButton');
+        if (finishButton) {
+            resultsContainer.insertBefore(finalScoreEl, finishButton);
+            resultsContainer.insertBefore(roundsCompletedEl, finishButton);
+            resultsContainer.insertBefore(totalTrialsEl, finishButton);
+    } else {
+            resultsContainer.appendChild(finalScoreEl);
+            resultsContainer.appendChild(roundsCompletedEl);
+            resultsContainer.appendChild(totalTrialsEl);
+    }
+    }
     
     showScreen('object-span-results');
 }
@@ -5125,25 +5175,67 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Object Span Task event listeners
     document.getElementById('startObjectSpanButton')?.addEventListener('click', function() {
+        console.log('Starting object span practice from button click');
+        // Ensure we reset the practice attempts counter to 0
+        objectSpanState.practiceAttempts = 0;
         startObjectSpanPractice();
     });
 
     document.getElementById('continuePracticeButton')?.addEventListener('click', function() {
+        // Don't increment the practice attempts counter when continuing practice
+        // (it will be incremented once when submitting the response)
+        
+        // Reset input and start a new sequence
+        const objectDisplay = document.querySelector('.object-display');
+        if (objectDisplay) {
+            objectDisplay.innerHTML = ''; // Clear any previous content
+        }
+        
+        // Show game area and start a new sequence
+        showScreen('object-game-area');
         startObjectSequence();
     });
 
     document.getElementById('readyForMainTaskButton')?.addEventListener('click', function() {
+        console.log('User indicated ready for main task');
         objectSpanState.readyForMainTask = true;
+        objectSpanState.practiceAttempts = 0; // Reset practice attempts
+        
+        // Clear any existing timers
+        TimerManager.clearAll();
+        
+        // Show the main task instructions
         showScreen('object-span-main-instructions');
     });
 
     document.getElementById('startObjectSpanMainButton')?.addEventListener('click', function() {
+        console.log('Starting main object span task');
+        
+        // Reset state for main task
         objectSpanState.isRealGame = true;
         objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan;
         objectSpanState.currentAttempt = 1;
-        objectSpanState.currentRound = 1;
+        objectSpanState.currentRound = 1; // Start at round 1
         objectSpanState.maxSpanReached = OBJECT_SPAN_CONFIG.minSpan - 1;
         objectSpanState.results = [];
+        
+        // Clear any existing timers
+        TimerManager.clearAll();
+        
+        // Clear any input values that might remain from practice
+        const responseInput = document.getElementById('object-response');
+        if (responseInput) {
+            responseInput.value = '';
+        }
+        
+        // Update debug info
+        const debugEl = document.getElementById('object-debug');
+        if (debugEl) {
+            debugEl.textContent = 'Starting main task';
+            debugEl.style.color = 'black';
+        }
+        
+        // Start the first sequence
         startObjectSequence();
     });
 
@@ -5156,6 +5248,20 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Enter') {
             submitObjectSpanResponse();
         }
+    });
+    
+    // Add keyup event listener to monitor input
+    document.getElementById('object-response')?.addEventListener('keyup', function(e) {
+        // Log the current input value
+        console.log('Current input value (keyup):', this.value);
+        
+        // Store in state to ensure we have the latest value
+        objectSpanState.lastResponse = this.value.trim().toLowerCase();
+    });
+    
+    // Add special focus event to capture initial focus
+    document.getElementById('object-response')?.addEventListener('focus', function(e) {
+        console.log('Input field received focus');
     });
 });
 
@@ -5211,4 +5317,181 @@ document.addEventListener('DOMContentLoaded', function() {
         responseScreen.appendChild(guide);
     }
 });
+
+function showObjectSpanResponse() {
+    // Clear any existing timers
+    TimerManager.clearAll();
+    
+    // Show the response screen
+    showScreen('object-span-response');
+    
+    // Get and enable the submit button
+    const submitButton = document.getElementById('submitObjectResponseButton');
+    if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.removeAttribute('disabled'); // Force enable
+    }
+    
+    // Get and enable the input field
+    const responseInput = document.getElementById('object-response');
+    if (responseInput) {
+        responseInput.value = ''; // Clear any previous input
+        responseInput.disabled = false; // Ensure input is enabled
+        responseInput.focus(); // Set focus to input field
+    }
+    
+    // Update debug info
+    const debugEl = document.getElementById('object-debug');
+    if (debugEl) {
+        debugEl.textContent = `Debug: Showing response screen for span ${objectSpanState.currentSpan}, attempt ${objectSpanState.currentAttempt}`;
+    }
+}
+
+function submitObjectSpanResponse() {
+    // Debug info
+    console.log('Submit object span response called');
+    
+    // Get the input element
+    const responseInput = document.getElementById('object-response');
+    
+    // Make sure we have the input element and it has a value
+    if (!responseInput) {
+        console.error('Response input element not found!');
+        return;
+    }
+    
+    // Get user's response and normalize it (trim whitespace, lowercase)
+    const response = responseInput.value.trim().toLowerCase();
+    
+    // Safety check - don't proceed if response is empty
+    if (response.trim() === '') {
+        return false;
+    }
+    
+    // Get expected sequence of object names
+    const expectedSequence = objectSpanState.sequence.map(index => 
+        OBJECT_SPAN_CONFIG.objectMapping[index].name
+    ).join(' ');
+    
+    // More flexible comparison:
+    // 1. Normalize both strings by removing extra spaces
+    // 2. Compare the normalized strings
+    const normalizedExpected = expectedSequence.replace(/\s+/g, ' ').trim();
+    const normalizedResponse = response.replace(/\s+/g, ' ').trim();
+    
+    let isCorrect = false;
+    
+    // First try exact match
+    if (normalizedResponse === normalizedExpected) {
+        isCorrect = true;
+    } 
+    // Then try checking if all the object names are present in the right order
+    else {
+        const expectedObjects = normalizedExpected.split(' ');
+        const responseObjects = normalizedResponse.split(' ');
+        
+        // Only consider it correct if the number of objects matches
+        if (expectedObjects.length === responseObjects.length) {
+            isCorrect = true;
+            // Check each object
+            for (let i = 0; i < expectedObjects.length; i++) {
+                if (expectedObjects[i] !== responseObjects[i]) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+        }
+    }
+    
+    // Store the response for display in feedback
+    objectSpanState.lastResponse = response;
+    
+    if (objectSpanState.isRealGame) {
+        handleMainTaskResponse(isCorrect);
+    } else {
+        handlePracticeResponse(isCorrect);
+    }
+    
+    // Clear the input field
+    responseInput.value = '';
+}
+
+function handleMainTaskResponse(isCorrect) {
+    // Store result
+    objectSpanState.results.push({
+        round: objectSpanState.currentRound,
+        span: objectSpanState.currentSpan,
+        attempt: objectSpanState.currentAttempt,
+        isCorrect: isCorrect,
+        timestamp: new Date().toISOString()
+    });
+    
+    // Check if we've exceeded the maximum rounds first
+    if (objectSpanState.currentRound > OBJECT_SPAN_CONFIG.mainTaskRounds) {
+        showFinalResults();
+        return;
+    }
+    
+    if (isCorrect) {
+        // If this was the first attempt at this span length
+        if (objectSpanState.currentAttempt === 1) {
+            // Move to next span length
+            objectSpanState.currentSpan++;
+            objectSpanState.currentAttempt = 1;
+            objectSpanState.maxSpanReached = Math.max(objectSpanState.maxSpanReached, objectSpanState.currentSpan - 1);
+            
+            // Check if we've reached the maximum span
+            if (objectSpanState.currentSpan > OBJECT_SPAN_CONFIG.maxSpan) {
+                // Reached maximum span, end task
+                showFinalResults();
+                return;
+            }
+            
+            // Check if we've completed all rounds
+            objectSpanState.currentRound++;
+            if (objectSpanState.currentRound > OBJECT_SPAN_CONFIG.mainTaskRounds) {
+                // Completed all rounds, end task
+                showFinalResults();
+                return;
+            } else {
+                // Continue with next span length
+                startObjectSequence();
+            }
+        } else {
+            // Second successful attempt, move to next span
+            objectSpanState.currentSpan++;
+            objectSpanState.currentAttempt = 1;
+            objectSpanState.maxSpanReached = Math.max(objectSpanState.maxSpanReached, objectSpanState.currentSpan - 1);
+            
+            // Check if we've reached the maximum span
+            if (objectSpanState.currentSpan > OBJECT_SPAN_CONFIG.maxSpan) {
+                // Reached maximum span, end task
+                showFinalResults();
+                return;
+            }
+            
+            // Check if we've completed all rounds
+            objectSpanState.currentRound++;
+            if (objectSpanState.currentRound > OBJECT_SPAN_CONFIG.mainTaskRounds) {
+                // Completed all rounds, end task
+                showFinalResults();
+                return;
+            } else {
+                // Continue with next span length
+                startObjectSequence();
+            }
+        }
+    } else {
+        // If this was the first attempt and we haven't exceeded rounds
+        if (objectSpanState.currentAttempt === 1 && objectSpanState.currentRound <= OBJECT_SPAN_CONFIG.mainTaskRounds) {
+            // Give second attempt at same span length
+            objectSpanState.currentAttempt = 2;
+            startObjectSequence();
+        } else {
+            // Failed both attempts or exceeded rounds, end task
+            showFinalResults();
+            return;
+        }
+    }
+}
 

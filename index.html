@@ -710,7 +710,7 @@
         <div id="object-span-response" class="screen hidden">
             <h2>Enter the objects in the order they appeared</h2>
             <p>Type the names of the objects separated by spaces (e.g., "bread car pot")</p>
-            <input type="text" id="object-response" class="response-input" style="width: 80%; max-width: 500px; padding: 10px; margin: 20px;">
+            <input type="text" id="object-response" class="response-input" style="width: 80%; max-width: 500px; padding: 10px; margin: 20px;" autocomplete="off" placeholder="Type the object names here...">
             <button id="submitObjectResponseButton" class="button">Submit</button>
         </div>
 
@@ -727,15 +727,21 @@
         <div id="object-span-main-instructions" class="screen hidden">
             <h1>Main Task</h1>
             <p>Great! Now you'll begin the main task.</p>
-            <p>The task will get progressively harder, starting with sequences of 3 objects.</p>
-            <p>You'll have two attempts at each sequence length.</p>
-            <p>The task will end when you cannot correctly recall a sequence after two attempts.</p>
+            <p>The task consists of 8 rounds with increasing difficulty:</p>
+            <ul>
+                <li>Starting with sequences of 3 objects</li>
+                <li>Each round increases by one object (up to 10 objects maximum)</li>
+                <li>You'll have two attempts at each sequence length</li>
+                <li>If you succeed at least once, you'll move to the next length</li>
+                <li>If you fail both attempts, the task will end</li>
+            </ul>
+            <p>Your final score will be the longest sequence you correctly recalled.</p>
             <button id="startObjectSpanMainButton" class="button">Start Main Task</button>
         </div>
 
         <div id="object-span-results" class="screen hidden">
             <h1>Task Complete</h1>
-            <p>Maximum span reached: <span id="max-span-reached">0</span></p>
+            <p>Maximum span reached: <span id="max-span-reached">0</span> (Final Score)</p>
             <p>Total correct sequences: <span id="total-correct-sequences">0</span></p>
             <button id="finishObjectSpanButton" class="button">Complete Task</button>
         </div>
