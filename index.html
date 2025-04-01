@@ -649,12 +649,17 @@
 
         <!-- Working Memory Capacity (Ecological) Intro -->
         <div id="object-span-intro" class="screen hidden">
-            <h1>Object Span Task</h1>
-            <p>In this task, you will be shown a series of objects one at a time.</p>
-            <p>Your task is to remember the objects in the order they appeared.</p>
-            <p>After the objects are shown, you'll be asked to recall them.</p>
-            <p>You will start with practice trials to help you understand the task.</p>
-            <button id="startObjectSpanButton" class="button">Start Practice</button>
+            <h2 id="object-span-title">Object Span Task</h2>
+            <div id="object-span-instructions">
+                <p>In this task, you will be shown a series of objects one at a time.</p>
+                <p id="recall-instruction">Your task is to remember and recall the objects in the <span class="mode-text">SAME</span> ORDER as they appeared.</p>
+                <p>For example, if you see: bread → car → book</p>
+                <p id="example-instruction">You should type: "bread car book"</p>
+                <p>You will start with practice trials to help you understand the task.</p>
+            </div>
+            <div class="button-container">
+                <button id="objectSpanIntroButton">Continue</button>
+            </div>
         </div>
 
         <!-- Object Span Example Screen -->
@@ -681,9 +686,10 @@
 
         <!-- Object Span Backward Example -->
         <div id="object-span-backward-example" class="screen hidden">
-            <h2>Backward Working Memory Capacity Task</h2>
-            <p>Now you will do the task again, but this time, please report the objects in <span class="important">REVERSE ORDER</span>.</p>
-            <p>For example, if you see:</p>
+            <h2>Backward Object Span Task</h2>
+            <p>In this task, you will be shown a series of objects one at a time.</p>
+            <p>Your task is to remember and recall the objects in <span class="important">REVERSE ORDER</span> from how they appeared.</p>
+            <p>For example, if you see this sequence:</p>
             <div class="example-container">
                 <img src="images/Bread.png" alt="Bread" class="example-object">
                 <img src="images/Car.png" alt="Car" class="example-object">
@@ -717,6 +723,16 @@
         <div id="object-span-practice-feedback" class="screen hidden">
             <h2>Practice Feedback</h2>
             <p id="practice-feedback-text"></p>
+            <div class="sequence-info">
+                <p>Your response: <span id="user-response"></span></p>
+                <p>Expected response: <span id="expected-response"></span></p>
+                <p class="recall-mode-reminder">
+                    <strong>Remember:</strong> 
+                    <span id="recall-mode-instruction">
+                        Type the objects in the <span class="mode-text"></span> order as shown
+                    </span>
+                </p>
+            </div>
             <p id="practice-score"></p>
             <div class="practice-controls">
                 <button id="continuePracticeButton" class="button">Continue Practice</button>
@@ -748,19 +764,74 @@
 
         <!-- Object Span Real Game Instructions -->
         <div id="object-span-real-game-instructions" class="screen hidden">
-            <h2>Great job!</h2>
-            <p>You are now finished practicing the Object Span tasks.</p>
-            <p>Next, you will play the actual game.</p>
+            <h2>Main Task Instructions</h2>
+            <p>You will now begin the main task.</p>
             <ul>
-                <li>The sequences will be <span class="important">longer</span> in the real game than in the practice rounds.</li>
-                <li><span class="important">Remember to pay close attention</span> to each object in the sequence.</li>
-                <li>For forward object span, type the object names in the <span class="important">same order</span> as you saw them.</li>
-                <li>For backward object span, type the object names in the <span class="important">reverse order</span> from how you saw them.</li>
+                <li>You will see sequences of objects, one at a time</li>
+                <li>Starting with 3 objects, the sequence will get longer as you progress</li>
+                <li>You get two attempts at each sequence length</li>
+                <li>If you succeed at least once, you'll move to a longer sequence</li>
+                <li>If you fail both attempts, the task will end</li>
+                <li>Your final score will be the longest sequence you correctly recalled</li>
             </ul>
-            <p>You will play <span class="important">5 rounds</span> of each game. From now on you will <span class="important">not receive feedback</span> after each round.</p>
-            <p>Click the button below to begin.</p>
-            <button id="startObjectSpanRealGameButton">Start</button>
-    </div>
+            <div class="important-note">
+                <p><strong>For Forward Recall:</strong> Type the object names in the SAME order as shown (e.g., "bread car book")</p>
+                <p><strong>For Backward Recall:</strong> Type the object names in REVERSE order (e.g., if shown "bread car book", type "book car bread")</p>
+            </div>
+            <button id="startObjectSpanRealGameButton" class="button">Start Main Task</button>
+        </div>
+
+        <!-- Forward Object Span Intro Screen -->
+        <div id="forward-object-span-intro" class="screen hidden">
+            <h2>Forward Object Span Task</h2>
+            <p>In this task, you will be shown a series of objects one at a time.</p>
+            <p>Your task is to remember and recall the objects in the <span class="important">SAME ORDER</span> as they appeared.</p>
+            <p>For example, if you see: bread → car → book</p>
+            <p>You should type: "bread car book"</p>
+            <p>You will start with practice trials to help you understand the task.</p>
+            <button id="startForwardObjectSpanButton" class="button">Start Practice</button>
+        </div>
+
+        <!-- Backward Object Span Intro Screen -->
+        <div id="backward-object-span-intro" class="screen hidden">
+            <h2>Backward Object Span Task</h2>
+            <p>In this task, you will be shown a series of objects one at a time.</p>
+            <p>Your task is to remember and recall the objects in <span class="important">REVERSE ORDER</span> from how they appeared.</p>
+            <p>For example, if you see: bread → car → book</p>
+            <p>You should type: "book car bread"</p>
+            <p>You will start with practice trials to help you understand the task.</p>
+            <button id="startBackwardObjectSpanButton" class="button">Start Practice</button>
+        </div>
+
+        <!-- Object Span Practice Feedback -->
+        <div id="object-span-practice-feedback" class="screen hidden">
+            <h2>Practice Feedback</h2>
+            <p id="practice-feedback-text"></p>
+            <div class="sequence-info">
+                <p>Your response: <span id="user-response"></span></p>
+                <p>Expected response: <span id="expected-response"></span></p>
+                <p class="recall-mode-reminder">
+                    <strong>Remember:</strong> 
+                    <span id="recall-mode-instruction">
+                        Type the objects in the <span class="mode-text"></span> order as shown
+                    </span>
+                </p>
+            </div>
+            <p id="practice-score"></p>
+            <div class="practice-controls">
+                <button id="continuePracticeButton" class="button">Continue Practice</button>
+                <button id="readyForMainTaskButton" class="button">I'm Ready for Main Task</button>
+            </div>
+        </div>
+
+        <!-- Object Span Response Screen -->
+        <div id="object-span-response" class="screen hidden">
+            <div class="response-instruction">
+                <p id="recall-instruction">Type the objects in the <span class="mode-text"></span> order</p>
+            </div>
+            <input type="text" id="object-response" class="response-input" style="width: 80%; max-width: 500px; padding: 10px; margin: 20px;" autocomplete="off" placeholder="Type the object names here...">
+            <button id="submitObjectResponseButton" class="button">Submit</button>
+        </div>
 
     <div id="task-6-intro" class="screen hidden">
         <h1>Ecological Spatial Working Memory Task</h1>

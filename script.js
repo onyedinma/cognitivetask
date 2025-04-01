@@ -390,9 +390,53 @@ function handleSchemeSelection(scheme) {
     
     switch (scheme) {
         case '1':
-            // Object Span Task
-            console.log("Initializing Object Span Task");
-            initializeObjectSpanTask(1);
+            // Show object span selection screen
+            const objectSpanScreen = document.createElement('div');
+            objectSpanScreen.id = 'object-span-selection';
+            objectSpanScreen.className = 'screen';
+            objectSpanScreen.innerHTML = `
+                <h1>Object Span Task Selection</h1>
+                <p>Please select which version of the Object Span task you would like to complete:</p>
+                <div class="button-container" style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
+                    <button id="forwardObjectSpanButton" class="button">
+                        Forward Object Span Task<br>
+                        <small>(Recall objects in same order)</small>
+                    </button>
+                    <button id="backwardObjectSpanButton" class="button">
+                        Backward Object Span Task<br>
+                        <small>(Recall objects in reverse order)</small>
+                    </button>
+                </div>
+            `;
+            
+            // Add the screen to the document
+            document.body.appendChild(objectSpanScreen);
+            
+            // Show the selection screen
+            showScreen('object-span-selection');
+            
+            // Add event listeners for the buttons
+            document.getElementById('forwardObjectSpanButton').addEventListener('click', () => {
+                objectSpanState.isBackward = false;
+                showScreen('forward-object-span-intro');
+            });
+            
+            document.getElementById('backwardObjectSpanButton').addEventListener('click', () => {
+                objectSpanState.isBackward = true;
+                showScreen('backward-object-span-intro');
+            });
+            
+            // Add event listeners for the new start buttons
+            document.getElementById('startForwardObjectSpanButton')?.addEventListener('click', () => {
+                objectSpanState.isBackward = false;
+                startObjectSpanPractice();
+            });
+            
+            document.getElementById('startBackwardObjectSpanButton')?.addEventListener('click', () => {
+                console.log('Starting backward object span practice');
+                objectSpanState.isBackward = true;
+                startObjectSpanBackwardPractice();
+            });
             break;
         case '2':
             // Digit Span Game
@@ -1056,8 +1100,7 @@ function showScreen(screenId) {
     TimerManager.clearAll();
     
     // Hide all screens
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(screen => {
+    document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.add('hidden');
     });
     
@@ -1742,31 +1785,46 @@ function animateObjects(sequence) {
         objectDisplay.innerHTML = '';
     }
     
-    // Show each object in sequence
-    sequence.forEach((objectDigit, index) => {
-        // Show blank screen between objects
-        setTimeout(() => {
-            objectDisplay.innerHTML = '';
-        }, index * (OBJECT_SPAN_CONFIG.displayTime + OBJECT_SPAN_CONFIG.blankTime), 'objectSpan_blankTime_' + index);
-        
-        // Show the object
-        setTimeout(() => {
-            const objectData = OBJECT_SPAN_CONFIG.objectMapping[objectDigit];
-            if (objectData) {
-                const img = document.createElement('img');
-                img.src = objectData.image;
-                img.alt = objectData.name;
-                img.className = 'object-image';
-                objectDisplay.appendChild(img);
-            }
-        }, index * (OBJECT_SPAN_CONFIG.displayTime + OBJECT_SPAN_CONFIG.blankTime) + OBJECT_SPAN_CONFIG.blankTime, 'objectSpan_displayTime_' + index);
-    });
+    let index = 0;
     
-    // After showing all objects, show the response screen
-    const totalTime = sequence.length * (OBJECT_SPAN_CONFIG.displayTime + OBJECT_SPAN_CONFIG.blankTime);
-    setTimeout(() => {
-        showObjectSpanResponse();
-    }, totalTime + 500); // Add a small delay after the last object
+    function showNextObject() {
+        if (index >= sequence.length) {
+            // After showing all objects, show the response screen
+            setTimeout(() => {
+                showObjectSpanResponse();
+            }, 500);
+            return;
+        }
+        
+        // Clear the display first
+        objectDisplay.innerHTML = '';
+        
+        // Show the current object
+        const objectData = OBJECT_SPAN_CONFIG.objectMapping[sequence[index]];
+        if (objectData) {
+            const img = document.createElement('img');
+            img.src = objectData.image;
+            img.alt = objectData.name;
+            img.className = 'object-image';
+            objectDisplay.appendChild(img);
+        }
+        
+        // Schedule the next object
+        setTimeout(() => {
+            // Clear the display
+            objectDisplay.innerHTML = '';
+            
+            // Wait during blank time before showing next object
+            setTimeout(() => {
+                index++;
+                showNextObject();
+            }, OBJECT_SPAN_CONFIG.blankTime);
+            
+        }, OBJECT_SPAN_CONFIG.displayTime);
+    }
+    
+    // Start showing the first object
+    showNextObject();
 }
 
 // Submit answers for counting game
@@ -2355,46 +2413,32 @@ function startObjectSpanPractice() {
 function startObjectSpanBackwardPractice() {
     console.log('Starting object span backward practice');
     
-    // Clear any existing timers
-    TimerManager.clearAll();
-    
-    // Set game flags
-    gameState.isPatternGame = false;
-    gameState.isRealGame = false;
-    gameState.isBackward = true;
-    gameState.currentRound = 0;
-    gameState.correctCounts = null;
-    
-    // Reset object span state to starting level
-    objectSpanState.currentLevel = OBJECT_SPAN_CONFIG.startObjects;
+    // Reset practice state
+    objectSpanState.isRealGame = false;
     objectSpanState.isBackward = true;
+    objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan;
+    objectSpanState.currentAttempt = 1;
+    objectSpanState.practiceAttempts = 0;
+    objectSpanState.readyForMainTask = false;
+    objectSpanState.results = [];
     
-    // Hide all screens
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(screen => screen.classList.add('hidden'));
-    
-    // Show object game area
-    const objectGameArea = document.getElementById('object-game-area');
-    if (objectGameArea) {
-        objectGameArea.classList.remove('hidden');
-        objectGameArea.style.display = 'flex';
-    } else {
-        console.error('Object game area not found');
-        return;
+    // Update debug info
+    const debugEl = document.getElementById('object-debug');
+    if (debugEl) {
+        debugEl.textContent = `Debug: Backward practice starting with span ${objectSpanState.currentSpan}`;
     }
     
-    // Generate a sequence of random objects
-    const sequence = generateObjectSequence(OBJECT_SPAN_CONFIG.startObjects);
-    objectSpanState.sequence = sequence;
+    // Clear any existing content in the display
+    const objectDisplay = document.querySelector('.object-display');
+    if (objectDisplay) {
+        objectDisplay.innerHTML = '';
+    }
     
-    // Log the sequence (for debugging)
-    console.log("Object Sequence (backward):", sequence.map(d => OBJECT_SPAN_CONFIG.objectMapping[d].name).join(' '));
+    // Show game area
+    showScreen('object-game-area');
     
-    // Start animating the objects with delay to ensure everything is ready
-    setTimeout(() => {
-        // Start the animation
-        animateObjects(sequence);
-    }, 300);
+    // Start sequence with minimum span length
+    startObjectSequence();
 }
 
 function startObjectSpanRealGame() {
@@ -2501,9 +2545,17 @@ function submitObjectSpanResponse() {
     }
     
     // Get expected sequence of object names
-    const expectedSequence = objectSpanState.sequence.map(index => 
+    let expectedSequence = objectSpanState.sequence.map(index => 
         OBJECT_SPAN_CONFIG.objectMapping[index].name
-    ).join(' ');
+    );
+    
+    // If in backward mode, reverse the expected sequence
+    if (objectSpanState.isBackward) {
+        expectedSequence = expectedSequence.reverse();
+    }
+    
+    // Join the sequence into a string
+    expectedSequence = expectedSequence.join(' ');
     
     console.log('Expected sequence:', expectedSequence);
     console.log('User response:', response);
@@ -2567,30 +2619,46 @@ function submitObjectSpanResponse() {
 }
 
 function handlePracticeResponse(isCorrect) {
-    // We're simply going to reset the counter in the feedback display
-    // rather than incrementing it to ensure consistency
-    
-    // Show feedback
-    const feedbackScreen = document.getElementById('object-span-practice-feedback');
-    const feedbackText = document.getElementById('practice-feedback-text');
-    const scoreText = document.getElementById('practice-score');
-    
-    // Get the user's response from stored state
+    // Get the user's response and expected sequence
     const userResponse = objectSpanState.lastResponse || '(no response)';
-    const expectedSequence = objectSpanState.sequence.map(index => 
+    let expectedSequence = objectSpanState.sequence.map(index => 
         OBJECT_SPAN_CONFIG.objectMapping[index].name
-    ).join(' ');
+    );
     
+    // If in backward mode, reverse the expected sequence
+    if (objectSpanState.isBackward) {
+        expectedSequence = expectedSequence.reverse();
+    }
+    expectedSequence = expectedSequence.join(' ');
+    
+    // Update feedback text
+    const feedbackText = document.getElementById('practice-feedback-text');
     if (isCorrect) {
         feedbackText.textContent = 'Correct! Well done!';
         feedbackText.className = 'feedback-correct';
     } else {
-        feedbackText.innerHTML = `Incorrect. Keep practicing!<br><br>Your answer: "${userResponse}"<br>Expected: "${expectedSequence}"`;
+        feedbackText.innerHTML = `Incorrect. Please try again.<br><br>
+            Your answer: "${userResponse}"<br>
+            Expected answer (${objectSpanState.isBackward ? 'REVERSE' : 'SAME'} order): "${expectedSequence}"`;
         feedbackText.className = 'feedback-incorrect';
     }
     
-    // Display the actual practice number (start from 1 not 0)
-    objectSpanState.practiceAttempts = 1; 
+    // Update sequence info
+    document.getElementById('user-response').textContent = userResponse;
+    document.getElementById('expected-response').textContent = expectedSequence;
+    
+    // Update recall mode instruction
+    const modeText = document.querySelector('#recall-mode-instruction .mode-text');
+    if (modeText) {
+        modeText.textContent = objectSpanState.isBackward ? "REVERSE" : "SAME";
+        const instruction = modeText.parentElement;
+        if (instruction) {
+            instruction.innerHTML = `Remember: Type the objects in <span class="mode-text">${objectSpanState.isBackward ? "REVERSE" : "SAME"}</span> ORDER`;
+        }
+    }
+    
+    // Display practice attempt number
+    const scoreText = document.getElementById('practice-score');
     scoreText.textContent = `Practice attempt: ${objectSpanState.practiceAttempts}`;
     
     // Show feedback screen
@@ -5325,6 +5393,19 @@ function showObjectSpanResponse() {
     // Show the response screen
     showScreen('object-span-response');
     
+    // Update mode-specific instruction
+    const modeText = document.querySelector('#recall-instruction .mode-text');
+    const instruction = document.querySelector('#recall-instruction');
+    if (modeText && instruction) {
+        if (objectSpanState.isBackward) {
+            modeText.textContent = "REVERSE";
+            instruction.innerHTML = 'Type the objects in <span class="mode-text">REVERSE</span> ORDER from how they appeared.';
+        } else {
+            modeText.textContent = "SAME";
+            instruction.innerHTML = 'Type the objects in the <span class="mode-text">SAME</span> ORDER as they appeared.';
+        }
+    }
+    
     // Get and enable the submit button
     const submitButton = document.getElementById('submitObjectResponseButton');
     if (submitButton) {
@@ -5339,12 +5420,53 @@ function showObjectSpanResponse() {
         responseInput.disabled = false; // Ensure input is enabled
         responseInput.focus(); // Set focus to input field
     }
+}
+
+function handlePracticeResponse(isCorrect) {
+    // Get the user's response and expected sequence
+    const userResponse = objectSpanState.lastResponse || '(no response)';
+    let expectedSequence = objectSpanState.sequence.map(index => 
+        OBJECT_SPAN_CONFIG.objectMapping[index].name
+    );
     
-    // Update debug info
-    const debugEl = document.getElementById('object-debug');
-    if (debugEl) {
-        debugEl.textContent = `Debug: Showing response screen for span ${objectSpanState.currentSpan}, attempt ${objectSpanState.currentAttempt}`;
+    // If in backward mode, reverse the expected sequence
+    if (objectSpanState.isBackward) {
+        expectedSequence = expectedSequence.reverse();
     }
+    expectedSequence = expectedSequence.join(' ');
+    
+    // Update feedback text
+    const feedbackText = document.getElementById('practice-feedback-text');
+    if (isCorrect) {
+        feedbackText.textContent = 'Correct! Well done!';
+        feedbackText.className = 'feedback-correct';
+    } else {
+        feedbackText.innerHTML = `Incorrect. Please try again.<br><br>
+            Your answer: "${userResponse}"<br>
+            Expected answer (${objectSpanState.isBackward ? 'REVERSE' : 'SAME'} order): "${expectedSequence}"`;
+        feedbackText.className = 'feedback-incorrect';
+    }
+    
+    // Update sequence info
+    document.getElementById('user-response').textContent = userResponse;
+    document.getElementById('expected-response').textContent = expectedSequence;
+    
+    // Update recall mode instruction
+    const modeText = document.querySelector('#recall-mode-instruction .mode-text');
+    if (modeText) {
+        modeText.textContent = objectSpanState.isBackward ? "REVERSE" : "SAME";
+        const instruction = modeText.parentElement;
+        if (instruction) {
+            instruction.innerHTML = `Remember: Type the objects in <span class="mode-text">${objectSpanState.isBackward ? "REVERSE" : "SAME"}</span> ORDER`;
+        }
+    }
+    
+    // Display practice attempt number
+    const scoreText = document.getElementById('practice-score');
+    scoreText.textContent = `Practice attempt: ${objectSpanState.practiceAttempts}`;
+    
+    // Show feedback screen
+    showScreen('object-span-practice-feedback');
 }
 
 function submitObjectSpanResponse() {
@@ -5369,9 +5491,17 @@ function submitObjectSpanResponse() {
     }
     
     // Get expected sequence of object names
-    const expectedSequence = objectSpanState.sequence.map(index => 
+    let expectedSequence = objectSpanState.sequence.map(index => 
         OBJECT_SPAN_CONFIG.objectMapping[index].name
-    ).join(' ');
+    );
+    
+    // If in backward mode, reverse the expected sequence
+    if (objectSpanState.isBackward) {
+        expectedSequence = expectedSequence.reverse();
+    }
+    
+    // Join the sequence into a string
+    expectedSequence = expectedSequence.join(' ');
     
     // More flexible comparison:
     // 1. Normalize both strings by removing extra spaces
