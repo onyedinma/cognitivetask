@@ -2023,3 +2023,97 @@ button:hover {
     margin: 20px 0;
     font-weight: bold;
 }
+
+/* Digit Span Example Interactive Styles */
+#digit-span-example-interactive .digit {
+    font-size: 120px;
+    font-weight: bold;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 250px;
+    margin: 20px 0;
+}
+
+#digit-span-example-interactive input {
+    font-size: 24px;
+    padding: 10px;
+    width: 200px;
+    text-align: center;
+    margin: 10px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+}
+
+#digit-span-example-interactive input:focus {
+    border-color: #4a90e2;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+#example-feedback {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+#example-feedback.hidden {
+    display: none;
+}
+
+#example-feedback p {
+    margin: 10px 0;
+    font-size: 18px;
+}
+
+#example-user-response,
+#example-correct-response {
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Digit Span Intro Screen Styles */
+#digit-span-intro {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+#digit-span-instructions {
+    margin: 20px 0;
+}
+
+#digit-span-instructions ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+#digit-span-instructions li {
+    margin: 10px 0;
+    font-size: 18px;
+}
+
+.button-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.button-container .button {
+    min-width: 200px;
+    padding: 15px 30px;
+    font-size: 18px;
+}

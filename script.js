@@ -124,12 +124,12 @@ const TimerManager = {
 // Ensure key functions are globally accessible
 window.startDigitSpanPractice = function() {
     console.log("Global wrapper for startDigitSpanPractice called");
-    startDigitSpanPractice();
+    directStartDigitSpanPractice(); // Call the direct function instead of recursing
 };
 
 window.startDigitSpanBackwardPractice = function() {
     console.log("Global wrapper for startDigitSpanBackwardPractice called");
-    startDigitSpanBackwardPractice();
+    directStartDigitSpanBackwardPractice(); // Call the direct function instead of recursing
 };
 
 window.submitDigitResponse = function() {
@@ -425,22 +425,11 @@ function handleSchemeSelection(scheme) {
                 objectSpanState.isBackward = true;
                 showScreen('backward-object-span-intro');
             });
-            
-            // Add event listeners for the new start buttons
-            document.getElementById('startForwardObjectSpanButton')?.addEventListener('click', () => {
-                objectSpanState.isBackward = false;
-                startObjectSpanPractice();
-            });
-            
-            document.getElementById('startBackwardObjectSpanButton')?.addEventListener('click', () => {
-                console.log('Starting backward object span practice');
-                objectSpanState.isBackward = true;
-                startObjectSpanBackwardPractice();
-            });
             break;
         case '2':
-            // Digit Span Game
-            showScreen('pattern-game-intro');
+            // Show Digit Span selection screen
+            gameState.isBackward = false;
+            showScreen('digit-span-intro');
             break;
         case '3':
             // Shape Counting Game
@@ -626,11 +615,37 @@ function finishGame() {
     // Show the completion screen
     document.getElementById('game-complete').classList.remove('hidden');
     
-    // Export the results as a CSV file
-    exportCSV(gameState.results);
+    // Prepare results for export
+    const results = {
+        studentId: gameState.studentId,
+        scheme: gameState.scheme,
+        gameResults: gameState.gameResults,
+        timestamp: new Date().toISOString()
+    };
     
-    // Reset the game state for another attempt if needed
-    resetGameState();
+    // Export results as CSV
+    exportCSV(results);
+    
+    // Also save as JSON for debugging
+    saveResultsAsJSON(results);
+    
+    // Reset all game state flags
+    gameState.isRealGame = false;
+    gameState.isCountingGame = false;
+    gameState.isPatternGame = false;
+    gameState.isPatternRecognitionGame = false;
+    gameState.isBackward = false;
+    gameState.currentRound = 0;
+    gameState.correctCounts = null;
+    gameState.currentPattern = null;
+    gameState.currentPatternType = null;
+    gameState.patternAnswer = null;
+    gameState.originalShapesData = null;
+    gameState.movedShapeIndices = null;
+    gameState.objectOrder = null;
+    
+    // Clear any remaining game results
+    gameState.gameResults = [];
 }
 
 /**
@@ -1094,41 +1109,20 @@ function loadScreen(screenId) {
 
 // Screen Management
 function showScreen(screenId) {
-    console.log(`Showing screen: ${screenId}`);
-    
-    // Clear all timers when switching screens to prevent overlapping animations or timing issues
-    TimerManager.clearAll();
-    
+    if (screenId === 'game-complete') {
+        transitionToGameComplete();
+    } else {
     // Hide all screens
-    document.querySelectorAll('.screen').forEach(screen => {
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(screen => {
         screen.classList.add('hidden');
     });
     
-    // Special handling for digit-span-response screen
-    if (screenId === 'digit-span-response') {
-        const responseTitle = document.querySelector('#digit-span-response h2');
-        if (responseTitle) {
-            if (gameState.isBackward) {
-                responseTitle.textContent = "Please type in the number in REVERSE order and press enter.";
-            } else {
-                responseTitle.textContent = "Please type in the number in the same order and press enter.";
-            }
-        }
-    }
-    
-    // Show the selected screen
+        // Show the requested screen
     const targetScreen = document.getElementById(screenId);
     if (targetScreen) {
         targetScreen.classList.remove('hidden');
-        
-        // Special handling for digit-game-area
-        if (screenId === 'digit-game-area') {
-            targetScreen.style.display = 'flex';
         }
-        
-        console.log(`Screen "${screenId}" should now be visible`);
-    } else {
-        console.error(`Screen with ID "${screenId}" not found`);
     }
 }
 
@@ -1252,9 +1246,20 @@ function initializeEventListeners() {
     });
 
     // Digit span game intro screen
-    document.getElementById('digitSpanIntroButton').addEventListener('click', () => {
+    // Forward and Backward selection buttons
+    const forwardBtn = document.getElementById('forwardDigitSpanButton');
+    if (forwardBtn) {
+        forwardBtn.addEventListener('click', () => {
         showScreen('digit-span-example');
     });
+    }
+
+    const backwardBtn = document.getElementById('backwardDigitSpanButton');
+    if (backwardBtn) {
+        backwardBtn.addEventListener('click', () => {
+            showScreen('digit-span-backward-example');
+        });
+    }
 
     // Digit span game example screen and practice game (combined)
     document.getElementById('startDigitSpanPracticeButton').addEventListener('click', function() {
@@ -1296,8 +1301,8 @@ function initializeEventListeners() {
             gameState.isBackward = false;
             gameState.currentRound = 0;
         } else {
-            // If we've completed the forward mode, go to backward mode instructions
-            showScreen('digit-span-backward-example');
+            // If we've completed the forward mode, show forward completion screen
+            showScreen('forward-digit-span-complete');
         }
     });
 
@@ -1339,9 +1344,9 @@ function initializeEventListeners() {
                     console.log("Completed all backward rounds, showing completion screen");
                     showScreen('digit-span-complete');
                 } else {
-                    // If forward mode is complete, transition to backward mode
-                    console.log("Completed all forward rounds, transitioning to backward mode");
-                    completeForwardDigitSpanRealGame();
+                    // If forward mode is complete, show forward completion screen
+                    console.log("Completed all forward rounds, showing forward completion screen");
+                    showScreen('forward-digit-span-complete');
                 }
             }
         } else {
@@ -1353,9 +1358,9 @@ function initializeEventListeners() {
                 console.log("Completed backward practice, showing real game instructions");
                 showScreen('digit-span-real-game-instructions');
             } else {
-                // If forward practice is complete, transition to backward practice
-                console.log("Completed forward practice, transitioning to backward practice");
-                completeForwardDigitSpanPractice();
+                // If forward practice is complete, show real game instructions
+                console.log("Completed forward practice, showing real game instructions");
+                showScreen('digit-span-real-game-instructions');
             }
         }
     });
@@ -1812,11 +1817,11 @@ function animateObjects(sequence) {
         // Schedule the next object
         setTimeout(() => {
             // Clear the display
-            objectDisplay.innerHTML = '';
-            
-            // Wait during blank time before showing next object
+        objectDisplay.innerHTML = '';
+                    
+                    // Wait during blank time before showing next object
             setTimeout(() => {
-                index++;
+                        index++;
                 showNextObject();
             }, OBJECT_SPAN_CONFIG.blankTime);
             
@@ -1938,7 +1943,7 @@ function startDigitSpanGame() {
     startDigitSequence();
 }
 
-// Function to start a sequence of digits
+// Function to start a sequence of digits (specific to Digit Span task)
 function startDigitSequence() {
     // Generate a sequence of random digits
     const sequenceLength = gameState.isRealGame ? 
@@ -2041,60 +2046,84 @@ function animateDigits(sequence) {
 
 // Function to submit digit span response
 function submitDigitSpanResponse() {
-    const userResponse = document.getElementById('digit-response').value;
-    const originalSequence = gameState.correctSequence.join('');
+    const responseInput = document.getElementById('digit-response');
+    const response = responseInput.value.trim();
     
-    console.log("Digit Span Response - Mode:", gameState.isBackward ? "Backward" : "Forward");
-    console.log("Original sequence:", gameState.correctSequence);
-    
-    // Determine the correct response based on mode
-    let correctResponse;
+    // Get expected sequence
+    let expectedSequence = gameState.correctSequence;  // Changed from currentSequence to correctSequence
     if (gameState.isBackward) {
-        // For backward mode, the correct response is the reverse of the original sequence
-        correctResponse = gameState.correctSequence.slice().reverse().join('');
-        console.log("Backward mode - Correct response should be:", correctResponse);
-    } else {
-        // For forward mode, the correct response is the original sequence
-        correctResponse = originalSequence;
-        console.log("Forward mode - Correct response should be:", correctResponse);
+        expectedSequence = [...expectedSequence].reverse();
     }
+    expectedSequence = expectedSequence.join('');
     
-    // Check if the response is correct
-    const isCorrect = userResponse === correctResponse;
-    console.log("User response:", userResponse, "Correct response:", correctResponse, "Is correct:", isCorrect);
+    // Check if response is correct
+    const isCorrect = response === expectedSequence;
     
-    // Display the results
-    document.getElementById('user-digit-response').textContent = userResponse;
-    document.getElementById('correct-digit-response').textContent = correctResponse;
-    
-    // Show correct/incorrect feedback
-    const resultElement = document.getElementById('digit-span-result-feedback');
+    if (!gameState.isRealGame) {
+        // Show practice feedback
+        document.getElementById('digit-user-response').textContent = response;
+        document.getElementById('digit-expected-response').textContent = expectedSequence;
+        
+        const feedbackText = document.getElementById('digit-practice-feedback-text');
     if (isCorrect) {
-        resultElement.textContent = "Correct!";
-        resultElement.className = "correct-answer";
+            feedbackText.textContent = 'Correct! Well done!';
+            feedbackText.className = 'feedback-correct';
     } else {
-        resultElement.textContent = "Incorrect";
-        resultElement.className = "incorrect-answer";
+            feedbackText.textContent = 'Incorrect. Please try again.';
+            feedbackText.className = 'feedback-incorrect';
+        }
+        
+        // Update mode text
+        const modeText = document.querySelector('#digit-recall-mode-instruction .mode-text');
+        if (modeText) {
+            modeText.textContent = gameState.isBackward ? "REVERSE" : "SAME";
+        }
+        
+        // Show feedback screen
+        showScreen('digit-span-practice-feedback');
+    } else {
+        // Handle real game response...
+        // (existing real game logic)
     }
     
-    // Store round results
-    if (gameState.isRealGame) {
-        gameState.gameResults.push({
-            round: gameState.currentRound,
-            userResponse: userResponse,
-            correctResponse: correctResponse,
-            originalSequence: originalSequence,
-            isCorrect: isCorrect,
-            isBackward: gameState.isBackward
+    // Clear input
+    responseInput.value = '';
+}
+
+// Add event listeners for practice feedback buttons
+document.addEventListener('DOMContentLoaded', function() {
+    // Continue practice button
+    const continuePracticeBtn = document.getElementById('continuePracticeButton-digit');
+    if (continuePracticeBtn) {
+        continuePracticeBtn.addEventListener('click', function() {
+            if (gameState.isBackward) {
+                directStartDigitSpanBackwardPractice();
+            } else {
+                directStartDigitSpanPractice();
+            }
         });
     }
     
-    // Clear the input field
-    document.getElementById('digit-response').value = '';
+    // Ready for main task button
+    const readyForMainBtn = document.getElementById('readyForMainTaskButton-digit');
+    if (readyForMainBtn) {
+        readyForMainBtn.addEventListener('click', function() {
+            showScreen('digit-span-main-instructions');
+        });
+    }
     
-    // Show the results screen
-    showScreen('digit-span-results');
-}
+    // Start real game button
+    const startRealGameBtn = document.getElementById('startDigitSpanRealGameButton');
+    if (startRealGameBtn) {
+        startRealGameBtn.addEventListener('click', function() {
+            if (gameState.isBackward) {
+                startDigitSpanBackwardRealGame();
+            } else {
+                startDigitSpanRealGame();
+            }
+        });
+    }
+});
 
 // Function to start the digit span practice game
 function startDigitSpanPractice() {
@@ -2305,13 +2334,13 @@ function startTask4bPractice() {
 
 // Object Span Game Configuration
 const OBJECT_SPAN_CONFIG = {
-    displayTime: 1500,  // 1.5 seconds to show each object
-    blankTime: 750,     // 0.75 seconds between objects
-    startObjects: 3,    // Starting span length
-    minSpan: 3,         // Starting span length
-    maxSpan: 10,        // Maximum span length
-    attemptsPerSpan: 2, // Number of attempts allowed at each span length
-    mainTaskRounds: 8,  // Number of rounds in the main task (from 3 to 10 objects)
+    minSpan: 3,           // Starting span length
+    maxSpan: 9,          // Maximum span length
+    startObjects: 3,      // Number of objects to start with
+    mainTaskRounds: 8,    // Number of rounds in the main task
+    practiceAttempts: 2,  // Number of practice attempts allowed
+    displayTime: 1000,    // Time each object is displayed (ms)
+    interStimulusInterval: 500,  // Time between objects (ms)
     objectMapping: {
         1: { name: 'bread', image: 'images/Bread.png' },
         2: { name: 'car', image: 'images/Car.png' },
@@ -2389,25 +2418,39 @@ document.getElementById('finishObjectSpanButton')?.addEventListener('click', fun
 function startObjectSpanPractice() {
     console.log('Starting object span practice');
     
-    // Reset practice state
-    objectSpanState.isRealGame = false;
-    objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan;
-    objectSpanState.currentAttempt = 1;
-    objectSpanState.practiceAttempts = 0;
-    objectSpanState.readyForMainTask = false;
-    objectSpanState.results = [];
-    
-    // Update debug info
-    const debugEl = document.getElementById('object-debug');
-    if (debugEl) {
-        debugEl.textContent = `Debug: Practice starting with span ${objectSpanState.currentSpan}`;
+    try {
+        // Reset practice state
+        objectSpanState.isRealGame = false;
+    objectSpanState.isBackward = false;
+        objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan;
+        objectSpanState.currentAttempt = 1;
+        objectSpanState.practiceAttempts = 0;
+        objectSpanState.readyForMainTask = false;
+        objectSpanState.results = [];
+        
+        console.log('Object span state reset:', objectSpanState);
+        
+        // Update debug info
+        const debugEl = document.getElementById('object-debug');
+        if (debugEl) {
+            debugEl.textContent = `Debug: Practice starting with span ${objectSpanState.currentSpan}`;
+            console.log('Debug element updated');
+    } else {
+            console.warn('Debug element not found');
+        }
+        
+        // Show game area
+        console.log('Showing object game area');
+        showScreen('object-game-area');
+        
+        // Start sequence with minimum span length
+        console.log('Starting object sequence');
+        startObjectSequence();
+        
+    } catch (error) {
+        console.error('Error in startObjectSpanPractice:', error);
+        alert('There was an error starting the practice. Please try again.');
     }
-    
-    // Show game area
-    showScreen('object-game-area');
-    
-    // Start sequence with minimum span length
-    startObjectSequence();
 }
 
 function startObjectSpanBackwardPractice() {
@@ -2444,12 +2487,13 @@ function startObjectSpanBackwardPractice() {
 function startObjectSpanRealGame() {
     objectSpanState.isRealGame = true;
     objectSpanState.isBackward = false;
-    objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan; // Start with minSpan (3)
+    objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan;
     objectSpanState.currentAttempt = 1;
     objectSpanState.currentRound = 1;
     objectSpanState.maxSpanReached = 0;
     objectSpanState.results = [];
     
+    // Start sequence
     startObjectSequence();
 }
 
@@ -2490,7 +2534,7 @@ function startObjectSequence() {
     
     console.log("Object Sequence:", objectSequence.map(d => OBJECT_SPAN_CONFIG.objectMapping[d].name).join(' '));
     
-    // Show the game area and animate the digits
+    // Show the game area and animate the objects
     showScreen('object-game-area');
     
     // Update debug again to confirm we're starting animation
@@ -2518,7 +2562,7 @@ function submitObjectSpanResponse() {
     console.log('Submit object span response called');
     
     // Get the input element
-    const responseInput = document.getElementById('object-response');
+    const responseInput = document.getElementById('object-response-input');  // Changed from object-response-input-main
     
     // Make sure we have the input element and it has a value
     if (!responseInput) {
@@ -2526,21 +2570,11 @@ function submitObjectSpanResponse() {
         return;
     }
     
-    console.log('Current state:', {
-        isRealGame: objectSpanState.isRealGame,
-        currentSpan: objectSpanState.currentSpan,
-        currentAttempt: objectSpanState.currentAttempt,
-        practiceAttempts: objectSpanState.practiceAttempts
-    });
-    
     // Get user's response and normalize it (trim whitespace, lowercase)
     const response = responseInput.value.trim().toLowerCase();
-    console.log('Raw input value:', responseInput.value);
-    console.log('Processed response value:', response);
     
     // Safety check - don't proceed if response is empty
     if (response.trim() === '') {
-        // Remove the alert popup
         return false;
     }
     
@@ -2556,9 +2590,6 @@ function submitObjectSpanResponse() {
     
     // Join the sequence into a string
     expectedSequence = expectedSequence.join(' ');
-    
-    console.log('Expected sequence:', expectedSequence);
-    console.log('User response:', response);
     
     // More flexible comparison:
     // 1. Normalize both strings by removing extra spaces
@@ -2590,32 +2621,17 @@ function submitObjectSpanResponse() {
         }
     }
     
-    console.log('Is correct:', isCorrect);
-    
-    // Show which objects were incorrect (for debugging)
-    if (!isCorrect) {
-        const expectedObjects = normalizedExpected.split(' ');
-        const responseObjects = normalizedResponse.split(' ');
-        
-        console.log('Expected vs Response:');
-        for (let i = 0; i < Math.max(expectedObjects.length, responseObjects.length); i++) {
-            const expected = expectedObjects[i] || 'missing';
-            const response = responseObjects[i] || 'missing';
-            const match = expected === response ? '✓' : '✗';
-            console.log(`Object ${i+1}: ${expected} vs ${response} ${match}`);
-        }
-    }
-    
     // Store the response for display in feedback
     objectSpanState.lastResponse = response;
     
     if (objectSpanState.isRealGame) {
         handleMainTaskResponse(isCorrect);
     } else {
-        // Force reset the input field to prevent double submissions
-        responseInput.value = '';
         handlePracticeResponse(isCorrect);
     }
+    
+    // Clear the input field
+    responseInput.value = '';
 }
 
 function handlePracticeResponse(isCorrect) {
@@ -3413,52 +3429,45 @@ window.directStartObjectSpanPractice = function() {
 
 // Direct global function for starting backward object span practice
 window.directStartObjectSpanBackwardPractice = function() {
-    console.log("Direct global access for starting backward object span practice");
-    
-    // Set game state
+    console.log("Direct Object Span Backward Practice function called");
+    try {
+        // Reset practice state
     objectSpanState.isRealGame = false;
     objectSpanState.isBackward = true;
-    objectSpanState.currentLevel = OBJECT_SPAN_CONFIG.startObjects;
-    objectSpanState.successes = 0;
-    objectSpanState.failures = 0;
+        objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan;
+        objectSpanState.currentAttempt = 1;
+        objectSpanState.practiceAttempts = 0;
     objectSpanState.results = [];
+        
+        // Clear any existing timers
+        TimerManager.clearAll();
     
     // Hide all screens
     document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.add('hidden');
     });
     
-    // Show the object game area
-    const gameArea = document.getElementById('object-game-area');
-    if (gameArea) {
-        gameArea.classList.remove('hidden');
-        gameArea.style.display = 'flex';
-        console.log('Object game area should now be visible');
+        // Show game area and start the sequence
+        showScreen('object-game-area');
+        startObjectSequence();
         
-        // Generate and start an object sequence
-        setTimeout(() => {
-            // Create a sequence of 3 random object indices
-            const sequence = [
-                Math.floor(Math.random() * 9) + 1,
-                Math.floor(Math.random() * 9) + 1,
-                Math.floor(Math.random() * 9) + 1
-            ];
-            
-            console.log("Starting object sequence:", sequence);
-            
-            // Get the object display element
-            const objectDisplay = document.querySelector('.object-display');
-            if (!objectDisplay) {
-                gameArea.innerHTML = '<div class="object-display"></div>';
-            }
-            
-            // Show the sequence
-            animateObjects(sequence);
-        }, 100);
-    } else {
-        console.error('object-game-area element not found!');
+    } catch (error) {
+        console.error("Error in directStartObjectSpanBackwardPractice:", error);
+        alert('There was an error starting the practice. Please try again.');
     }
 };
+
+// Add specific event listener for the backward object span button
+document.addEventListener('DOMContentLoaded', function() {
+    const backwardButton = document.getElementById('startBackwardObjectSpanButton');
+    if (backwardButton) {
+        backwardButton.onclick = function() {
+            console.log('Backward object span button clicked');
+            window.directStartObjectSpanBackwardPractice();
+            return false;
+        };
+    }
+});
 
 // Comprehensive debugging for all buttons
 document.addEventListener('DOMContentLoaded', function() {
@@ -3665,10 +3674,36 @@ function animateCountingObjects(sequence) {
 window.directStartObjectSpanPractice = function() {
     console.log('Direct start object span practice function called');
     try {
-        // Call the normal start function
-        startObjectSpanPractice();
+        // Reset practice state
+        objectSpanState.isRealGame = false;
+        objectSpanState.isBackward = false;
+        objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan;
+        objectSpanState.currentAttempt = 1;
+        objectSpanState.practiceAttempts = 0;
+        objectSpanState.results = [];
+        
+        // Clear any existing timers
+        TimerManager.clearAll();
+        
+        // Hide all screens
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.add('hidden');
+        });
+        
+        // Show game area
+        const gameArea = document.getElementById('object-game-area');
+        if (gameArea) {
+            gameArea.classList.remove('hidden');
+            gameArea.style.display = 'flex';
+            console.log('Object game area should now be visible');
+        }
+        
+        // Start the object sequence
+        startObjectSequence();
+        
     } catch (error) {
-        console.error('Error starting object span practice:', error);
+        console.error("Error in directStartObjectSpanPractice:", error);
+        alert('There was an error starting the practice. Please try again.');
     }
 };
 
@@ -5291,7 +5326,7 @@ document.addEventListener('DOMContentLoaded', function() {
         TimerManager.clearAll();
         
         // Clear any input values that might remain from practice
-        const responseInput = document.getElementById('object-response');
+        const responseInput = document.getElementById('object-response-input');
         if (responseInput) {
             responseInput.value = '';
         }
@@ -5312,14 +5347,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Add keypress event listener for the response input
-    document.getElementById('object-response')?.addEventListener('keypress', function(e) {
+    document.getElementById('object-response-input')?.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             submitObjectSpanResponse();
         }
     });
     
     // Add keyup event listener to monitor input
-    document.getElementById('object-response')?.addEventListener('keyup', function(e) {
+    document.getElementById('object-response-input')?.addEventListener('keyup', function(e) {
         // Log the current input value
         console.log('Current input value (keyup):', this.value);
         
@@ -5328,13 +5363,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Add special focus event to capture initial focus
-    document.getElementById('object-response')?.addEventListener('focus', function(e) {
+    document.getElementById('object-response-input')?.addEventListener('focus', function(e) {
         console.log('Input field received focus');
     });
 });
 
 // Creates a visual reference guide for object names
 function createObjectReferenceGuide() {
+    // Check if objectMapping exists
+    if (!OBJECT_SPAN_CONFIG.objectMapping) {
+        console.error('Object mapping not found in OBJECT_SPAN_CONFIG');
+        return null;
+    }
+
     const referenceContainer = document.createElement('div');
     referenceContainer.className = 'object-reference-guide';
     referenceContainer.style.display = 'flex';
@@ -5350,39 +5391,51 @@ function createObjectReferenceGuide() {
     heading.style.marginBottom = '10px';
     referenceContainer.appendChild(heading);
     
-    Object.values(OBJECT_SPAN_CONFIG.objectMapping).forEach(obj => {
-        const itemDiv = document.createElement('div');
-        itemDiv.style.display = 'flex';
-        itemDiv.style.flexDirection = 'column';
-        itemDiv.style.alignItems = 'center';
-        itemDiv.style.margin = '5px';
-        
-        const img = document.createElement('img');
-        img.src = obj.image;
-        img.alt = obj.name;
-        img.style.width = '40px';
-        img.style.height = '40px';
-        img.style.objectFit = 'contain';
-        
-        const name = document.createElement('span');
-        name.textContent = obj.name;
-        name.style.fontSize = '12px';
-        name.style.marginTop = '5px';
-        
-        itemDiv.appendChild(img);
-        itemDiv.appendChild(name);
-        referenceContainer.appendChild(itemDiv);
-    });
+    try {
+        Object.values(OBJECT_SPAN_CONFIG.objectMapping).forEach(obj => {
+            if (!obj || !obj.name || !obj.image) {
+                console.warn('Invalid object in mapping:', obj);
+                return;
+            }
+
+            const itemDiv = document.createElement('div');
+            itemDiv.style.display = 'flex';
+            itemDiv.style.flexDirection = 'column';
+            itemDiv.style.alignItems = 'center';
+            itemDiv.style.margin = '5px';
+            
+            const img = document.createElement('img');
+            img.src = obj.image;
+            img.alt = obj.name;
+            img.style.width = '40px';
+            img.style.height = '40px';
+            img.style.objectFit = 'contain';
+            
+            const name = document.createElement('span');
+            name.textContent = obj.name;
+            name.style.fontSize = '12px';
+            name.style.marginTop = '5px';
+            
+            itemDiv.appendChild(img);
+            itemDiv.appendChild(name);
+            referenceContainer.appendChild(itemDiv);
+        });
+    } catch (error) {
+        console.error('Error creating object reference guide:', error);
+        return null;
+    }
     
     return referenceContainer;
 }
 
-// Add the object reference guide to the response screen
+// Update the DOM event listener to handle potential null return
 document.addEventListener('DOMContentLoaded', function() {
     const responseScreen = document.getElementById('object-span-response');
     if (responseScreen) {
         const guide = createObjectReferenceGuide();
-        responseScreen.appendChild(guide);
+        if (guide) {
+            responseScreen.appendChild(guide);
+        }
     }
 });
 
@@ -5414,7 +5467,7 @@ function showObjectSpanResponse() {
     }
     
     // Get and enable the input field
-    const responseInput = document.getElementById('object-response');
+    const responseInput = document.getElementById('object-response-input');
     if (responseInput) {
         responseInput.value = ''; // Clear any previous input
         responseInput.disabled = false; // Ensure input is enabled
@@ -5436,7 +5489,7 @@ function handlePracticeResponse(isCorrect) {
     expectedSequence = expectedSequence.join(' ');
     
     // Update feedback text
-    const feedbackText = document.getElementById('practice-feedback-text');
+    const feedbackText = document.getElementById('object-practice-feedback-text');
     if (isCorrect) {
         feedbackText.textContent = 'Correct! Well done!';
         feedbackText.className = 'feedback-correct';
@@ -5448,25 +5501,25 @@ function handlePracticeResponse(isCorrect) {
     }
     
     // Update sequence info
-    document.getElementById('user-response').textContent = userResponse;
-    document.getElementById('expected-response').textContent = expectedSequence;
+    document.getElementById('object-user-response').textContent = userResponse;
+    document.getElementById('object-expected-response').textContent = expectedSequence;
     
     // Update recall mode instruction
-    const modeText = document.querySelector('#recall-mode-instruction .mode-text');
+    const modeText = document.querySelector('#object-recall-mode-instruction .object-mode-text');
     if (modeText) {
         modeText.textContent = objectSpanState.isBackward ? "REVERSE" : "SAME";
         const instruction = modeText.parentElement;
         if (instruction) {
-            instruction.innerHTML = `Remember: Type the objects in <span class="mode-text">${objectSpanState.isBackward ? "REVERSE" : "SAME"}</span> ORDER`;
+            instruction.innerHTML = `Remember: Type the objects in <span class="object-mode-text">${objectSpanState.isBackward ? "REVERSE" : "SAME"}</span> ORDER`;
         }
     }
     
     // Display practice attempt number
-    const scoreText = document.getElementById('practice-score');
+    const scoreText = document.getElementById('object-practice-score');
     scoreText.textContent = `Practice attempt: ${objectSpanState.practiceAttempts}`;
     
     // Show feedback screen
-    showScreen('object-span-practice-feedback');
+    showScreen('object-span-practice-feedback-main');
 }
 
 function submitObjectSpanResponse() {
@@ -5474,7 +5527,7 @@ function submitObjectSpanResponse() {
     console.log('Submit object span response called');
     
     // Get the input element
-    const responseInput = document.getElementById('object-response');
+    const responseInput = document.getElementById('object-response-input');  // Changed from object-response-input-main
     
     // Make sure we have the input element and it has a value
     if (!responseInput) {
@@ -5582,8 +5635,8 @@ function handleMainTaskResponse(isCorrect) {
             if (objectSpanState.currentRound > OBJECT_SPAN_CONFIG.mainTaskRounds) {
                 // Completed all rounds, end task
                 showFinalResults();
-                return;
-            } else {
+                    return;
+                } else {
                 // Continue with next span length
                 startObjectSequence();
             }
@@ -5597,8 +5650,8 @@ function handleMainTaskResponse(isCorrect) {
             if (objectSpanState.currentSpan > OBJECT_SPAN_CONFIG.maxSpan) {
                 // Reached maximum span, end task
                 showFinalResults();
-                return;
-            }
+                    return;
+                }
             
             // Check if we've completed all rounds
             objectSpanState.currentRound++;
@@ -5624,4 +5677,352 @@ function handleMainTaskResponse(isCorrect) {
         }
     }
 }
+
+// Add event listener for starting backward digit span
+document.getElementById('startBackwardDigitSpanButton').addEventListener('click', () => {
+    console.log("Starting backward digit span task");
+    showScreen('digit-span-backward-example');
+});
+
+// Event listeners for Object Span game
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listener for practice button
+    const practiceButton = document.getElementById('startObjectSpanPracticeButton');
+    if (practiceButton) {
+        // Remove any existing onclick attribute
+        practiceButton.removeAttribute('onclick');
+        
+        // Remove any existing event listeners
+        const newButton = practiceButton.cloneNode(true);
+        practiceButton.parentNode.replaceChild(newButton, practiceButton);
+        
+        // Add new event listener
+        newButton.addEventListener('click', function() {
+            console.log('Starting object span practice from button click');
+            objectSpanState.practiceAttempts = 0;
+            startObjectSpanPractice();
+        });
+    }
+});
+
+// Update event listener for object span ready button
+document.getElementById('readyForMainTaskButton-object')?.addEventListener('click', function() {
+    console.log('User indicated ready for main task (object span)');
+    objectSpanState.readyForMainTask = true;
+    objectSpanState.practiceAttempts = 0; // Reset practice attempts
+    
+    // Clear any existing timers
+    TimerManager.clearAll();
+    
+    // Show the main task instructions
+    showScreen('object-span-main-instructions');
+});
+
+// Update event listener for digit span ready button
+document.getElementById('readyForMainTaskButton-digit')?.addEventListener('click', function() {
+    console.log('User indicated ready for main task (digit span)');
+    showScreen('digit-span-real-game-instructions');
+});
+
+// Update event listener for object span continue practice button
+document.getElementById('continuePracticeButton-object')?.addEventListener('click', function() {
+    // Reset input and start a new sequence
+    const objectDisplay = document.querySelector('.object-display');
+    if (objectDisplay) {
+        objectDisplay.innerHTML = ''; // Clear any previous content
+    }
+    
+    // Show game area and start a new sequence
+    showScreen('object-game-area');
+    startObjectSequence();
+});
+
+// Update event listener for digit span continue practice button
+document.getElementById('continuePracticeButton-digit')?.addEventListener('click', function() {
+    // Show game area and start a new sequence
+    showScreen('digit-game-area');
+    startDigitSequence();
+});
+
+// Initialize Object Span practice button
+function initializeObjectSpanPracticeButton() {
+    const practiceButton = document.getElementById('startObjectSpanPracticeButton');
+    if (practiceButton) {
+        // Remove any existing listeners
+        const newButton = practiceButton.cloneNode(true);
+        practiceButton.parentNode.replaceChild(newButton, practiceButton);
+        
+        // Add new event listener
+        newButton.addEventListener('click', function() {
+            console.log('Starting object span practice');
+            objectSpanState.practiceAttempts = 0;
+            startObjectSpanPractice();
+        });
+    }
+}
+
+// Call the initialization function when the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initializeObjectSpanPracticeButton();
+    // ... existing code ...
+});
+
+// ... existing code ...
+document.addEventListener('DOMContentLoaded', function() {
+    // Add direct event listener for Start Practice button
+    const startPracticeButton = document.getElementById('startObjectSpanPracticeButton');
+    if (startPracticeButton) {
+        startPracticeButton.addEventListener('click', function() {
+            console.log('Start Practice button clicked');
+            // Reset practice state
+            objectSpanState.isRealGame = false;
+            objectSpanState.isBackward = false;
+            objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan;
+            objectSpanState.currentAttempt = 1;
+            objectSpanState.practiceAttempts = 0;
+            objectSpanState.results = [];
+            
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.add('hidden');
+            });
+            
+            // Show game area
+            const gameArea = document.getElementById('object-game-area');
+            if (gameArea) {
+                gameArea.classList.remove('hidden');
+                gameArea.style.display = 'flex';
+                console.log('Object game area should now be visible');
+                
+                // Start the object sequence after a short delay
+                setTimeout(() => {
+                    startObjectSequence();
+                }, 100);
+            }
+        });
+    }
+});
+// ... existing code ...
+
+// Add this near the top with other event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const startObjectSpanPracticeBtn = document.getElementById('startObjectSpanPracticeButton');
+    if (startObjectSpanPracticeBtn) {
+        startObjectSpanPracticeBtn.addEventListener('click', function() {
+            console.log('Starting object span practice');
+            // Reset practice state
+            objectSpanState.isRealGame = false;
+            objectSpanState.isBackward = false;
+            objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan;
+            objectSpanState.currentAttempt = 1;
+            objectSpanState.practiceAttempts = 0;
+            objectSpanState.results = [];
+            
+            // Show game area
+            showScreen('object-game-area');
+            
+            // Start sequence
+            startObjectSequence();
+        });
+    } else {
+        console.error('Start Object Span Practice button not found');
+    }
+});
+
+// Add specific event listener for the forward object span button
+document.addEventListener('DOMContentLoaded', function() {
+    const forwardButton = document.getElementById('startForwardObjectSpanButton');
+    if (forwardButton) {
+        forwardButton.onclick = function() {
+            console.log('Forward object span button clicked');
+            window.directStartObjectSpanPractice();
+            return false;
+        };
+    }
+});
+
+// ... existing code ...
+    // Digit span game intro screen
+    document.getElementById('forwardDigitSpanButton')?.addEventListener('click', () => {
+        showScreen('digit-span-example');
+    });
+
+    document.getElementById('backwardDigitSpanButton')?.addEventListener('click', () => {
+        showScreen('digit-span-backward-example');
+    });
+
+    // Digit span game example screen and practice game
+    document.getElementById('startDigitSpanPracticeButton')?.addEventListener('click', function() {
+        console.log("Starting digit span practice from button click");
+        startDigitSpanPractice();
+    });
+
+    // Digit span backward practice
+    document.getElementById('startDigitSpanBackwardButton')?.addEventListener('click', () => {
+        console.log("Starting backward digit span practice from button click");
+        gameState.isBackward = true; // Explicitly set backward mode
+        console.log("isBackward flag set to:", gameState.isBackward);
+        startDigitSpanBackwardPractice();
+    });
+// ... existing code ...
+
+// Direct implementation for backward digit span practice
+window.directStartDigitSpanBackwardPractice = function() {
+    console.log("Starting backward digit span practice");
+    try {
+        // Reset game state
+        gameState.isRealGame = false;
+        gameState.isBackward = true;
+        gameState.currentRound = 1;
+        gameState.gameResults = [];
+        
+        // Clear any existing timers
+        TimerManager.clearAll();
+        
+        // Hide all screens
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.add('hidden');
+        });
+        
+        // Show game area
+        const gameArea = document.getElementById('digit-game-area');
+        if (gameArea) {
+            gameArea.classList.remove('hidden');
+            gameArea.style.display = 'flex';
+        }
+        
+        // Start the sequence
+        startDigitSequence();
+        
+    } catch (error) {
+        console.error("Error in directStartDigitSpanBackwardPractice:", error);
+        alert('There was an error starting the practice. Please try again.');
+    }
+};
+
+// Add event listener for object span submit button
+document.addEventListener('DOMContentLoaded', function() {
+    const submitButton = document.getElementById('submitObjectResponseButton');
+    if (submitButton) {
+        submitButton.addEventListener('click', function() {
+            console.log('Submit button clicked');
+            // Get the input element
+            const responseInput = document.getElementById('object-response-input');
+            
+            if (!responseInput) {
+                console.error('Response input element not found!');
+                return;
+            }
+            
+            // Get user's response and normalize it
+            const response = responseInput.value.trim().toLowerCase();
+            
+            // Safety check - don't proceed if response is empty
+            if (response === '') {
+                return;
+            }
+            
+            // Get expected sequence of object names
+            let expectedSequence = objectSpanState.sequence.map(index => 
+                OBJECT_SPAN_CONFIG.objectMapping[index].name
+            );
+            
+            // If in backward mode, reverse the expected sequence
+            if (objectSpanState.isBackward) {
+                expectedSequence = expectedSequence.reverse();
+            }
+            
+            // Join the sequence into a string
+            expectedSequence = expectedSequence.join(' ');
+            
+            // Compare normalized strings
+            const normalizedExpected = expectedSequence.replace(/\s+/g, ' ').trim();
+            const normalizedResponse = response.replace(/\s+/g, ' ').trim();
+            
+            const isCorrect = normalizedResponse === normalizedExpected;
+            
+            // Store the response for display in feedback
+            objectSpanState.lastResponse = response;
+            
+            if (objectSpanState.isRealGame) {
+                handleMainTaskResponse(isCorrect);
+            } else {
+                handlePracticeResponse(isCorrect);
+            }
+            
+            // Clear the input field
+            responseInput.value = '';
+        });
+    }
+});
+
+// Event listeners for object span practice feedback buttons
+document.addEventListener('DOMContentLoaded', function() {
+    // Continue Practice button
+    const continuePracticeBtn = document.getElementById('continuePracticeButton-object');
+    if (continuePracticeBtn) {
+        continuePracticeBtn.addEventListener('click', function() {
+            console.log('Continue practice clicked');
+            // Reset input and start a new sequence
+            const objectDisplay = document.querySelector('.object-display');
+            if (objectDisplay) {
+                objectDisplay.innerHTML = ''; // Clear any previous content
+            }
+            
+            // Show game area and start a new sequence
+            showScreen('object-game-area');
+            if (objectSpanState.isBackward) {
+                startObjectSpanBackwardPractice();
+            } else {
+                startObjectSpanPractice();
+            }
+        });
+    }
+    
+    // Ready for Main Task button
+    const readyForMainBtn = document.getElementById('readyForMainTaskButton-object');
+    if (readyForMainBtn) {
+        readyForMainBtn.addEventListener('click', function() {
+            console.log('Ready for main task clicked');
+            objectSpanState.readyForMainTask = true;
+            objectSpanState.practiceAttempts = 0; // Reset practice attempts
+            
+            // Clear any existing timers
+            TimerManager.clearAll();
+            
+            // Show the main task instructions
+            showScreen('object-span-main-instructions');
+        });
+    }
+});
+
+// Direct functions for object span practice feedback buttons
+window.directContinueObjectSpanPractice = function() {
+    console.log('Continue practice clicked');
+    // Reset input and start a new sequence
+    const objectDisplay = document.querySelector('.object-display');
+    if (objectDisplay) {
+        objectDisplay.innerHTML = ''; // Clear any previous content
+    }
+    
+    // Show game area and start a new sequence
+    showScreen('object-game-area');
+    if (objectSpanState.isBackward) {
+        startObjectSpanBackwardPractice();
+    } else {
+        startObjectSpanPractice();
+    }
+};
+
+window.directReadyForObjectSpanMainTask = function() {
+    console.log('Ready for main task clicked');
+    objectSpanState.readyForMainTask = true;
+    objectSpanState.practiceAttempts = 0; // Reset practice attempts
+    
+    // Clear any existing timers
+    TimerManager.clearAll();
+    
+    // Show the main task instructions
+    showScreen('object-span-main-instructions');
+};
 

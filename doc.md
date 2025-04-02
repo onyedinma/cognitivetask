@@ -221,60 +221,36 @@ function animateShapes(sequence) {
 
 ### 2. Object Counting Task
 #### Overview
-Similar to the shape task but uses common objects (money, bus, face) instead of geometric shapes.
+The Object Counting Task evaluates participants' attention and working memory by requiring them to count occurrences of specific objects (e.g., $5 bills, buses, faces) presented in a sequence.
 
 #### Implementation Details
-```javascript
-const CONFIG = {
-    countingMode: { minObjects: 5, maxObjects: 10, displayTime: 1000, blankTime: 250 },
-    countingRealMode: { minObjects: 10, maxObjects: 15, displayTime: 1000, blankTime: 250, rounds: 5 }
-};
-```
+- **Practice Mode**: Displays 5-10 objects with a display time of 1000ms per object and a blank time of 250ms between objects.
+- **Real Mode**: Displays 10-15 objects with the same timing parameters. The task consists of 5 rounds.
 
 #### Core Functions
-```javascript
-function startCountingSequence() {
-    const config = gameState.isRealGame ? CONFIG.countingRealMode : CONFIG.countingMode;
-    const objectCount = {
-        '5dollar': Math.floor(Math.random() * (config.maxObjects / 3)) + 1,
-        'bus': Math.floor(Math.random() * (config.maxObjects / 3)) + 1,
-        'face': Math.floor(Math.random() * (config.maxObjects / 3)) + 1
-    };
-    
-    const sequence = [];
-    Object.entries(objectCount).forEach(([obj, count]) => {
-        for (let i = 0; i < count; i++) sequence.push(obj);
-    });
-    
-    // Shuffle sequence
-    sequence.sort(() => Math.random() - 0.5);
-    gameState.correctCounts = objectCount;
-    animateCountingObjects(sequence);
-}
+- `startCountingSequence()`: Initializes the object counting sequence.
+- `submitCountingAnswers()`: Processes and validates participant responses.
 
-function animateCountingObjects(sequence) {
-    let index = 0;
-    const shapeElement = document.querySelector('.shape');
-    const config = gameState.isRealGame ? CONFIG.countingRealMode : CONFIG.countingMode;
-    
-    function displayNext() {
-        if (index >= sequence.length) {
-            showScreen('counting-answer-form');
-            return;
-        }
-        const currentObject = sequence[index];
-        shapeElement.innerHTML = `<img src="dollarmanbus/${currentObject}.jpg" class="counting-object">`;
-        setTimeout(() => {
-            shapeElement.innerHTML = '';
-            setTimeout(() => {
-                index++;
-                displayNext();
-            }, config.blankTime);
-        }, config.displayTime);
-    }
-    displayNext();
-}
-```
+#### Flow
+1. **Practice Mode**:
+   - Display a sequence of objects.
+   - Collect participant responses.
+   - Provide feedback.
+   - Repeat if necessary.
+2. **Real Mode**:
+   - Display a longer sequence of objects.
+   - Collect participant responses.
+   - No feedback is provided during this phase.
+3. **Results**:
+   - Display the correct counts and participant responses.
+   - Calculate accuracy and score.
+
+#### Example
+- Sequence: $5 bill → bus → face → bus → $5 bill
+- Correct counts:
+  - $5 Bills: 2
+  - Buses: 2
+  - Faces: 1
 
 ### 3. Digit Span Task
 #### Overview
@@ -332,62 +308,104 @@ function animateDigits(sequence) {
 
 ### 4. Object Span Task
 #### Overview
-Similar to digit span but uses visual objects instead of numbers.
+The Object Span task measures working memory capacity using sequences of everyday objects. It includes both forward and backward recall modes.
 
 #### Implementation Details
 ```javascript
 const OBJECT_SPAN_CONFIG = {
-    displayTime: 1500,
-    blankTime: 750,
-    startObjects: 3,
-    maxObjects: 9,
-    objectMapping: {
-        1: { name: 'bread', image: 'images/Bread.png' },
-        2: { name: 'car', image: 'images/Car.png' },
-        // ... more object mappings
+    minSpan: 3,           // Starting sequence length
+    displayTime: 1000,    // Time each object is shown
+    blankTime: 500,       // Time between objects
+    objectMapping: {      // Object mappings for display
+        1: { name: 'bread', image: 'Bread.png' },
+        2: { name: 'car', image: 'Car.png' },
+        // ... other object mappings
     }
+};
+
+// Object Span State Management
+const objectSpanState = {
+    sequence: [],           // Current sequence being shown
+    isRealGame: false,      // Whether we're in the real game or practice
+    currentSpan: 3,         // Current span length
+    currentAttempt: 1,      // Current attempt at this span length
+    isBackward: false,      // Whether we're in backward recall mode
+    practiceAttempts: 0,    // Number of practice attempts
+    results: []            // Store all results
 };
 ```
 
 #### Core Functions
 ```javascript
-function startObjectSequence() {
-    const objectSequence = [];
-    for (let i = 0; i < objectSpanState.currentLevel; i++) {
-        const objectDigit = Math.floor(Math.random() * 9) + 1;
-        objectSequence.push(objectDigit);
-    }
+// Forward Object Span Practice
+window.directStartObjectSpanPractice = function() {
+    // Reset practice state
+    objectSpanState.isRealGame = false;
+    objectSpanState.isBackward = false;
+    objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan;
+    objectSpanState.currentAttempt = 1;
+    objectSpanState.practiceAttempts = 0;
+    objectSpanState.results = [];
     
-    objectSpanState.sequence = objectSequence;
-    animateObjects(objectSequence);
-}
+    // Start sequence
+    showScreen('object-game-area');
+    startObjectSequence();
+};
 
-function animateObjects(sequence) {
-    let index = 0;
-    const objectDisplay = document.querySelector('.object-display');
+// Backward Object Span Practice
+window.directStartObjectSpanBackwardPractice = function() {
+    // Reset practice state
+    objectSpanState.isRealGame = false;
+    objectSpanState.isBackward = true;
+    objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan;
+    objectSpanState.currentAttempt = 1;
+    objectSpanState.practiceAttempts = 0;
+    objectSpanState.results = [];
     
-    function showNextObject() {
-        if (index >= sequence.length) {
-            showScreen('object-span-response');
-            return;
-        }
-        const objectData = OBJECT_SPAN_CONFIG.objectMapping[sequence[index]];
-        const imgElement = new Image();
-        imgElement.src = objectData.image;
-        objectDisplay.innerHTML = '';
-        objectDisplay.appendChild(imgElement);
-        
-        setTimeout(() => {
-            objectDisplay.innerHTML = '';
-            setTimeout(() => {
-                index++;
-                showNextObject();
-            }, OBJECT_SPAN_CONFIG.blankTime);
-        }, OBJECT_SPAN_CONFIG.displayTime);
-    }
-    showNextObject();
-}
+    // Start sequence
+    showScreen('object-game-area');
+    startObjectSequence();
+};
 ```
+
+#### User Interface Elements
+```html
+<!-- Forward Object Span Button -->
+<button id="startForwardObjectSpanButton" 
+        class="button" 
+        onclick="window.directStartObjectSpanPractice(); return false;">
+    Start Practice
+</button>
+
+<!-- Backward Object Span Button -->
+<button id="startBackwardObjectSpanButton" 
+        class="button" 
+        onclick="window.directStartObjectSpanBackwardPractice(); return false;">
+    Start Practice
+</button>
+```
+
+#### Task Flow
+1. **Forward Mode**
+   - Objects are shown one at a time
+   - Participant recalls objects in the same order
+   - Sequence length increases with successful recalls
+
+2. **Backward Mode**
+   - Objects are shown one at a time
+   - Participant recalls objects in reverse order
+   - Sequence length increases with successful recalls
+
+3. **Practice Phase**
+   - Starts with 3-object sequences
+   - Provides feedback on accuracy
+   - Multiple practice attempts allowed
+
+4. **Main Task**
+   - Progressively longer sequences
+   - Two attempts per span length
+   - Continues until two failures at same span
+   - Final score is longest correct sequence
 
 ### 5. Spatial Memory Task
 #### Overview
@@ -1501,4 +1519,4 @@ This improved design includes:
 6. **Performance Optimizations**
    - Efficient event handling
    - Optimized image loading
-   - Smooth animations and transitions 
+   - Smooth animations and transitions

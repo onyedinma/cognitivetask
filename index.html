@@ -47,6 +47,25 @@
                 alert('Error: Task8Module not found. Please refresh the page and try again.');
             }
         }
+
+        // Function to display the digit sequence one at a time
+        // Parameters:
+        // - sequence: array of digits to display
+        // - index: current position in sequence
+        // - mode: 'forward' or 'backward' to determine display behavior
+        // Uses setTimeout to create timing between digits (1000ms display, 500ms gap)
+
+        // Function to show the appropriate response screen based on mode
+        // Parameters:
+        // - mode: 'forward' or 'backward' to determine which screen to show
+        // Sets up input field and submit button with appropriate event listeners
+        // Handles both button click and Enter key submission
+
+        // Function to validate user's digit response
+        // Parameters:
+        // - mode: 'forward' or 'backward' to determine validation rules
+        // Compares user input with expected sequence (reversed for backward mode)
+        // Shows results screen with feedback
     </script>
 </head>
 <body>
@@ -79,18 +98,30 @@
             </div>
         </div>
 
-        <!-- Digit Span Game Intro (for scheme 2) -->
-        <div id="pattern-game-intro" class="screen hidden">
-            <h2>You will now play a Digit Span game.</h2>
-            <p>In this game, you will be presented with a sequence of digits, one at a time on the screen. Your job is to <span class="important">REMEMBER the sequence</span> of digits.</p>
-            <p>After you see each digit sequence, you will be asked to type the list of digits in exactly the order you saw them in.</p>
-            <p>Click 'continue' to see an example.</p>
-            <button id="digitSpanIntroButton">continue</button>
+        <!-- Digit Span Task Intro -->
+        <div id="digit-span-intro" class="screen hidden">
+            <h2>Digit Span Task</h2>
+            <div id="digit-span-instructions">
+                <p>In this task, you will be shown a series of digits one at a time.</p>
+                <p>You can choose to practice either:</p>
+                <ul>
+                    <li><strong>Forward Digit Span:</strong> Recall digits in the SAME order</li>
+                    <li><strong>Backward Digit Span:</strong> Recall digits in REVERSE order</li>
+                </ul>
+                <p>Select which version you would like to try:</p>
+            </div>
+            <div class="button-container">
+                <button id="forwardDigitSpanButton" class="button" onclick="showScreen('digit-span-example');">Forward Digit Span</button>
+                <button id="backwardDigitSpanButton" class="button" onclick="showScreen('digit-span-backward-example');">Backward Digit Span</button>
+            </div>
         </div>
 
-        <!-- Digit Span Game Example -->
+        <!-- Forward Digit Span Example -->
         <div id="digit-span-example" class="screen hidden">
-            <h2>In this example, let's say you see the following sequence of digits:</h2>
+            <h2>Forward Digit Span Task</h2>
+            <p>In this task, you will be shown a series of digits one at a time.</p>
+            <p>Your task is to remember and recall the digits in the <span class="important">SAME ORDER</span> as they appeared.</p>
+            <p>For example, if you see:</p>
             
             <div class="example-digits">
                 <div class="example-digit">7</div>
@@ -98,25 +129,18 @@
                 <div class="example-digit">3</div>
             </div>
             
-            <h2>In this example, the correct response would be:</h2>
+            <p>You should type: <span class="important">793</span></p>
+            <p>You will start with practice trials to help you understand the task.</p>
             
-            <div class="example-response">
-                <p><strong>Type: <span class="important">793</span></strong></p>
+            <button id="startDigitSpanPracticeButton" class="button" onclick="window.directStartDigitSpanPractice(); return false;">Start Practice</button>
             </div>
             
-            <p>Click the 'continue' button to practice the <strong>Digit Span</strong> game.</p>
-            
-            <div class="button-group">
-                <button id="digitSpanGoBackButton">go back</button>
-                <button id="startDigitSpanPracticeButton" onclick="console.log('Button clicked directly'); directStartDigitSpanPractice();">continue</button>
-            </div>
-        </div>
-
-        <!-- Digit Span Backward Example -->
+        <!-- Backward Digit Span Example -->
         <div id="digit-span-backward-example" class="screen hidden">
-            <h2>Very good! In the next part of the task, you will continue to see sequences of digits.</h2>
-            <p>But now you will be asked to type the list of digits in exactly the <span class="important">OPPOSITE</span> order you saw them in.</p>
-            <p>That means, if you see the sequence '13', you type '31'.</p>
+            <h2>Backward Digit Span Task</h2>
+            <p>In this task, you will be shown a series of digits one at a time.</p>
+            <p>Your task is to remember and recall the digits in <span class="important">REVERSE ORDER</span> from how they appeared.</p>
+            <p>For example, if you see:</p>
             
             <div class="example-digits">
                 <div class="example-digit">1</div>
@@ -124,17 +148,10 @@
                 <div class="example-digit">8</div>
             </div>
             
-            <h2>In this example, the correct response would be:</h2>
+            <p>You should type: <span class="important">831</span></p>
+            <p>You will start with practice trials to help you understand the task.</p>
             
-            <div class="example-response">
-                <p><strong>Type: <span class="important">831</span></strong></p>
-            </div>
-            
-            <p>Click the 'continue' button to practice the <strong>Backward Digit Span</strong> game.</p>
-            
-            <div class="button-group">
-                <button id="startDigitSpanBackwardButton" onclick="console.log('Backward button clicked directly'); directStartDigitSpanBackwardPractice();">continue</button>
-            </div>
+            <button id="startDigitSpanBackwardButton" class="button" onclick="window.directStartDigitSpanBackwardPractice(); return false;">Start Practice</button>
         </div>
 
         <!-- Digit Span Game Area -->
@@ -142,7 +159,9 @@
             <div class="digit"></div>
         </div>
 
-        <!-- Digit Span Response Form -->
+        <!-- Forward Digit Span Response Screen -->
+        <!-- This screen is shown when user needs to recall digits in the same order -->
+        <!-- Contains a numeric input field and submit button specific to forward recall -->
         <div id="digit-span-response" class="screen hidden">
             <h2>Please type in the number in the correct order and press enter.</h2>
             <p>Do not leave spaces between the numbers.</p>
@@ -164,6 +183,18 @@
             <p id="digit-span-result-feedback" class="result-feedback"></p>
             
             <button id="nextDigitSpanButton">continue</button>
+        </div>
+
+        <!-- Forward Digit Span Complete -->
+        <div id="forward-digit-span-complete" class="screen hidden">
+            <h2>Great work!</h2>
+            <p>You have completed the Forward Digit Span task.</p>
+            <p>Now you will move on to the Backward Digit Span task.</p>
+            <p>In this task, you will need to recall the digits in REVERSE order.</p>
+            <p>For example, if you see: 1 2 3</p>
+            <p>You should type: 3 2 1</p>
+            <p>Click 'continue' to see an example of the Backward Digit Span task.</p>
+            <button id="startBackwardDigitSpanButton">Continue</button>
         </div>
 
         <!-- Digit Span Complete -->
@@ -658,30 +689,19 @@
                 <p>You will start with practice trials to help you understand the task.</p>
             </div>
             <div class="button-container">
-                <button id="objectSpanIntroButton">Continue</button>
+                <button id="startObjectSpanPracticeButton" class="button">Start Practice</button>
             </div>
         </div>
 
         <!-- Object Span Example Screen -->
         <div id="object-span-example" class="screen hidden">
-            <h2>Working Memory Capacity Task Example</h2>
-            <p>In this task:</p>
-            <ol>
-                <li>You'll see objects like this:</li>
-                <div class="example-container">
-                    <img src="images/Bread.png" alt="Bread" class="example-object">
-                    <img src="images/Car.png" alt="Car" class="example-object">
-                    <img src="images/Shoe.png" alt="Shoe" class="example-object">
-                </div>
-                <li>After seeing the sequence, type the names of all objects in the <span class="important">order they appeared</span>.</li>
-                <li>For example, if you saw the objects above in that order, you would type: "bread car shoe"</li>
-                <li>Later, you'll be asked to type the objects in <span class="important">REVERSE order</span>. (Example: "shoe car bread")</li>
-            </ol>
-            <p>Let's practice with a few objects.</p>
-            <div class="button-container">
-                <button id="objectSpanGoBackButton">Go Back</button>
-                <button id="startObjectSpanPracticeButton" onclick="console.log('Practice button clicked directly'); directStartObjectSpanPractice();">Start Practice</button>
-            </div>
+            <h2>Forward Object Span Task</h2>
+            <p>In this task, you will be shown a series of objects one at a time.</p>
+            <p>Your task is to remember and recall the objects in the <span class="important">SAME ORDER</span> as they appeared.</p>
+            <p>For example, if you see: bread → car → book</p>
+            <p>You should type: "bread car book"</p>
+            <p>You will start with practice trials to help you understand the task.</p>
+            <button id="startForwardObjectSpanButton" class="button" onclick="window.directStartObjectSpanPractice(); return false;">Start Practice</button>
         </div>
 
         <!-- Object Span Backward Example -->
@@ -697,7 +717,7 @@
             </div>
             <p>You should type: "shoe car bread"</p>
             <p>Let's practice with the backward version.</p>
-            <button id="startObjectSpanBackwardButton" onclick="console.log('Backward button clicked directly'); directStartObjectSpanBackwardPractice();">continue</button>
+            <button id="startBackwardObjectSpanButton" class="button" onclick="window.directStartObjectSpanBackwardPractice(); return false;">Start Practice</button>
         </div>
 
         <!-- Object Game Area -->
@@ -714,9 +734,10 @@
 
         <!-- Object Span Response Form -->
         <div id="object-span-response" class="screen hidden">
-            <h2>Enter the objects in the order they appeared</h2>
-            <p>Type the names of the objects separated by spaces (e.g., "bread car pot")</p>
-            <input type="text" id="object-response" class="response-input" style="width: 80%; max-width: 500px; padding: 10px; margin: 20px;" autocomplete="off" placeholder="Type the object names here...">
+            <div class="response-instruction">
+                <p id="recall-instruction">Type the objects in the <span class="mode-text"></span> order</p>
+            </div>
+            <input type="text" id="object-response-input" class="response-input" style="width: 80%; max-width: 500px; padding: 10px; margin: 20px;" autocomplete="off" placeholder="Type the object names here...">
             <button id="submitObjectResponseButton" class="button">Submit</button>
         </div>
 
@@ -735,11 +756,11 @@
             </div>
             <p id="practice-score"></p>
             <div class="practice-controls">
-                <button id="continuePracticeButton" class="button">Continue Practice</button>
-                <button id="readyForMainTaskButton" class="button">I'm Ready for Main Task</button>
+                <button id="continuePracticeButton-object" class="button" onclick="window.directContinueObjectSpanPractice(); return false;">Continue Practice</button>
+                <button id="readyForMainTaskButton-object" class="button" onclick="window.directReadyForObjectSpanMainTask(); return false;">I'm Ready for Main Task</button>
             </div>
-        </div>
-
+            </div>
+            
         <div id="object-span-main-instructions" class="screen hidden">
             <h1>Main Task</h1>
             <p>Great! Now you'll begin the main task.</p>
@@ -760,7 +781,7 @@
             <p>Maximum span reached: <span id="max-span-reached">0</span> (Final Score)</p>
             <p>Total correct sequences: <span id="total-correct-sequences">0</span></p>
             <button id="finishObjectSpanButton" class="button">Complete Task</button>
-        </div>
+                    </div>
 
         <!-- Object Span Real Game Instructions -->
         <div id="object-span-real-game-instructions" class="screen hidden">
@@ -777,9 +798,9 @@
             <div class="important-note">
                 <p><strong>For Forward Recall:</strong> Type the object names in the SAME order as shown (e.g., "bread car book")</p>
                 <p><strong>For Backward Recall:</strong> Type the object names in REVERSE order (e.g., if shown "bread car book", type "book car bread")</p>
-            </div>
+                    </div>
             <button id="startObjectSpanRealGameButton" class="button">Start Main Task</button>
-        </div>
+                    </div>
 
         <!-- Forward Object Span Intro Screen -->
         <div id="forward-object-span-intro" class="screen hidden">
@@ -789,8 +810,8 @@
             <p>For example, if you see: bread → car → book</p>
             <p>You should type: "bread car book"</p>
             <p>You will start with practice trials to help you understand the task.</p>
-            <button id="startForwardObjectSpanButton" class="button">Start Practice</button>
-        </div>
+            <button id="startForwardObjectSpanButton" class="button" onclick="window.directStartObjectSpanPractice(); return false;">Start Practice</button>
+                    </div>
 
         <!-- Backward Object Span Intro Screen -->
         <div id="backward-object-span-intro" class="screen hidden">
@@ -800,276 +821,316 @@
             <p>For example, if you see: bread → car → book</p>
             <p>You should type: "book car bread"</p>
             <p>You will start with practice trials to help you understand the task.</p>
-            <button id="startBackwardObjectSpanButton" class="button">Start Practice</button>
+            <button id="startBackwardObjectSpanButton" class="button" onclick="window.directStartObjectSpanBackwardPractice(); return false;">Start Practice</button>
+                    </div>
+
+        <div id="task-6-intro" class="screen hidden">
+            <h1>Ecological Spatial Working Memory Task</h1>
+            <p>In this task, you will see a grid of real-world object images. You need to remember the locations of these images.</p>
+            <p>After studying the grid, some images will swap positions. Your job is to identify which images have moved from their original positions.</p>
+            <p>First, you'll complete a short practice to get familiar with the task.</p>
+            <button id="task6ContinueButton" class="task6-button">Continue</button>
+                    </div>
+
+        <div id="task-6-practice-instructions" class="screen hidden">
+            <h1>Practice Instructions</h1>
+            <p>In this practice, you will see a 3×2 grid with 6 images.</p>
+            <p>Study the positions of these images carefully. After some time, one pair of images will swap positions.</p>
+            <p>Your task is to identify which images have changed positions by clicking on them in the final grid.</p>
+            <p>After the practice, you'll move on to the main task with a larger grid and more position changes.</p>
+            <button id="startTask6GridButton" class="task6-button">Start Practice</button>
+                    </div>
+
+        <div id="task-6-grid" class="screen hidden">
+            <h1>Study the Image Positions</h1>
+            <p>Remember where each image is located. Some images will change positions shortly.</p>
+            <div class="task6-grid-container"></div>
+                    </div>
+
+        <div id="task-6-response" class="screen hidden">
+            <h1>Which Images Changed Positions?</h1>
+            <p>Click on the images that have changed positions from the original grid.</p>
+            <div class="task6-grid-container"></div>
+            <button id="submitTask6ResponseButton" class="task6-button">Submit</button>
+                    </div>
+
+        <div id="task-6-practice-results" class="screen hidden">
+            <h1>Practice Results</h1>
+            <p></p>
+            <button id="startTask6RealButton" class="task6-button">Start Main Task</button>
+                </div>
+
+        <div id="task-6-real-instructions" class="screen hidden">
+            <h1>Main Task Instructions</h1>
+            <p>Now you'll complete the main task. You will see a 5×4 grid with 20 images.</p>
+            <p>Study the positions of these images carefully. After some time, three pairs of images will swap positions.</p>
+            <p>Your task is to identify which images have changed positions by clicking on them in the final grid.</p>
+            <p>You'll have 90 seconds to study the grid before the images swap positions.</p>
+            <button id="startTask6RealButton" class="task6-button">Start Main Task</button>
+            </div>
+
+        <div id="task-6-results" class="screen hidden">
+            <h1>Task Results</h1>
+            <p>Correct identifications: <span id="task6-correct-count">0</span></p>
+            <p>Incorrect identifications: <span id="task6-incorrect-count">0</span></p>
+            <p>Total score: <span id="task6-total-score">0</span></p>
+            <button id="completeTask6Button" class="task6-button" onclick="finishGame()">Complete Task</button>
+        </div>
+
+        <!-- Task 7: Deductive Reasoning Task -->
+        <div id="task-7-intro" class="screen hidden">
+            <h1>Deductive Reasoning Task</h1>
+            <p>In this task, you will be asked to solve logical puzzles using four cards that will appear on the screen.</p>
+            <p>Among the four cards presented, you will be required to identify which two cards to turn to test the logical premise presented in each question.</p>
+            <p>In other words, in each game, there will be a simple rule, and all you have to do is work out which cards you need to turn over to see if the rule has been broken.</p>
+            <button id="task7ContinueButton" class="task7-button">Continue</button>
+        </div>
+
+        <div id="task-7-instructions" class="screen hidden">
+            <h1>Task Instructions</h1>
+            <p>For each question:</p>
+            <ol>
+                <li>Read the logical rule carefully</li>
+                <li>Look at the four cards presented</li>
+                <li>Select exactly two cards that you need to turn over to test if the rule is true or false</li>
+                <li>Click "Submit" when you've made your selection</li>
+            </ol>
+            <p>Let's start with a practice round to get familiar with the task.</p>
+            <button id="startTask7PracticeButton" class="task7-button">Start Practice</button>
+        </div>
+
+        <div id="task-7-practice" class="screen hidden">
+            <h1>Practice Round</h1>
+            <div id="task7-question-container">
+                <p id="task7-question-text">If a card has a circle on one side, then it has the color yellow on the other side.</p>
+                <p>Select the two cards you need to turn over to test this rule:</p>
+        </div>
+
+            <div id="task7-cards-container" class="cards-container">
+                <!-- Cards will be generated dynamically -->
+        </div>
+
+            <div id="task7-selection-info">
+                <p>Selected cards: <span id="task7-selected-count">0</span>/2</p>
+            </div>
+
+            <button id="task7SubmitButton" class="task7-button" onclick="task7SubmitPracticeAnswer()" disabled>Submit</button>
+            
+            <!-- Extra direct submit button for practice as fallback -->
+            <button id="task7DirectPracticeSubmitButton" class="task7-button" style="margin-top: 15px; background-color: #ff9800;" 
+                    onclick="Task7Module.evaluatePracticeResponse();">
+                Direct Submit (Use if regular button doesn't work)
+            </button>
+        </div>
+
+        <div id="task-7-feedback" class="screen hidden">
+            <h1>Feedback</h1>
+            <div id="task7-feedback-container">
+                <p id="task7-result-text"></p>
+                <div id="task7-explanation"></div>
+            </div>
+            <button id="task7ContinueAfterFeedbackButton" class="task7-button">Continue</button>
+        </div>
+
+        <div id="task-7-real-instructions" class="screen hidden">
+            <h1>Main Task Instructions</h1>
+            <p>Now you'll complete the main task with several logical puzzles to solve.</p>
+            <p>Remember to select exactly two cards for each question that you need to turn over to test the rule.</p>
+            <p>Your performance will be recorded for each puzzle.</p>
+            <button id="startTask7RealButton" class="task7-button">Start Main Task</button>
+        </div>
+
+        <div id="task-7-main" class="screen hidden">
+            <h1>Deductive Reasoning Puzzle</h1>
+            <div id="task7-main-question-container">
+                <p id="task7-main-question-text"></p>
+                <p>Select the two cards you need to turn over to test this rule:</p>
+            </div>
+
+            <div id="task7-main-cards-container" class="cards-container">
+                <!-- Cards will be generated dynamically -->
+            </div>
+
+            <div id="task7-main-selection-info">
+                <p>Selected cards: <span id="task7-main-selected-count">0</span>/2</p>
+            </div>
+
+            <button id="task7MainSubmitButton" class="task7-button" onclick="debugSubmitTask7()" disabled>Submit</button>
+            
+            <!-- Extra direct submit button as fallback -->
+            <button id="task7DirectSubmitButton" class="task7-button" style="margin-top: 15px; background-color: #ff9800;" 
+                    onclick="Task7Module.evaluateMainResponse();">
+                Direct Submit (Use if regular button doesn't work)
+            </button>
+        </div>
+
+        <div id="task-7-results" class="screen hidden">
+            <h1>Task Results</h1>
+            <p>You have completed the Deductive Reasoning Task.</p>
+            <div id="task7-results-container">
+                <p>Correct answers: <span id="task7-correct-count">0</span></p>
+                <p>Total puzzles: <span id="task7-total-count">0</span></p>
+                <p>Accuracy: <span id="task7-accuracy">0%</span></p>
+            </div>
+            <button id="completeTask7Button" class="task7-button" onclick="finishGame()">Complete Task</button>
+        </div>
+        
+        <!-- Task 8: Ecological Deductive Reasoning -->
+        <div id="task-8-intro" class="screen hidden">
+            <h1>Task 8: Ecological Deductive Reasoning</h1>
+            <p>In this task, you will be asked to solve logical puzzles using four cards that appear on the screen.</p>
+            <p>Among the four cards presented, you will be required to identify which two cards to turn to test the logical premise presented in each question.</p>
+            <p>In other words, in each game, there will be a simple rule, and all you have to do is work out which cards you need to turn over to see if the rule has been broken.</p>
+            <button id="task8ContinueButton" class="button">Continue</button>
+        </div>
+
+        <div id="task-8-instructions" class="screen hidden">
+            <h1>Instructions</h1>
+            <p>For each question, you will see a logical rule and four cards.</p>
+            <p>Your task is to select the two cards that need to be turned over to determine whether the rule is being followed or broken.</p>
+            <p>Click on a card to select it. Click again to deselect.</p>
+            <p>Let's start with a practice round.</p>
+            <button id="startTask8PracticeButton" class="button">Start Practice</button>
+        </div>
+
+        <div id="task-8-practice" class="screen hidden">
+            <h1>Practice Round</h1>
+            <p>Select the two cards that need to be turned over to test the rule:</p>
+            <p id="task8-practice-question-text">"If a person drinks an alcoholic drink, then they must be over the age of 21 years old."</p>
+            
+            <div id="task8-cards-container" class="cards-container">
+                <!-- Cards will be added dynamically by JavaScript -->
+            </div>
+            
+            <div class="task8-card-info">
+                <p>Selected cards: <span id="task8-selected-count">0</span>/2</p>
+            </div>
+
+            <button id="task8SubmitButton" class="task8-button" onclick="task8SubmitPracticeAnswer()" disabled>Submit</button>
+            
+            <!-- Extra direct submit button as fallback -->
+            <button id="task8DirectSubmitButton" class="task8-button" style="margin-top: 15px; background-color: #ff9800;" 
+                    onclick="Task8Module.evaluatePracticeResponse();">
+                Direct Submit (Use if regular button doesn't work)
+            </button>
+        </div>
+
+        <div id="task-8-feedback" class="screen hidden">
+            <h1>Practice Feedback</h1>
+            <p id="task8-practice-result"></p>
+            <p id="task8-practice-explanation"></p>
+            <p>Now let's move on to the main task.</p>
+            <button id="task8ContinueAfterFeedbackButton" class="button">Continue</button>
+        </div>
+
+        <div id="task-8-real-instructions" class="screen hidden">
+            <h1>Main Task</h1>
+            <p>Great! Now you'll solve several similar puzzles.</p>
+            <p>Remember to select the two cards you need to turn over to test the rule.</p>
+            <button id="startTask8RealButton" class="button">Start Task</button>
+        </div>
+
+        <div id="task-8-main" class="screen hidden">
+            <h1>Ecological Deductive Reasoning Task</h1>
+            <p>Select the two cards that need to be turned over to test the rule:</p>
+            <p id="task8-main-question-text"></p>
+            
+            <div id="task8-main-cards-container" class="cards-container">
+                <!-- Cards will be added dynamically by JavaScript -->
+            </div>
+            
+            <div class="task8-card-info">
+                <p>Selected cards: <span id="task8-main-selected-count">0</span>/2</p>
+            </div>
+
+            <button id="task8MainSubmitButton" class="task8-button" onclick="debugSubmitTask8()" disabled>Submit</button>
+            
+            <!-- Extra direct submit button as fallback -->
+            <button id="task8DirectSubmitButton" class="task8-button" style="margin-top: 15px; background-color: #ff9800;" 
+                    onclick="Task8Module.evaluateMainResponse();">
+                Direct Submit (Use if regular button doesn't work)
+            </button>
+        </div>
+
+        <div id="task-8-results" class="screen hidden">
+            <h1>Task Results</h1>
+            <p>You have completed the Ecological Deductive Reasoning Task.</p>
+            <div id="task8-results-container">
+                <p>Correct answers: <span id="task8-correct-count">0</span></p>
+                <p>Total puzzles: <span id="task8-total-count">0</span></p>
+                <p>Accuracy: <span id="task8-accuracy">0%</span></p>
+            </div>
+            <button id="completeTask8Button" class="task8-button" onclick="finishGame()">Complete Task</button>
         </div>
 
         <!-- Object Span Practice Feedback -->
-        <div id="object-span-practice-feedback" class="screen hidden">
+        <div id="object-span-practice-feedback-main" class="screen hidden">
             <h2>Practice Feedback</h2>
-            <p id="practice-feedback-text"></p>
+            <p id="object-practice-feedback-text"></p>
             <div class="sequence-info">
-                <p>Your response: <span id="user-response"></span></p>
-                <p>Expected response: <span id="expected-response"></span></p>
+                <p>Your response: <span id="object-user-response"></span></p>
+                <p>Expected response: <span id="object-expected-response"></span></p>
                 <p class="recall-mode-reminder">
                     <strong>Remember:</strong> 
-                    <span id="recall-mode-instruction">
-                        Type the objects in the <span class="mode-text"></span> order as shown
+                    <span id="object-recall-mode-instruction">
+                        Type the objects in the <span class="object-mode-text"></span> order as shown
                     </span>
                 </p>
             </div>
-            <p id="practice-score"></p>
+            <p id="object-practice-score"></p>
             <div class="practice-controls">
-                <button id="continuePracticeButton" class="button">Continue Practice</button>
-                <button id="readyForMainTaskButton" class="button">I'm Ready for Main Task</button>
+                <button id="object-continue-practice-button" class="button" onclick="window.directContinueObjectSpanPractice(); return false;">Continue Practice</button>
+                <button id="object-ready-main-task-button" class="button" onclick="window.directReadyForObjectSpanMainTask(); return false;">I'm Ready for Main Task</button>
             </div>
         </div>
 
         <!-- Object Span Response Screen -->
-        <div id="object-span-response" class="screen hidden">
+        <div id="object-span-response-main" class="screen hidden">
             <div class="response-instruction">
-                <p id="recall-instruction">Type the objects in the <span class="mode-text"></span> order</p>
+                <p id="object-recall-instruction">Type the objects in the <span class="object-mode-text"></span> order</p>
             </div>
-            <input type="text" id="object-response" class="response-input" style="width: 80%; max-width: 500px; padding: 10px; margin: 20px;" autocomplete="off" placeholder="Type the object names here...">
-            <button id="submitObjectResponseButton" class="button">Submit</button>
+            <input type="text" id="object-response-input-main" class="response-input" style="width: 80%; max-width: 500px; padding: 10px; margin: 20px;" autocomplete="off" placeholder="Type the object names here...">
+            <button id="object-submit-response-button" class="button">Submit</button>
+    </div>
+
+    <!-- Digit Span Practice Feedback -->
+    <div id="digit-span-practice-feedback" class="screen hidden">
+        <h2>Practice Feedback</h2>
+        <p id="digit-practice-feedback-text"></p>
+        <div class="sequence-info">
+            <p>Your response: <span id="digit-user-response"></span></p>
+            <p>Expected response: <span id="digit-expected-response"></span></p>
+            <p class="recall-mode-reminder">
+                <strong>Remember:</strong> 
+                <span id="digit-recall-mode-instruction">
+                    Type the digits in the <span class="mode-text"></span> order as shown
+                </span>
+            </p>
         </div>
-
-    <div id="task-6-intro" class="screen hidden">
-        <h1>Ecological Spatial Working Memory Task</h1>
-        <p>In this task, you will see a grid of real-world object images. You need to remember the locations of these images.</p>
-        <p>After studying the grid, some images will swap positions. Your job is to identify which images have moved from their original positions.</p>
-        <p>First, you'll complete a short practice to get familiar with the task.</p>
-        <button id="task6ContinueButton" class="task6-button">Continue</button>
-    </div>
-
-    <div id="task-6-practice-instructions" class="screen hidden">
-        <h1>Practice Instructions</h1>
-        <p>In this practice, you will see a 3×2 grid with 6 images.</p>
-        <p>Study the positions of these images carefully. After some time, one pair of images will swap positions.</p>
-        <p>Your task is to identify which images have changed positions by clicking on them in the final grid.</p>
-        <p>After the practice, you'll move on to the main task with a larger grid and more position changes.</p>
-        <button id="startTask6GridButton" class="task6-button">Start Practice</button>
-    </div>
-
-    <div id="task-6-grid" class="screen hidden">
-        <h1>Study the Image Positions</h1>
-        <p>Remember where each image is located. Some images will change positions shortly.</p>
-        <div class="task6-grid-container"></div>
-    </div>
-
-    <div id="task-6-response" class="screen hidden">
-        <h1>Which Images Changed Positions?</h1>
-        <p>Click on the images that have changed positions from the original grid.</p>
-        <div class="task6-grid-container"></div>
-        <button id="submitTask6ResponseButton" class="task6-button">Submit</button>
-    </div>
-
-    <div id="task-6-practice-results" class="screen hidden">
-        <h1>Practice Results</h1>
-        <p></p>
-        <button id="startTask6RealButton" class="task6-button">Start Main Task</button>
-    </div>
-
-    <div id="task-6-real-instructions" class="screen hidden">
-        <h1>Main Task Instructions</h1>
-        <p>Now you'll complete the main task. You will see a 5×4 grid with 20 images.</p>
-        <p>Study the positions of these images carefully. After some time, three pairs of images will swap positions.</p>
-        <p>Your task is to identify which images have changed positions by clicking on them in the final grid.</p>
-        <p>You'll have 90 seconds to study the grid before the images swap positions.</p>
-        <button id="startTask6RealButton" class="task6-button">Start Main Task</button>
-    </div>
-
-    <div id="task-6-results" class="screen hidden">
-        <h1>Task Results</h1>
-        <p>Correct identifications: <span id="task6-correct-count">0</span></p>
-        <p>Incorrect identifications: <span id="task6-incorrect-count">0</span></p>
-        <p>Total score: <span id="task6-total-score">0</span></p>
-        <button id="completeTask6Button" class="task6-button" onclick="finishGame()">Complete Task</button>
-    </div>
-
-    <!-- Task 7: Deductive Reasoning Task -->
-    <div id="task-7-intro" class="screen hidden">
-        <h1>Deductive Reasoning Task</h1>
-        <p>In this task, you will be asked to solve logical puzzles using four cards that will appear on the screen.</p>
-        <p>Among the four cards presented, you will be required to identify which two cards to turn to test the logical premise presented in each question.</p>
-        <p>In other words, in each game, there will be a simple rule, and all you have to do is work out which cards you need to turn over to see if the rule has been broken.</p>
-        <button id="task7ContinueButton" class="task7-button">Continue</button>
-    </div>
-
-    <div id="task-7-instructions" class="screen hidden">
-        <h1>Task Instructions</h1>
-        <p>For each question:</p>
-        <ol>
-            <li>Read the logical rule carefully</li>
-            <li>Look at the four cards presented</li>
-            <li>Select exactly two cards that you need to turn over to test if the rule is true or false</li>
-            <li>Click "Submit" when you've made your selection</li>
-        </ol>
-        <p>Let's start with a practice round to get familiar with the task.</p>
-        <button id="startTask7PracticeButton" class="task7-button">Start Practice</button>
-    </div>
-
-    <div id="task-7-practice" class="screen hidden">
-        <h1>Practice Round</h1>
-        <div id="task7-question-container">
-            <p id="task7-question-text">If a card has a circle on one side, then it has the color yellow on the other side.</p>
-            <p>Select the two cards you need to turn over to test this rule:</p>
+        <p id="digit-practice-score"></p>
+        <div class="practice-controls">
+            <button id="continuePracticeButton-digit" class="button">Continue Practice</button>
+            <button id="readyForMainTaskButton-digit" class="button">I'm Ready for Main Task</button>
         </div>
-
-        <div id="task7-cards-container" class="cards-container">
-            <!-- Cards will be generated dynamically -->
-        </div>
-
-        <div id="task7-selection-info">
-            <p>Selected cards: <span id="task7-selected-count">0</span>/2</p>
-        </div>
-
-        <button id="task7SubmitButton" class="task7-button" onclick="task7SubmitPracticeAnswer()" disabled>Submit</button>
-        
-        <!-- Extra direct submit button for practice as fallback -->
-        <button id="task7DirectPracticeSubmitButton" class="task7-button" style="margin-top: 15px; background-color: #ff9800;" 
-                onclick="Task7Module.evaluatePracticeResponse();">
-            Direct Submit (Use if regular button doesn't work)
-        </button>
     </div>
 
-    <div id="task-7-feedback" class="screen hidden">
-        <h1>Feedback</h1>
-        <div id="task7-feedback-container">
-            <p id="task7-result-text"></p>
-            <div id="task7-explanation"></div>
+    <!-- Digit Span Main Task Instructions -->
+    <div id="digit-span-main-instructions" class="screen hidden">
+        <h2>Main Task Instructions</h2>
+        <p>You will now begin the main task.</p>
+        <ul>
+            <li>You will see sequences of digits, one at a time</li>
+            <li>Starting with 3 digits, the sequence will get longer as you progress</li>
+            <li>You get two attempts at each sequence length</li>
+            <li>If you succeed at least once, you'll move to a longer sequence</li>
+            <li>If you fail both attempts, the task will end</li>
+            <li>Your final score will be the longest sequence you correctly recalled</li>
+            </ul>
+        <div class="important-note">
+            <p><strong>For Forward Recall:</strong> Type the digits in the SAME order as shown</p>
+            <p><strong>For Backward Recall:</strong> Type the digits in REVERSE order</p>
         </div>
-        <button id="task7ContinueAfterFeedbackButton" class="task7-button">Continue</button>
-    </div>
-
-    <div id="task-7-real-instructions" class="screen hidden">
-        <h1>Main Task Instructions</h1>
-        <p>Now you'll complete the main task with several logical puzzles to solve.</p>
-        <p>Remember to select exactly two cards for each question that you need to turn over to test the rule.</p>
-        <p>Your performance will be recorded for each puzzle.</p>
-        <button id="startTask7RealButton" class="task7-button">Start Main Task</button>
-    </div>
-
-    <div id="task-7-main" class="screen hidden">
-        <h1>Deductive Reasoning Puzzle</h1>
-        <div id="task7-main-question-container">
-            <p id="task7-main-question-text"></p>
-            <p>Select the two cards you need to turn over to test this rule:</p>
-        </div>
-
-        <div id="task7-main-cards-container" class="cards-container">
-            <!-- Cards will be generated dynamically -->
-        </div>
-
-        <div id="task7-main-selection-info">
-            <p>Selected cards: <span id="task7-main-selected-count">0</span>/2</p>
-        </div>
-
-        <button id="task7MainSubmitButton" class="task7-button" onclick="debugSubmitTask7()" disabled>Submit</button>
-        
-        <!-- Extra direct submit button as fallback -->
-        <button id="task7DirectSubmitButton" class="task7-button" style="margin-top: 15px; background-color: #ff9800;" 
-                onclick="Task7Module.evaluateMainResponse();">
-            Direct Submit (Use if regular button doesn't work)
-        </button>
-    </div>
-
-    <div id="task-7-results" class="screen hidden">
-        <h1>Task Results</h1>
-        <p>You have completed the Deductive Reasoning Task.</p>
-        <div id="task7-results-container">
-            <p>Correct answers: <span id="task7-correct-count">0</span></p>
-            <p>Total puzzles: <span id="task7-total-count">0</span></p>
-            <p>Accuracy: <span id="task7-accuracy">0%</span></p>
-        </div>
-        <button id="completeTask7Button" class="task7-button" onclick="finishGame()">Complete Task</button>
-    </div>
-    
-    <!-- Task 8: Ecological Deductive Reasoning -->
-    <div id="task-8-intro" class="screen hidden">
-        <h1>Task 8: Ecological Deductive Reasoning</h1>
-        <p>In this task, you will be asked to solve logical puzzles using four cards that appear on the screen.</p>
-        <p>Among the four cards presented, you will be required to identify which two cards to turn to test the logical premise presented in each question.</p>
-        <p>In other words, in each game, there will be a simple rule, and all you have to do is work out which cards you need to turn over to see if the rule has been broken.</p>
-        <button id="task8ContinueButton" class="button">Continue</button>
-    </div>
-
-    <div id="task-8-instructions" class="screen hidden">
-        <h1>Instructions</h1>
-        <p>For each question, you will see a logical rule and four cards.</p>
-        <p>Your task is to select the two cards that need to be turned over to determine whether the rule is being followed or broken.</p>
-        <p>Click on a card to select it. Click again to deselect.</p>
-        <p>Let's start with a practice round.</p>
-        <button id="startTask8PracticeButton" class="button">Start Practice</button>
-    </div>
-
-    <div id="task-8-practice" class="screen hidden">
-        <h1>Practice Round</h1>
-        <p>Select the two cards that need to be turned over to test the rule:</p>
-        <p id="task8-practice-question-text">"If a person drinks an alcoholic drink, then they must be over the age of 21 years old."</p>
-        
-        <div id="task8-cards-container" class="cards-container">
-            <!-- Cards will be added dynamically by JavaScript -->
-        </div>
-        
-        <div class="task8-card-info">
-            <p>Selected cards: <span id="task8-selected-count">0</span>/2</p>
-        </div>
-
-        <button id="task8SubmitButton" class="task8-button" onclick="task8SubmitPracticeAnswer()" disabled>Submit</button>
-        
-        <!-- Extra direct submit button as fallback -->
-        <button id="task8DirectSubmitButton" class="task8-button" style="margin-top: 15px; background-color: #ff9800;" 
-                onclick="Task8Module.evaluatePracticeResponse();">
-            Direct Submit (Use if regular button doesn't work)
-        </button>
-    </div>
-
-    <div id="task-8-feedback" class="screen hidden">
-        <h1>Practice Feedback</h1>
-        <p id="task8-practice-result"></p>
-        <p id="task8-practice-explanation"></p>
-        <p>Now let's move on to the main task.</p>
-        <button id="task8ContinueAfterFeedbackButton" class="button">Continue</button>
-    </div>
-
-    <div id="task-8-real-instructions" class="screen hidden">
-        <h1>Main Task</h1>
-        <p>Great! Now you'll solve several similar puzzles.</p>
-        <p>Remember to select the two cards you need to turn over to test the rule.</p>
-        <button id="startTask8RealButton" class="button">Start Task</button>
-    </div>
-
-    <div id="task-8-main" class="screen hidden">
-        <h1>Ecological Deductive Reasoning Task</h1>
-        <p>Select the two cards that need to be turned over to test the rule:</p>
-        <p id="task8-main-question-text"></p>
-        
-        <div id="task8-main-cards-container" class="cards-container">
-            <!-- Cards will be added dynamically by JavaScript -->
-        </div>
-        
-        <div class="task8-card-info">
-            <p>Selected cards: <span id="task8-main-selected-count">0</span>/2</p>
-        </div>
-
-        <button id="task8MainSubmitButton" class="task8-button" onclick="debugSubmitTask8()" disabled>Submit</button>
-        
-        <!-- Extra direct submit button as fallback -->
-        <button id="task8DirectSubmitButton" class="task8-button" style="margin-top: 15px; background-color: #ff9800;" 
-                onclick="Task8Module.evaluateMainResponse();">
-            Direct Submit (Use if regular button doesn't work)
-        </button>
-    </div>
-
-    <div id="task-8-results" class="screen hidden">
-        <h1>Task Results</h1>
-        <p>You have completed the Ecological Deductive Reasoning Task.</p>
-        <div id="task8-results-container">
-            <p>Correct answers: <span id="task8-correct-count">0</span></p>
-            <p>Total puzzles: <span id="task8-total-count">0</span></p>
-            <p>Accuracy: <span id="task8-accuracy">0%</span></p>
-        </div>
-        <button id="completeTask8Button" class="task8-button" onclick="finishGame()">Complete Task</button>
+        <button id="startDigitSpanRealGameButton" class="button">Start Main Task</button>
     </div>
     </div>
     <script src="script.js"></script>
