@@ -1991,86 +1991,110 @@ function startDigitSequence() {
 
 // Function to animate digits one by one
 function animateDigits(sequence) {
-    console.log('Starting digit animation with sequence:', sequence);
-    
-    let index = 0;
+    console.log("Starting digit animation with sequence:", sequence);
+    const config = {
+        displayTime: 1000,
+        blankTime: 500,
+        startDigits: 3,
+        maxDigits: 9
+    };
+    console.log("Using config:", config);
+
     const digitElement = document.querySelector('.digit');
-    
     if (!digitElement) {
-        console.error('Digit element not found in the DOM');
+        console.error("Digit element not found!");
         return;
     }
     
-    const config = CONFIG.digitSpanMode;
-    console.log('Using config:', config);
+    let currentIndex = 0;
 
     function showNextDigit() {
-        if (index >= sequence.length) {
-            console.log('Sequence complete, clearing digit display');
-            digitElement.textContent = '';
-            
-            TimerManager.setTimeout(() => {
-                console.log('Showing response screen');
-                showScreen('digit-span-response');
-                
-                // Focus on the input field
-                const inputField = document.getElementById('digit-response');
-                if (inputField) {
-                    inputField.value = '';
-                    inputField.focus();
-                }
-            }, 500, 'digitSpan_showResponse');
-            
-            return;
-        }
+        if (currentIndex < sequence.length) {
+            console.log("Showing digit", sequence[currentIndex], "at index", currentIndex);
+            digitElement.textContent = sequence[currentIndex];
+            digitElement.style.visibility = 'visible';
 
-        console.log(`Showing digit ${sequence[index]} at index ${index}`);
-        digitElement.textContent = sequence[index];
-        digitElement.style.fontSize = '5rem'; // Make sure the digit is large and visible
-        
-        TimerManager.setTimeout(() => {
-            console.log(`Hiding digit ${sequence[index]}`);
+            setTimeout(() => {
+                console.log("Hiding digit", sequence[currentIndex]);
+                digitElement.style.visibility = 'hidden';
+
+                setTimeout(() => {
+                    currentIndex++;
+                    showNextDigit();
+                }, config.blankTime);
+            }, config.displayTime);
+        } else {
+            console.log("Sequence complete, clearing digit display");
             digitElement.textContent = '';
             
-            TimerManager.setTimeout(() => {
-                index++;
-                showNextDigit();
-            }, config.blankTime, 'digitSpan_blankTime');
+            console.log("Showing response screen");
+            // Hide the game area
+            const gameArea = document.getElementById('digit-game-area');
+            if (gameArea) {
+                gameArea.classList.add('hidden');
+            }
             
-        }, config.displayTime, 'digitSpan_displayTime');
+            // Show the response screen
+            const responseScreen = document.getElementById('digit-span-response');
+            if (responseScreen) {
+                responseScreen.classList.remove('hidden');
+                // Clear any previous response
+                const responseInput = document.getElementById('digit-response');
+                if (responseInput) {
+                    responseInput.value = '';
+                    // Focus the input field
+                    responseInput.focus();
+                }
+            } else {
+                console.error("Response screen not found!");
+            }
+        }
     }
 
-    // Start showing the first digit
     showNextDigit();
 }
 
 // Function to submit digit span response
 function submitDigitSpanResponse() {
+    console.log('Submitting digit span response');
     const responseInput = document.getElementById('digit-response');
+    if (!responseInput) {
+        console.error('Response input not found');
+        return;
+    }
+
     const response = responseInput.value.trim();
+    console.log('User response:', response);
     
     // Get expected sequence
-    let expectedSequence = gameState.correctSequence;  // Changed from currentSequence to correctSequence
+    let expectedSequence = gameState.correctSequence;
+    if (!expectedSequence) {
+        console.error('No correct sequence found in game state');
+        return;
+    }
+
     if (gameState.isBackward) {
         expectedSequence = [...expectedSequence].reverse();
     }
-    expectedSequence = expectedSequence.join('');
+    const expectedString = expectedSequence.join('');
+    console.log('Expected response:', expectedString);
     
     // Check if response is correct
-    const isCorrect = response === expectedSequence;
+    const isCorrect = response === expectedString;
+    console.log('Response correct:', isCorrect);
     
     if (!gameState.isRealGame) {
         // Show practice feedback
-        document.getElementById('digit-user-response').textContent = response;
-        document.getElementById('digit-expected-response').textContent = expectedSequence;
-        
+        const userResponseSpan = document.getElementById('digit-user-response');
+        const expectedResponseSpan = document.getElementById('digit-expected-response');
         const feedbackText = document.getElementById('digit-practice-feedback-text');
-    if (isCorrect) {
-            feedbackText.textContent = 'Correct! Well done!';
-            feedbackText.className = 'feedback-correct';
-    } else {
-            feedbackText.textContent = 'Incorrect. Please try again.';
-            feedbackText.className = 'feedback-incorrect';
+        
+        if (userResponseSpan) userResponseSpan.textContent = response;
+        if (expectedResponseSpan) expectedResponseSpan.textContent = expectedString;
+        
+        if (feedbackText) {
+            feedbackText.textContent = isCorrect ? 'Correct! Well done!' : 'Incorrect. Please try again.';
+            feedbackText.className = isCorrect ? 'feedback-correct' : 'feedback-incorrect';
         }
         
         // Update mode text
@@ -2082,8 +2106,24 @@ function submitDigitSpanResponse() {
         // Show feedback screen
         showScreen('digit-span-practice-feedback');
     } else {
-        // Handle real game response...
-        // (existing real game logic)
+        // Handle real game response
+    if (isCorrect) {
+            if (gameState.currentLength < gameState.maxLength) {
+                gameState.currentLength++;
+                gameState.currentAttempt = 1;
+            }
+    } else {
+            if (gameState.currentAttempt < gameState.attemptsPerLength) {
+                gameState.currentAttempt++;
+            } else {
+                // Game over - show results
+                showScreen('digit-span-complete');
+                return;
+            }
+        }
+        
+        // Start next sequence
+        startDigitSequence();
     }
     
     // Clear input
@@ -5720,8 +5760,50 @@ document.getElementById('readyForMainTaskButton-object')?.addEventListener('clic
 
 // Update event listener for digit span ready button
 document.getElementById('readyForMainTaskButton-digit')?.addEventListener('click', function() {
-    console.log('User indicated ready for main task (digit span)');
-    showScreen('digit-span-real-game-instructions');
+    console.log('=== Ready for Main Task clicked ===');
+    console.log('Current game state:', gameState);
+    
+    try {
+        // Hide all screens first
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.add('hidden');
+            screen.style.display = 'none';
+        });
+
+        // Show the appropriate instruction screen based on the mode
+        if (gameState.isBackward) {
+            console.log('Showing backward digit span main instructions');
+            const instructionScreen = document.getElementById('digit-span-backward-main-instructions');
+            if (instructionScreen) {
+                instructionScreen.classList.remove('hidden');
+                instructionScreen.style.display = 'flex';
+                instructionScreen.style.position = 'fixed';
+                instructionScreen.style.top = '50%';
+                instructionScreen.style.left = '50%';
+                instructionScreen.style.transform = 'translate(-50%, -50%)';
+                instructionScreen.style.zIndex = '1000';
+            } else {
+                console.error('Backward instruction screen not found!');
+            }
+        } else {
+            console.log('Showing forward digit span main instructions');
+            const instructionScreen = document.getElementById('digit-span-forward-main-instructions');
+            if (instructionScreen) {
+                instructionScreen.classList.remove('hidden');
+                instructionScreen.style.display = 'flex';
+                instructionScreen.style.position = 'fixed';
+                instructionScreen.style.top = '50%';
+                instructionScreen.style.left = '50%';
+                instructionScreen.style.transform = 'translate(-50%, -50%)';
+                instructionScreen.style.zIndex = '1000';
+            } else {
+                console.error('Forward instruction screen not found!');
+            }
+        }
+    } catch (error) {
+        console.error('Error in ready for main task transition:', error);
+        alert('There was an error transitioning to the main task. Please try again.');
+    }
 });
 
 // Update event listener for object span continue practice button
@@ -6025,4 +6107,261 @@ window.directReadyForObjectSpanMainTask = function() {
     // Show the main task instructions
     showScreen('object-span-main-instructions');
 };
+
+// Direct function for starting object span main task
+window.directStartObjectSpanMainTask = function() {
+    console.log("Starting object span main task");
+    try {
+        // Reset game state for main task
+        objectSpanState.isRealGame = true;
+        objectSpanState.currentSpan = OBJECT_SPAN_CONFIG.minSpan;
+        objectSpanState.currentAttempt = 1;
+        objectSpanState.results = [];
+        
+        // Clear any existing timers
+        TimerManager.clearAll();
+        
+        // Hide all screens
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.add('hidden');
+        });
+        
+        // Show game area
+        const gameArea = document.getElementById('object-game-area');
+        if (gameArea) {
+            gameArea.classList.remove('hidden');
+            gameArea.style.display = 'flex';
+        }
+        
+        // Start the sequence
+        startObjectSequence();
+        
+    } catch (error) {
+        console.error("Error starting object span main task:", error);
+        alert('There was an error starting the main task. Please try again.');
+    }
+};
+
+// Direct function for starting digit span real game
+window.directStartDigitSpanRealGame = function() {
+    console.log("=== Starting real digit span game ===");
+    try {
+        // Reset game state for main task
+        console.log("1. Setting game state");
+        if (typeof gameState === 'undefined') {
+            gameState = {};
+        }
+        
+        gameState.isPatternGame = false;
+        gameState.isDigitSpanGame = true;
+        gameState.isRealGame = true;
+        gameState.isBackward = false;
+        gameState.currentRound = 1;
+        gameState.correctCounts = null;
+        gameState.gameResults = [];
+        gameState.currentLength = 3;
+        gameState.maxLength = 9;
+        gameState.attemptsPerLength = 2;
+        gameState.currentAttempt = 1;
+        
+        console.log("Current game state:", gameState);
+        
+        // Clear any existing timers
+        console.log("2. Clearing timers");
+        if (typeof TimerManager !== 'undefined') {
+            TimerManager.clearAll();
+        }
+        
+        console.log("3. Preparing to show game area");
+        // Get and prepare the digit game area
+        const digitGameArea = document.getElementById('digit-game-area');
+        if (!digitGameArea) {
+            throw new Error("Fatal: Digit game area not found!");
+        }
+        
+        console.log("4. Setting up digit display");
+        // Clear any existing content and create new digit element
+        digitGameArea.innerHTML = '<div class="digit"></div>';
+        
+        console.log("5. Hiding all screens");
+        // Hide all screens first
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.add('hidden');
+            screen.style.display = 'none';
+            screen.style.pointerEvents = 'none'; // Disable interactions
+        });
+        
+        console.log("6. Showing game area");
+        // Show the game area
+        digitGameArea.classList.remove('hidden');
+        digitGameArea.style.removeProperty('display');
+        digitGameArea.style.display = 'flex';
+        digitGameArea.style.visibility = 'visible';
+        digitGameArea.style.pointerEvents = 'auto'; // Enable interactions
+        digitGameArea.style.zIndex = '1000';
+        
+        console.log("7. Creating sequence");
+        // Create initial sequence
+        const sequence = [];
+        for (let i = 0; i < gameState.currentLength; i++) {
+            sequence.push(Math.floor(Math.random() * 10));
+        }
+        gameState.correctSequence = sequence;
+        console.log("Generated sequence:", sequence);
+        
+        console.log("8. Starting animation sequence");
+        // Start the sequence after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            console.log("Starting digit animation");
+            animateDigits(sequence);
+        }, 1000);
+        
+    } catch (error) {
+        console.error("Error in directStartDigitSpanRealGame:", error);
+        alert('There was an error starting the main task. Please try again.');
+    }
+};
+
+// Update animateDigits function with more logging
+function animateDigits(sequence) {
+    console.log("=== Starting digit animation ===");
+    console.log("Sequence to animate:", sequence);
+    
+    const config = {
+        displayTime: 1000,
+        blankTime: 500,
+        startDigits: 3,
+        maxDigits: 9
+    };
+    console.log("Using config:", config);
+
+    const digitElement = document.querySelector('.digit');
+    if (!digitElement) {
+        console.error("Fatal: Digit element not found!");
+        return;
+    }
+    console.log("Found digit element:", digitElement);
+
+    let currentIndex = 0;
+
+    function showNextDigit() {
+        console.log(`Animation step: ${currentIndex + 1}/${sequence.length}`);
+        if (currentIndex < sequence.length) {
+            console.log(`Showing digit ${sequence[currentIndex]} at index ${currentIndex}`);
+            digitElement.textContent = sequence[currentIndex];
+            digitElement.style.visibility = 'visible';
+            digitElement.style.display = 'flex';
+
+            setTimeout(() => {
+                console.log(`Hiding digit ${sequence[currentIndex]}`);
+                digitElement.style.visibility = 'hidden';
+
+                setTimeout(() => {
+                    currentIndex++;
+                    showNextDigit();
+                }, config.blankTime);
+            }, config.displayTime);
+        } else {
+            console.log("=== Sequence complete ===");
+            console.log("Clearing digit display");
+            digitElement.textContent = '';
+            
+            console.log("Transitioning to response screen");
+            // Hide the game area
+            const gameArea = document.getElementById('digit-game-area');
+            if (gameArea) {
+                gameArea.classList.add('hidden');
+                gameArea.style.display = 'none';
+            }
+            
+            // Show the response screen
+            const responseScreen = document.getElementById('digit-span-response');
+            if (responseScreen) {
+                responseScreen.classList.remove('hidden');
+                responseScreen.style.display = 'flex';
+                // Clear any previous response
+                const responseInput = document.getElementById('digit-response');
+                if (responseInput) {
+                    responseInput.value = '';
+                    // Focus the input field
+                    setTimeout(() => {
+                        responseInput.focus();
+                    }, 100);
+                }
+            } else {
+                console.error("Fatal: Response screen not found!");
+            }
+        }
+    }
+
+    showNextDigit();
+}
+
+// Direct function for practice feedback "I'm Ready for Main Task" button
+window.directReadyForDigitSpanMainTask = function() {
+    console.log('=== Ready for Main Task clicked ===');
+    console.log('Current game state:', gameState);
+    
+    try {
+        // Hide all screens first
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.add('hidden');
+            screen.style.display = 'none';
+        });
+
+        // Show the appropriate instruction screen based on the mode
+        const screenId = gameState.isBackward ? 'digit-span-backward-main-instructions' : 'digit-span-forward-main-instructions';
+        console.log('Showing instruction screen:', screenId);
+        
+        const instructionScreen = document.getElementById(screenId);
+        if (!instructionScreen) {
+            throw new Error(`Instruction screen ${screenId} not found!`);
+        }
+
+        // Make sure the screen is visible
+        instructionScreen.classList.remove('hidden');
+        instructionScreen.style.removeProperty('display');
+        instructionScreen.style.display = 'flex';
+        instructionScreen.style.visibility = 'visible';
+        instructionScreen.style.opacity = '1';
+        instructionScreen.style.position = 'fixed';
+        instructionScreen.style.top = '50%';
+        instructionScreen.style.left = '50%';
+        instructionScreen.style.transform = 'translate(-50%, -50%)';
+        instructionScreen.style.zIndex = '1000';
+        instructionScreen.style.backgroundColor = 'white';
+        instructionScreen.style.width = '80%';
+        instructionScreen.style.maxWidth = '800px';
+        instructionScreen.style.padding = '20px';
+        instructionScreen.style.borderRadius = '8px';
+        instructionScreen.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+
+        console.log('Instruction screen styles applied:', instructionScreen.style.cssText);
+    } catch (error) {
+        console.error('Error in ready for main task transition:', error);
+        alert('There was an error transitioning to the main task. Please try again.');
+    }
+};
+
+// Add event listeners when the document is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize event listeners for digit span buttons
+    const startMainTaskButton = document.getElementById('startDigitSpanForwardRealGameButton');
+    if (startMainTaskButton) {
+        startMainTaskButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Start Main Task button clicked');
+            window.directStartDigitSpanRealGame();
+        });
+    }
+
+    const startBackwardMainTaskButton = document.getElementById('startDigitSpanBackwardRealGameButton');
+    if (startBackwardMainTaskButton) {
+        startBackwardMainTaskButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Start Backward Main Task button clicked');
+            window.directStartDigitSpanBackwardRealGame();
+        });
+    }
+});
 

@@ -160,17 +160,15 @@
         </div>
 
         <!-- Forward Digit Span Response Screen -->
-        <!-- This screen is shown when user needs to recall digits in the same order -->
-        <!-- Contains a numeric input field and submit button specific to forward recall -->
         <div id="digit-span-response" class="screen hidden">
             <h2>Please type in the number in the correct order and press enter.</h2>
             <p>Do not leave spaces between the numbers.</p>
             
             <div class="response-input">
-                <input type="text" id="digit-response" pattern="[0-9]*" inputmode="numeric">
+                <input type="text" id="digit-response" pattern="[0-9]*" inputmode="numeric" style="width: 200px; height: 40px; font-size: 24px; text-align: center; margin: 20px 0;">
             </div>
             
-            <button id="submitDigitResponseButton">Submit</button>
+            <button id="submitDigitResponseButton" class="button" style="cursor: pointer; pointer-events: auto;">Submit</button>
         </div>
 
         <!-- Digit Span Results -->
@@ -464,7 +462,7 @@
             </ul>
             <p>You will play <span class="important">5 rounds</span> of each game. From now on you will <span class="important">not receive feedback</span> after each round.</p>
             <p>Click the button below to begin.</p>
-            <button id="startDigitSpanRealGameButton">Start</button>
+            <button id="startDigitSpanRealGameButton" class="button" onclick="window.directStartDigitSpanRealGame(); return false;">Start Main Task</button>
         </div>
 
         <!-- Pattern Recognition Game Intro (for scheme 1) -->
@@ -773,7 +771,7 @@
                 <li>If you fail both attempts, the task will end</li>
             </ul>
             <p>Your final score will be the longest sequence you correctly recalled.</p>
-            <button id="startObjectSpanMainButton" class="button">Start Main Task</button>
+            <button id="startObjectSpanMainButton" class="button" onclick="window.directStartObjectSpanMainTask(); return false;">Start Main Task</button>
         </div>
 
         <div id="object-span-results" class="screen hidden">
@@ -1110,12 +1108,12 @@
         <p id="digit-practice-score"></p>
         <div class="practice-controls">
             <button id="continuePracticeButton-digit" class="button">Continue Practice</button>
-            <button id="readyForMainTaskButton-digit" class="button">I'm Ready for Main Task</button>
+            <button id="readyForMainTaskButton-digit" class="button" onclick="window.directReadyForDigitSpanMainTask(); return false;">I'm Ready for Main Task</button>
         </div>
     </div>
 
-    <!-- Digit Span Main Task Instructions -->
-    <div id="digit-span-main-instructions" class="screen hidden">
+    <!-- Digit Span Forward Main Instructions -->
+    <div id="digit-span-forward-main-instructions" class="screen hidden">
         <h2>Main Task Instructions</h2>
         <p>You will now begin the main task.</p>
         <ul>
@@ -1127,10 +1125,27 @@
             <li>Your final score will be the longest sequence you correctly recalled</li>
             </ul>
         <div class="important-note">
-            <p><strong>For Forward Recall:</strong> Type the digits in the SAME order as shown</p>
-            <p><strong>For Backward Recall:</strong> Type the digits in REVERSE order</p>
+            <p><strong>Remember:</strong> Type the digits in the <span class="important">SAME ORDER</span> as shown</p>
         </div>
-        <button id="startDigitSpanRealGameButton" class="button">Start Main Task</button>
+        <button id="startDigitSpanForwardRealGameButton" class="button" style="cursor: pointer; pointer-events: auto;">Start Main Task</button>
+    </div>
+
+    <!-- Backward Digit Span Main Instructions -->
+    <div id="digit-span-backward-main-instructions" class="screen hidden">
+        <h2>Main Task Instructions</h2>
+        <p>You will now begin the main task.</p>
+        <ul>
+            <li>You will see sequences of digits, one at a time</li>
+            <li>Starting with 3 digits, the sequence will get longer as you progress</li>
+            <li>You get two attempts at each sequence length</li>
+            <li>If you succeed at least once, you'll move to a longer sequence</li>
+            <li>If you fail both attempts, the task will end</li>
+            <li>Your final score will be the longest sequence you correctly recalled</li>
+        </ul>
+        <div class="important-note">
+            <p><strong>Remember:</strong> Type the digits in <span class="important">REVERSE ORDER</span> from how they appeared</p>
+        </div>
+        <button id="startDigitSpanBackwardRealGameButton" class="button" style="cursor: pointer; pointer-events: auto;">Start Main Task</button>
     </div>
     </div>
     <script src="script.js"></script>

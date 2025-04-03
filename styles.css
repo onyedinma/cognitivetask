@@ -818,16 +818,31 @@ button:hover {
 
 /* Digit Span Game Styles */
 .digit {
-    font-size: 120px;
-    font-weight: bold;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 250px;
-    height: 250px;
-    margin: 0 auto;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 300px !important;
+    height: 300px !important;
+    font-size: 180px !important;
+    font-weight: bold !important;
+    color: #333 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    line-height: 1 !important;
+    user-select: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Ensure the digit is vertically centered */
+.digit::before {
+    content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
 }
 
 .example-digits {
@@ -873,23 +888,23 @@ button:hover {
     padding: 4px 8px;
 }
 
-#digit-game-area {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: white;
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0;
-    margin: 0;
-    border-radius: 0;
-    box-shadow: none;
-    transform: none;
-    border: none;
+#digit-game-area.screen {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 80% !important;
+    height: 80vh !important;
+    max-width: 1000px !important;
+    background: white !important;
+    border-radius: 16px !important;
+    border: 2px solid #333 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 0 !important;
+    z-index: 1000 !important;
+    overflow: visible !important;
 }
 
 .correct-answer {
