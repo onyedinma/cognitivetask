@@ -24,100 +24,121 @@ const TASK6_IMAGES = [
 
 // Centralized Timer Management System
 const TimerManager = {
-    timers: {},
+    timeouts: {},
     intervals: {},
-
-    // Set a timeout with automatic cleanup
-    setTimeout: function(callback, delay, id) {
-        // Clear any existing timeout with this ID
-        this.clearTimeout(id);
+    
+    // Set a timeout and store the ID with an optional category
+    setTimeout: function(callback, delay, id = null, category = 'default') {
+        // Generate a unique ID if none provided
+        const timerId = id || `timeout_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         
-        // Create a new timeout
-        const timeoutId = setTimeout(() => {
-            // Auto-remove from tracking when it fires
-            delete this.timers[id];
-            // Execute the callback
-            callback();
-        }, delay);
-        
-        // Track this timeout
-        if (id) {
-            this.timers[id] = timeoutId;
+        // Create category if it doesn't exist
+        if (!this.timeouts[category]) {
+            this.timeouts[category] = {};
         }
         
-        return timeoutId;
+        // Store the timeout ID
+        this.timeouts[category][timerId] = setTimeout(() => {
+            // Remove the timeout from our tracking once it executes
+            delete this.timeouts[category][timerId];
+            
+            // Execute the callback
+            try {
+                callback();
+            } catch (error) {
+                console.error(`Error in TimerManager timeout (${timerId}):`, error);
+            }
+        }, delay);
+        
+        return timerId;
+    },
+    
+    // Set an interval and store the ID with an optional category
+    setInterval: function(callback, delay, id = null, category = 'default') {
+        // Generate a unique ID if none provided
+        const timerId = id || `interval_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Create category if it doesn't exist
+        if (!this.intervals[category]) {
+            this.intervals[category] = {};
+        }
+        
+        // Store the interval ID
+        this.intervals[category][timerId] = setInterval(callback, delay);
+        
+        return timerId;
     },
     
     // Clear a specific timeout
-    clearTimeout: function(id) {
-        if (id && this.timers[id]) {
-            clearTimeout(this.timers[id]);
-            delete this.timers[id];
+    clearTimeout: function(id, category = 'default') {
+        if (this.timeouts[category] && this.timeouts[category][id]) {
+            clearTimeout(this.timeouts[category][id]);
+            delete this.timeouts[category][id];
+            return true;
         }
-    },
-    
-    // Set an interval with automatic tracking
-    setInterval: function(callback, delay, id) {
-        // Clear any existing interval with this ID
-        this.clearInterval(id);
-        
-        // Create a new interval
-        const intervalId = setInterval(callback, delay);
-        
-        // Track this interval
-        if (id) {
-            this.intervals[id] = intervalId;
-        }
-        
-        return intervalId;
+        return false;
     },
     
     // Clear a specific interval
-    clearInterval: function(id) {
-        if (id && this.intervals[id]) {
-            clearInterval(this.intervals[id]);
-            delete this.intervals[id];
+    clearInterval: function(id, category = 'default') {
+        if (this.intervals[category] && this.intervals[category][id]) {
+            clearInterval(this.intervals[category][id]);
+            delete this.intervals[category][id];
+            return true;
         }
+        return false;
     },
     
-    // Clear all timers and intervals
+    // Clear all timeouts in a specific category
+    clearCategory: function(category) {
+        let count = 0;
+        
+        // Clear timeouts in the category
+        if (this.timeouts[category]) {
+            Object.keys(this.timeouts[category]).forEach(id => {
+                clearTimeout(this.timeouts[category][id]);
+                delete this.timeouts[category][id];
+                count++;
+            });
+        }
+        
+        // Clear intervals in the category
+        if (this.intervals[category]) {
+            Object.keys(this.intervals[category]).forEach(id => {
+                clearInterval(this.intervals[category][id]);
+                delete this.intervals[category][id];
+                count++;
+            });
+        }
+        
+        console.log(`Cleared ${count} timers in category '${category}'`);
+        return count;
+    },
+    
+    // Clear all timeouts and intervals
     clearAll: function() {
+        let totalCleared = 0;
+        
         // Clear all timeouts
-        Object.keys(this.timers).forEach(id => {
-            clearTimeout(this.timers[id]);
+        Object.keys(this.timeouts).forEach(category => {
+            Object.keys(this.timeouts[category]).forEach(id => {
+                clearTimeout(this.timeouts[category][id]);
+                delete this.timeouts[category][id];
+                totalCleared++;
+            });
         });
-        this.timers = {};
         
         // Clear all intervals
-        Object.keys(this.intervals).forEach(id => {
-            clearInterval(this.intervals[id]);
-        });
-        this.intervals = {};
-        
-        console.log('All timers and intervals cleared');
-    },
-    
-    // Clear timers by category
-    clearCategory: function(category) {
-        const pattern = new RegExp(`^${category}`);
-        
-        // Clear timeouts in this category
-        Object.keys(this.timers).forEach(id => {
-            if (pattern.test(id)) {
-                clearTimeout(this.timers[id]);
-                delete this.timers[id];
-            }
+        Object.keys(this.intervals).forEach(category => {
+            Object.keys(this.intervals[category]).forEach(id => {
+                clearInterval(this.intervals[category][id]);
+                delete this.intervals[category][id];
+                totalCleared++;
+            });
         });
         
-        // Clear intervals in this category
-        Object.keys(this.intervals).forEach(id => {
-            if (pattern.test(id)) {
-                clearInterval(this.intervals[id]);
-                delete this.intervals[id];
-            }
-        });
-        
-        console.log(`Timers in category '${category}' cleared`);
+        console.log(`Cleared ${totalCleared} timers in total`);
+        return totalCleared;
     }
 };
 
@@ -1780,61 +1801,115 @@ function startCountingSequence() {
 
 // Animate the counting objects
 function animateObjects(sequence) {
-    // Clear any existing timers
+    console.log("Starting object animation with sequence:", sequence);
+    
+    // Clear any existing timers to prevent interference
     TimerManager.clearAll();
     
     // Show the game area
     const gameArea = document.getElementById('object-game-area');
     if (gameArea) {
         gameArea.classList.remove('hidden');
+        gameArea.style.display = 'flex';
+    } else {
+        console.error("object-game-area element not found!");
+        return;
+    }
+    
+    // Get or create the object display element
+    let objectDisplay = document.querySelector('.object-display');
+    if (!objectDisplay) {
+        console.log("Creating object display element");
+        objectDisplay = document.createElement('div');
+        objectDisplay.className = 'object-display';
+        gameArea.appendChild(objectDisplay);
     }
     
     // Clear any existing content
-    const objectDisplay = document.querySelector('.object-display');
-    if (objectDisplay) {
-        objectDisplay.innerHTML = '';
+    objectDisplay.innerHTML = '';
+    
+    // Update debug info if available
+    const debugEl = document.getElementById('object-debug');
+    if (debugEl) {
+        debugEl.textContent = `Debug: Starting animation for ${sequence.length} objects. Display: ${OBJECT_SPAN_CONFIG.displayTime}ms, Blank: ${OBJECT_SPAN_CONFIG.blankTime}ms`;
     }
     
+    // Initialize index for the sequence
     let index = 0;
     
+    // Function to show next object in sequence
     function showNextObject() {
+        console.log(`Showing object at index ${index} of ${sequence.length}`);
+        
+        // If we've shown all objects, show the response screen
         if (index >= sequence.length) {
-            // After showing all objects, show the response screen
-            setTimeout(() => {
+            console.log("Animation complete, transitioning to response screen");
+            
+            // Use setTimeout to ensure a slight delay before showing response screen
+            TimerManager.setTimeout(() => {
                 showObjectSpanResponse();
-            }, 500);
+            }, 800, 'show-response', 'object-span');
             return;
         }
         
-        // Clear the display first
-        objectDisplay.innerHTML = '';
-        
-        // Show the current object
-        const objectData = OBJECT_SPAN_CONFIG.objectMapping[sequence[index]];
-        if (objectData) {
-            const img = document.createElement('img');
-            img.src = objectData.image;
-            img.alt = objectData.name;
-            img.className = 'object-image';
-            objectDisplay.appendChild(img);
-        }
-        
-        // Schedule the next object
-        setTimeout(() => {
-            // Clear the display
-        objectDisplay.innerHTML = '';
-                    
-                    // Wait during blank time before showing next object
-            setTimeout(() => {
-                        index++;
-                showNextObject();
-            }, OBJECT_SPAN_CONFIG.blankTime);
+        try {
+            // Clear the display first
+            objectDisplay.innerHTML = '';
             
-        }, OBJECT_SPAN_CONFIG.displayTime);
+            // Show the current object
+            const objectData = OBJECT_SPAN_CONFIG.objectMapping[sequence[index]];
+            if (objectData) {
+                console.log(`Displaying object: ${objectData.name}`);
+                const img = document.createElement('img');
+                img.src = objectData.image;
+                img.alt = objectData.name;
+                img.className = 'object-image';
+                
+                // Add an onload handler to ensure the image is fully loaded
+                img.onload = function() {
+                    console.log(`Image for ${objectData.name} loaded successfully`);
+                };
+                
+                // Add an onerror handler to handle image loading failures
+                img.onerror = function() {
+                    console.error(`Failed to load image for ${objectData.name}`);
+                };
+                
+                objectDisplay.appendChild(img);
+                
+                // Log after image is appended
+                console.log(`Object ${objectData.name} displayed, will clear in ${OBJECT_SPAN_CONFIG.displayTime}ms`);
+                
+                // Schedule clearing the display
+                TimerManager.setTimeout(() => {
+                    console.log(`Clearing object display for ${objectData.name}`);
+                    objectDisplay.innerHTML = '';
+                    
+                    // Schedule showing the next object
+                    TimerManager.setTimeout(() => {
+                        index++;
+                        showNextObject();
+                    }, OBJECT_SPAN_CONFIG.blankTime, `next-object-${index}`, 'object-span');
+                    
+                }, OBJECT_SPAN_CONFIG.displayTime, `clear-object-${index}`, 'object-span');
+            } else {
+                console.error(`No object data found for sequence item ${sequence[index]}`);
+                // Skip to next object on error
+                index++;
+                TimerManager.setTimeout(showNextObject, 100, `error-recovery-${index}`, 'object-span');
+            }
+        } catch (error) {
+            console.error("Error during object animation:", error);
+            // Try to recover by moving to the next object
+            index++;
+            TimerManager.setTimeout(showNextObject, 100, `error-recovery-${index}`, 'object-span');
+        }
     }
     
-    // Start showing the first object
-    showNextObject();
+    // Start showing the first object with a slight delay to ensure UI is ready
+    TimerManager.setTimeout(() => {
+        showNextObject();
+    }, 500, 'start-animation', 'object-span');
 }
 
 // Submit answers for counting game
@@ -2750,8 +2825,8 @@ const OBJECT_SPAN_CONFIG = {
     startObjects: 3,      // Number of objects to start with
     mainTaskRounds: 8,    // Number of rounds in the main task
     practiceAttempts: 2,  // Number of practice attempts allowed
-    displayTime: 1000,    // Time each object is displayed (ms)
-    interStimulusInterval: 500,  // Time between objects (ms)
+    displayTime: 1000,    // Time each object is displayed (ms) - INCREASED from 1000
+    blankTime: 1000,      // Time between objects (ms) - INCREASED from 500 (renamed from interStimulusInterval)
     objectMapping: {
         1: { name: 'bread', image: 'images/Bread.png' },
         2: { name: 'car', image: 'images/Car.png' },
@@ -3086,7 +3161,7 @@ function handlePracticeResponse(isCorrect) {
     
     // Display practice attempt number
     const scoreText = document.getElementById('practice-score');
-    scoreText.textContent = `Practice attempt: ${objectSpanState.practiceAttempts}`;
+    // scoreText.textContent = `Practice attempt: ${objectSpanState.practiceAttempts}`;
     
     // Show feedback screen
     showScreen('object-span-practice-feedback');
@@ -5877,11 +5952,30 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function showObjectSpanResponse() {
+    console.log('Showing object span response screen');
+    
     // Clear any existing timers
     TimerManager.clearAll();
     
+    // Make sure object-game-area is hidden
+    const gameArea = document.getElementById('object-game-area');
+    if (gameArea) {
+        gameArea.classList.add('hidden');
+        gameArea.style.display = 'none';
+    }
+    
     // Show the response screen
-    showScreen('object-span-response');
+    const responseScreen = document.getElementById('object-span-response');
+    if (responseScreen) {
+        responseScreen.classList.remove('hidden');
+        responseScreen.style.display = 'flex';
+        
+        // Ensure we bring it to front
+        responseScreen.style.zIndex = '1001';
+    } else {
+        console.error('object-span-response screen not found!');
+        return;
+    }
     
     // Update mode-specific instruction
     const modeText = document.querySelector('#recall-instruction .mode-text');
@@ -5896,19 +5990,40 @@ function showObjectSpanResponse() {
         }
     }
     
-    // Get and enable the submit button
+    // Update debug info if available
+    const debugEl = document.getElementById('object-debug');
+    if (debugEl) {
+        debugEl.textContent = `Debug: Response screen displayed. ${objectSpanState.isBackward ? "REVERSE" : "SAME"} order mode.`;
+    }
+    
+    // Get and ensure the submit button is enabled
     const submitButton = document.getElementById('submitObjectResponseButton');
     if (submitButton) {
         submitButton.disabled = false;
-        submitButton.removeAttribute('disabled'); // Force enable
+        submitButton.style.pointerEvents = 'auto';
+        submitButton.style.cursor = 'pointer';
+        submitButton.style.opacity = '1';
+    } else {
+        console.warn('Submit button not found!');
     }
     
-    // Get and enable the input field
+    // Get, clear, and focus the input field
     const responseInput = document.getElementById('object-response-input');
     if (responseInput) {
         responseInput.value = ''; // Clear any previous input
         responseInput.disabled = false; // Ensure input is enabled
-        responseInput.focus(); // Set focus to input field
+        
+        // Set focus after a short delay to ensure the input is ready
+        setTimeout(() => {
+            try {
+                responseInput.focus();
+                console.log('Set focus to response input');
+            } catch (e) {
+                console.error('Error setting focus:', e);
+            }
+        }, 100);
+    } else {
+        console.warn('Response input field not found!');
     }
 }
 
@@ -5953,7 +6068,7 @@ function handlePracticeResponse(isCorrect) {
     
     // Display practice attempt number
     const scoreText = document.getElementById('object-practice-score');
-    scoreText.textContent = `Practice attempt: ${objectSpanState.practiceAttempts}`;
+    // scoreText.textContent = `Practice attempt: ${objectSpanState.practiceAttempts}`;
     
     // Show feedback screen
     showScreen('object-span-practice-feedback-main');
