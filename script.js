@@ -3247,6 +3247,9 @@ function handleMainTaskResponse(isCorrect) {
 }
 
 function showFinalResults() {
+    console.log("Showing final results for Object Span task");
+    
+    // Display basic results
     document.getElementById('max-span-reached').textContent = objectSpanState.maxSpanReached;
     
     const correctSequences = objectSpanState.results.filter(r => r.isCorrect).length;
@@ -3258,6 +3261,10 @@ function showFinalResults() {
         // Remove all paragraphs that don't have an ID (the dynamically added ones)
         const dynamicParagraphs = resultsContainer.querySelectorAll('p:not([id])');
         dynamicParagraphs.forEach(p => p.remove());
+        
+        // Also remove any previously added export buttons
+        const exportButtons = resultsContainer.querySelectorAll('.export-button');
+        exportButtons.forEach(btn => btn.remove());
         
         // Add information about rounds completed
         const roundsCompletedEl = document.createElement('p');
@@ -3271,20 +3278,105 @@ function showFinalResults() {
         finalScoreEl.textContent = `Final Score: ${objectSpanState.maxSpanReached}`;
         finalScoreEl.classList.add('important');
         
+        // Create a CSV export button
+        const exportCsvButton = document.createElement('button');
+        exportCsvButton.textContent = 'Export Results as CSV';
+        exportCsvButton.className = 'button export-button';
+        exportCsvButton.style.marginTop = '15px';
+        exportCsvButton.style.backgroundColor = '#4caf50';
+        
+        // Add click event to export button
+        exportCsvButton.addEventListener('click', function() {
+            exportObjectSpanResultsAsCSV();
+        });
+        
         // Insert these elements after the existing content but before the button
         const finishButton = document.getElementById('finishObjectSpanButton');
         if (finishButton) {
-            resultsContainer.insertBefore(finalScoreEl, finishButton);
-            resultsContainer.insertBefore(roundsCompletedEl, finishButton);
-            resultsContainer.insertBefore(totalTrialsEl, finishButton);
-    } else {
+            resultsContainer.insertBefore(exportCsvButton, finishButton);
+            resultsContainer.insertBefore(finalScoreEl, exportCsvButton);
+            resultsContainer.insertBefore(roundsCompletedEl, finalScoreEl);
+            resultsContainer.insertBefore(totalTrialsEl, finalScoreEl);
+        } else {
             resultsContainer.appendChild(finalScoreEl);
             resultsContainer.appendChild(roundsCompletedEl);
             resultsContainer.appendChild(totalTrialsEl);
-    }
+            resultsContainer.appendChild(exportCsvButton);
+        }
     }
     
     showScreen('object-span-results');
+}
+
+// Function to export Object Span results as CSV
+function exportObjectSpanResultsAsCSV() {
+    console.log("Exporting Object Span results as CSV");
+    
+    // Create CSV header
+    const csvHeader = [
+        'participant_id',
+        'counter_balance',
+        'task_type',
+        'span_mode', // forward or backward
+        'trial_number',
+        'timestamp',
+        'span_length',
+        'attempt_number',
+        'is_correct',
+        'max_span_reached',
+        'total_correct_sequences'
+    ].join(',');
+    
+    // Get stored student ID and counterbalance scheme
+    const studentId = gameState.studentId || 'unknown';
+    const scheme = gameState.scheme || 'unknown';
+    
+    // Task type will be either 'object_span_forward' or 'object_span_backward'
+    const taskType = objectSpanState.isBackward ? 'object_span_backward' : 'object_span_forward';
+    
+    // Create a row for each trial
+    const csvRows = objectSpanState.results.map((result, index) => {
+        const row = {
+            participant_id: studentId,
+            counter_balance: scheme,
+            task_type: taskType,
+            span_mode: objectSpanState.isBackward ? 'backward' : 'forward',
+            trial_number: index + 1,
+            timestamp: result.timestamp || new Date().toISOString(),
+            span_length: result.span || 0,
+            attempt_number: result.attempt || 0,
+            is_correct: result.isCorrect ? 'true' : 'false',
+            max_span_reached: objectSpanState.maxSpanReached,
+            total_correct_sequences: objectSpanState.results.filter(r => r.isCorrect).length
+        };
+        
+        return Object.values(row).map(value => 
+            typeof value === 'string' && value.includes(',') ? 
+            `"${value}"` : value
+        ).join(',');
+    });
+    
+    // Combine header and rows
+    const csvContent = [csvHeader, ...csvRows].join('\n');
+    
+    // Create timestamp for filename
+    const now = new Date();
+    const timestamp = now.getFullYear() + 
+                     String(now.getMonth() + 1).padStart(2, '0') + 
+                     String(now.getDate()).padStart(2, '0') + '_' +
+                     String(now.getHours()).padStart(2, '0') + 
+                     String(now.getMinutes()).padStart(2, '0');
+    
+    // Create and download CSV file
+    const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csvUrl = URL.createObjectURL(csvBlob);
+    const csvLink = document.createElement('a');
+    csvLink.href = csvUrl;
+    csvLink.download = `${taskType}_results_${studentId}_${timestamp}.csv`;
+    csvLink.click();
+    URL.revokeObjectURL(csvUrl);
+    
+    console.log(`CSV file ${taskType}_results_${studentId}_${timestamp}.csv created and downloaded`);
 }
 
 function showObjectSpanResults(result) {
