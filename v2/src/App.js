@@ -37,6 +37,8 @@ import {
 import DeductiveReasoningTask from './components/DeductiveReasoning/DeductiveReasoningTask';
 import DeductiveReasoningPractice from './components/DeductiveReasoning/DeductiveReasoningPractice';
 import DeductiveReasoningMainTask from './components/DeductiveReasoning/DeductiveReasoningMainTask';
+// Questionnaire component
+import CombinedQuestionnaire from './components/Questionnaires/Combined/CombinedQuestionnaire';
 
 // Fullscreen components
 import { FullscreenProvider } from './components/FullscreenProvider';
@@ -376,6 +378,15 @@ function App() {
               <RequireStudentInfo>
                 <TaskWrapper>
                   <DeductiveReasoningMainTask />
+                </TaskWrapper>
+              </RequireStudentInfo>
+            } />
+            
+            {/* Questionnaire Route */}
+            <Route path="/combined-questionnaire" element={
+              <RequireStudentInfo>
+                <TaskWrapper>
+                  <CombinedQuestionnaire />
                 </TaskWrapper>
               </RequireStudentInfo>
             } />

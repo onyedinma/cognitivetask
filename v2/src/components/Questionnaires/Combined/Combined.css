@@ -1,0 +1,50 @@
+/* Combined Questionnaires Styles */
+
+.all-scores-summary {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.all-scores-summary h2 {
+  font-size: 1.3rem;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 0.5rem;
+  text-align: center;
+}
+
+.score-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 4px;
+  background-color: white;
+  margin-bottom: 1rem;
+  border-left: 4px solid #3498db;
+}
+
+.score-item:last-child {
+  margin-bottom: 0;
+}
+
+.score-item h3 {
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 500;
+  color: #333;
+}
+
+.score-item p {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #3498db;
+  background-color: #f0f7ff;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  margin: 0;
+} 

@@ -34,6 +34,9 @@ const Home = () => {
         <Link to="/deductive-reasoning" className="task-button">
           Deductive Reasoning
         </Link>
+        <Link to="/combined-questionnaire" className="task-button">
+          Questionnaires
+        </Link>
         {/* Add more task buttons as they are implemented */}
       </div>
       

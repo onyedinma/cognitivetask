@@ -1,0 +1,164 @@
+/* SES Questionnaire Styles */
+
+.questionnaire-instructions {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-left: 4px solid #3498db;
+  border-radius: 4px;
+}
+
+.validation-error {
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  background-color: #ffe0e0;
+  border-left: 4px solid #e74c3c;
+  color: #c0392b;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.ses-form {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.likert-scale-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.75rem;
+}
+
+.scale-description {
+  flex: 1;
+  font-weight: 500;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.scale-description:last-child {
+  text-align: right;
+}
+
+.scale-values {
+  display: flex;
+  justify-content: space-between;
+  flex: 2;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.scale-values span {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f7ff;
+  border-radius: 50%;
+  font-weight: 600;
+  color: #3498db;
+}
+
+.likert-question {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.likert-question:last-child {
+  border-bottom: none;
+}
+
+.likert-question .question-text {
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.likert-options {
+  display: flex;
+  justify-content: space-between;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.likert-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80px;
+}
+
+.likert-option input[type="radio"] {
+  opacity: 0;
+  position: absolute;
+}
+
+.likert-option label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  width: 100%;
+}
+
+.likert-option label:hover {
+  background-color: #f0f7ff;
+}
+
+.likert-option input[type="radio"]:checked + label {
+  background-color: #3498db;
+  color: white;
+}
+
+.likert-option input[type="radio"]:checked + label .option-value {
+  background-color: white;
+  color: #3498db;
+}
+
+.option-value {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f7ff;
+  border-radius: 50%;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s;
+}
+
+.option-label {
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+button.form-button.export {
+  background-color: #2ecc71;
+}
+
+button.form-button.export:hover {
+  background-color: #27ae60;
+}
+
+button.form-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+} 
