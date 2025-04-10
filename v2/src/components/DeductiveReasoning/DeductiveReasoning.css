@@ -1,0 +1,355 @@
+/* DeductiveReasoning Task Styles */
+
+.deductive-screen {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.deductive-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+  margin: 0;
+}
+
+.deductive-header {
+  text-align: center;
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.deductive-question {
+  font-size: 1.3rem;
+  margin-bottom: 30px;
+  max-width: 800px;
+  text-align: center;
+  line-height: 1.5;
+  color: #333;
+  font-weight: 500;
+  background-color: #f8f9fa;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.deductive-card {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid #333;
+  border-radius: 4px;
+  margin: 0 15px 35px;
+  background-color: white;
+}
+
+.deductive-card.selected {
+  transform: translateY(-3px);
+  border-color: #2196F3;
+  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+}
+
+.card-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  overflow: hidden;
+}
+
+.card-text {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.card-image {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+}
+
+.deductive-feedback {
+  margin: 30px auto;
+  max-width: 600px;
+  text-align: center;
+}
+
+.feedback-result {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  padding: 15px 20px;
+  border-radius: 8px;
+}
+
+.correct-answer {
+  color: #4CAF50;
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.incorrect-answer {
+  color: #F44336;
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.feedback-explanation {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin-bottom: 30px;
+  color: #555;
+}
+
+.deductive-results {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 30px;
+  background-color: #f7f7f7;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.results-item {
+  margin: 15px 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.results-value {
+  font-weight: bold;
+  color: #2196F3;
+}
+
+.selected-count {
+  margin: 15px 0;
+  font-size: 1.1rem;
+  color: #555;
+}
+
+.deductive-button {
+  padding: 12px 25px;
+  margin: 20px 10px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #2196F3;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.deductive-button:hover {
+  background-color: #0b7dda;
+  transform: translateY(-2px);
+}
+
+.deductive-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.continue-button {
+  background-color: #4CAF50;
+}
+
+.continue-button:hover {
+  background-color: #45a049;
+}
+
+.submit-button {
+  background-color: #2196F3;
+}
+
+.submit-button:hover {
+  background-color: #0b7dda;
+}
+
+.complete-button {
+  background-color: #9C27B0;
+}
+
+.complete-button:hover {
+  background-color: #7B1FA2;
+}
+
+/* Instructions Container */
+.instructions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.instructions-section {
+  margin-bottom: 20px;
+}
+
+.instructions-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  color: #444;
+}
+
+.instructions-section p {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .deductive-card {
+    width: 160px;
+    height: 160px;
+  }
+}
+
+@media (max-width: 768px) {
+  .deductive-card {
+    width: 140px;
+    height: 140px;
+  }
+  
+  .deductive-question {
+    font-size: 1.1rem;
+    padding: 12px 15px;
+  }
+  
+  .card-text {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .deductive-card {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .cards-container {
+    gap: 10px;
+    padding: 10px;
+  }
+  
+  .deductive-button {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Shape styles */
+.shape {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.shape-card .card-content {
+  padding: 25px;
+  background-color: white !important;
+}
+
+.circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: black;
+}
+
+.square {
+  width: 80px;
+  height: 80px;
+  background-color: black;
+}
+
+.triangle {
+  width: 0;
+  height: 0;
+  border-left: 40px solid transparent;
+  border-right: 40px solid transparent;
+  border-bottom: 80px solid black;
+  background-color: transparent !important;
+}
+
+/* Color styles */
+.color-card .card-content {
+  padding: 0;
+  background-color: transparent;
+}
+
+.color-card.selected .card-content {
+  background-color: transparent !important;
+}
+
+.color-card .shape {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+.color-card {
+  overflow: hidden;
+}
+
+.red .shape {
+  background-color: #ff0000 !important;
+}
+
+.yellow .shape {
+  background-color: #ffff00 !important;
+}
+
+/* Hide text labels */
+.color-text, .shape-text {
+  display: none;
+}
+
+/* Selection indicator */
+.deductive-card::after {
+  content: "Click to Select";
+  position: absolute;
+  bottom: -25px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.deductive-card.selected::after {
+  content: "Selected";
+  font-weight: bold;
+  color: #2196F3;
+}
+
+/* Remove checkbox styles as they're no longer needed */
+.selection-checkbox {
+  display: none;
+}

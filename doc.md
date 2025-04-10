@@ -1,4 +1,4 @@
-# Cognitive Task - Comprehensive Documentation
+# Cognitive Task - Comprehensive Documentation.
 
 ## Table of Contents
 1. [Introduction](#introduction)

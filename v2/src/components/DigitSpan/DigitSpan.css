@@ -1,0 +1,433 @@
+/* Digit Span CSS Styles */
+.task-screen {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 10px;
+  text-align: center;
+}
+
+.task-description {
+  margin-bottom: 1rem;
+}
+
+.task-options-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0.75rem 0;
+  text-align: left;
+  display: inline-block;
+}
+
+.task-options-list li {
+  margin: 0.3rem 0;
+  padding: 0.4rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.important {
+  font-weight: bold;
+  color: #e74c3c;
+}
+
+/* Example Digits */
+.example-digits {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.example-digit {
+  width: 70px;
+  height: 70px;
+  background-color: #f8f9fa;
+  border: 2px solid #333;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 36px;
+  font-weight: bold;
+}
+
+/* Digit Display */
+.digit-display {
+  width: 100%;
+  height: 220px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0.75rem auto;
+  position: relative;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.digit {
+  font-size: 140px;
+  font-weight: bold;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  user-select: none;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+  width: 160px;
+  height: 160px;
+}
+
+.digit.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.digit.hidden {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+/* Flash animation for digit transitions */
+@keyframes digitFlash {
+  0% { opacity: 0; transform: scale(0.9); }
+  10% { opacity: 1; transform: scale(1.05); }
+  90% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.9); }
+}
+
+.digit-flash {
+  animation: digitFlash 1s ease-in-out;
+}
+
+/* Response Section */
+.response-section {
+  margin: 1rem 0;
+}
+
+.response-input {
+  width: 80%;
+  max-width: 500px;
+  height: auto;
+  min-height: 60px;
+  font-size: 20px;
+  text-align: center;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 0.5rem auto;
+  display: block;
+}
+
+.submit-button {
+  padding: 0.5rem 1.2rem;
+  font-size: 1rem;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0.5rem 0;
+  transition: background-color 0.2s;
+}
+
+.submit-button:hover {
+  background-color: #3367d6;
+}
+
+/* Feedback Section */
+.feedback-section {
+  margin: 0.75rem 0;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.feedback-correct {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.feedback-incorrect {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.result-details {
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  background-color: white;
+  border-radius: 4px;
+  text-align: left;
+}
+
+.user-response,
+.expected-response {
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 1.2rem;
+}
+
+.recall-reminder {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background-color: #e9ecef;
+  border-radius: 4px;
+}
+
+.mode-text {
+  font-weight: bold;
+  color: #e74c3c;
+}
+
+/* Buttons */
+.start-button,
+.finish-button,
+.continue-button,
+.main-task-button,
+.export-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background-color: #e74c3c;
+  color: white;
+  text-decoration: none;
+  border: none;
+  border-radius: 5px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin: 1rem 0.5rem;
+}
+
+.start-button:hover,
+.finish-button:hover {
+  background-color: #c0392b;
+}
+
+.continue-button {
+  background-color: #4285f4;
+}
+
+.continue-button:hover {
+  background-color: #3367d6;
+}
+
+.main-task-button {
+  background-color: #28a745;
+}
+
+.main-task-button:hover {
+  background-color: #218838;
+}
+
+.export-button {
+  background-color: #17a2b8;
+}
+
+.export-button:hover {
+  background-color: #138496;
+}
+
+.export-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.back-button {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  background-color: #95a5a6;
+  color: white;
+  text-decoration: none;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 0.5rem;
+}
+
+.back-button:hover {
+  background-color: #7f8c8d;
+}
+
+/* Completion Screen */
+.completion-screen {
+  margin: 2rem 0;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.results-summary {
+  margin-bottom: 2rem;
+}
+
+.results-detail {
+  margin: 2rem 0;
+}
+
+.results-detail h2 {
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 1.4rem;
+}
+
+.max-span,
+.correct-sequences {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #e74c3c;
+}
+
+/* Results Table */
+.results-table {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  border-collapse: collapse;
+  text-align: center;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.results-table th,
+.results-table td {
+  padding: 0.75rem;
+  border: 1px solid #dee2e6;
+}
+
+.results-table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #495057;
+}
+
+.results-table tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.results-table .correct {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.results-table .incorrect {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.result-actions {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .digit {
+    font-size: 120px;
+    width: 150px;
+    height: 150px;
+  }
+  
+  .example-digit {
+    width: 50px;
+    height: 50px;
+    font-size: 26px;
+  }
+  
+  .response-input {
+    width: 90%;
+    max-width: 400px;
+    min-height: 70px;
+    font-size: 20px;
+    padding: 12px;
+  }
+  
+  .results-table {
+    max-width: 350px;
+  }
+}
+
+@media (max-width: 480px) {
+  .digit-display {
+    height: 200px;
+  }
+  
+  .digit {
+    font-size: 90px;
+    width: 120px;
+    height: 120px;
+  }
+  
+  .example-digit {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    gap: 8px;
+  }
+  
+  .task-screen {
+    padding: 8px;
+  }
+  
+  .response-input {
+    width: 95%;
+    max-width: 300px;
+    min-height: 60px;
+    font-size: 16px;
+    padding: 10px;
+  }
+  
+  .start-button,
+  .finish-button,
+  .continue-button,
+  .main-task-button,
+  .export-button {
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+  }
+  
+  .results-table {
+    max-width: 300px;
+    font-size: 0.9rem;
+  }
+  
+  .results-table th,
+  .results-table td {
+    padding: 0.5rem;
+  }
+}
+
+.span-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #444;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 5px 10px;
+  border-radius: 4px;
+} 

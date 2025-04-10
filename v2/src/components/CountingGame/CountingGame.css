@@ -1,0 +1,437 @@
+/* Counting Game Styles */
+
+/* Object Display */
+.object-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2rem auto;
+  height: 300px;
+  width: 300px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  position: relative;
+}
+
+/* Object Styles */
+.counting-object {
+  width: 200px;
+  height: 200px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  transition: all 0.3s ease;
+}
+
+/* Note: These background images will be set using style attributes in the React components */
+.dollar-bill {
+  /* Placeholder for styling, image will be set inline */
+}
+
+.bus {
+  /* Placeholder for styling, image will be set inline */
+}
+
+.face {
+  /* Placeholder for styling, image will be set inline */
+}
+
+/* Example Objects */
+.example-objects {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.example-object {
+  width: 100px;
+  height: 100px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* Note: These background images will be set using style attributes in the React components */
+.example-object.dollar-bill {
+  /* Placeholder for styling, image will be set inline */
+}
+
+.example-object.bus {
+  /* Placeholder for styling, image will be set inline */
+}
+
+.example-object.face {
+  /* Placeholder for styling, image will be set inline */
+}
+
+/* Response Section */
+.response-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.counting-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.count-input-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.count-input-group label {
+  font-weight: bold;
+  font-size: 1.1rem;
+  min-width: 100px;
+}
+
+.number-input {
+  display: flex;
+  align-items: center;
+}
+
+.number-input button {
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+  border: 1px solid #ccc;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.number-input button:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.number-input button:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.number-input input {
+  width: 60px;
+  height: 40px;
+  text-align: center;
+  font-size: 1.2rem;
+  border: 1px solid #ccc;
+  border-left: none;
+  border-right: none;
+}
+
+.submit-button {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+  background-color: #45a049;
+}
+
+/* Feedback Section */
+.feedback-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.feedback-correct {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.feedback-incorrect {
+  color: #F44336;
+  font-weight: bold;
+}
+
+.counts-comparison {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin: 1.5rem 0;
+  justify-content: center;
+}
+
+.correct-counts, .user-counts {
+  min-width: 200px;
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.important {
+  font-weight: bold;
+  color: #2196F3;
+}
+
+.correct {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.incorrect {
+  color: #F44336;
+  font-weight: bold;
+}
+
+.practice-controls, .trial-controls {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  justify-content: center;
+}
+
+.continue-button, .main-task-button {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.continue-button {
+  background-color: #2196F3;
+  color: white;
+}
+
+.continue-button:hover {
+  background-color: #0b7dda;
+}
+
+.main-task-button {
+  background-color: #673AB7;
+  color: white;
+}
+
+.main-task-button:hover {
+  background-color: #5e35b1;
+}
+
+/* Results Section */
+.results-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.performance-summary {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.results-table-container {
+  overflow-x: auto;
+  margin-bottom: 2rem;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  background-color: white;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.results-table th, .results-table td {
+  padding: 0.8rem;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.results-table th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.results-table tr:last-child td {
+  border-bottom: none;
+}
+
+.correct-row {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.incorrect-row {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.export-controls {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  justify-content: center;
+}
+
+.export-button {
+  padding: 0.8rem 1.5rem;
+  background-color: #FF9800;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.export-button:hover {
+  background-color: #e68a00;
+}
+
+.export-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.menu-button {
+  padding: 0.8rem 1.5rem;
+  background-color: #607D8B;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.menu-button:hover {
+  background-color: #546e7a;
+}
+
+/* Loading State */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  font-size: 1.2rem;
+  color: #777;
+}
+
+/* Navigation Buttons */
+.navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+
+.back-button, .start-button {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-button {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.back-button:hover {
+  background-color: #e0e0e0;
+}
+
+.start-button {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.start-button:hover {
+  background-color: #45a049;
+}
+
+/* Instruction List */
+.instruction-list {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.instruction-list li {
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .object-display {
+    height: 250px;
+    width: 250px;
+  }
+  
+  .counting-object {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .counts-comparison {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .correct-counts, .user-counts {
+    min-width: unset;
+    width: 100%;
+  }
+  
+  .count-input-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .number-input {
+    width: 100%;
+  }
+  
+  .number-input button, .number-input input {
+    height: 36px;
+  }
+  
+  .practice-controls, .trial-controls, .export-controls {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .continue-button, .main-task-button, .export-button, .menu-button {
+    width: 100%;
+  }
+  
+  .navigation-buttons {
+    flex-direction: column;
+    gap: 1rem;
+  }
+} 

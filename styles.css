@@ -1094,20 +1094,9 @@ button:hover {
     width: 95%;
 }
 
+/* Remove the number display on shapes */
 .cell-number {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    background-color: black;
-    color: white;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 14px;
-    font-weight: bold;
+    display: none;
 }
 
 /* Make sure the screens have adequate space for the grid */
