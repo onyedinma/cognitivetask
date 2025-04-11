@@ -58,6 +58,7 @@ const ShapeCountingMainTask = () => {
     const sequence = [];
     const counts = { squares: 0, triangles: 0, circles: 0 };
     
+    // Ensure we have exactly the number of shapes defined for this level
     for (let i = 0; i < sequenceLength; i++) {
       const shapeIndex = Math.floor(Math.random() * shapes.length);
       const shape = shapes[shapeIndex];
@@ -67,6 +68,14 @@ const ShapeCountingMainTask = () => {
       if (shape === 'square') counts.squares++;
       else if (shape === 'triangle') counts.triangles++;
       else if (shape === 'circle') counts.circles++;
+    }
+    
+    // Double-check the total number of shapes equals the required amount
+    const totalShapes = counts.squares + counts.triangles + counts.circles;
+    console.log(`Level ${currentLevel} (Attempt ${currentAttempt}) - Total shapes: ${totalShapes}, Expected: ${sequenceLength}`);
+    
+    if (totalShapes !== sequenceLength) {
+      console.error(`Shape count mismatch: got ${totalShapes}, expected ${sequenceLength}`);
     }
     
     return { sequence, counts };
@@ -101,7 +110,7 @@ const ShapeCountingMainTask = () => {
     sequence.forEach((shape, index) => {
       // Show shape
       const showTimer = setTimeout(() => {
-        console.log(`Showing shape: ${shape}`);
+        console.log(`Showing shape ${index + 1}/${sequence.length}: ${shape}`);
         setCurrentShape(shape);
       }, index * 1500); // Show each shape for 1.5 seconds
       
@@ -114,6 +123,13 @@ const ShapeCountingMainTask = () => {
         }, (index * 1500) + 1000); // Show for 1 second, blank for 0.5 seconds
         
         timersRef.current.push(hideTimer);
+      } else {
+        // For the last shape, ensure it's hidden before showing the response form
+        const hideLastTimer = setTimeout(() => {
+          setCurrentShape(null);
+        }, (index * 1500) + 1000);
+        
+        timersRef.current.push(hideLastTimer);
       }
     });
     
@@ -122,7 +138,7 @@ const ShapeCountingMainTask = () => {
       setShowingShapes(false);
       setCurrentShape(null);
       setShowResponse(true);
-    }, sequence.length * 1500);
+    }, (sequence.length * 1500) + 500); // Add a small buffer after the last shape
     
     timersRef.current.push(responseTimer);
   };
@@ -192,10 +208,11 @@ const ShapeCountingMainTask = () => {
       if (lastResult.correct) {
         // Move to next level
         if (currentLevel < levels.length) {
+          // First update the level, then start the sequence in a separate effect
+          // to ensure the current level state is updated before generating the sequence
           setCurrentLevel(prev => prev + 1);
           setCurrentAttempt(1);
           setShowFeedback(false);
-          startSequence();
         } else {
           // Game completed successfully
           setTaskComplete(true);
@@ -215,6 +232,18 @@ const ShapeCountingMainTask = () => {
       }
     }
   };
+  
+  // Effect to start sequence after level change
+  useEffect(() => {
+    if (!taskComplete && !showFeedback) {
+      const timer = setTimeout(() => {
+        startSequence();
+      }, 500); // Short delay to ensure state is updated
+      
+      timersRef.current.push(timer);
+      return () => clearTimeout(timer);
+    }
+  }, [currentLevel, currentAttempt, showFeedback, taskComplete]);
   
   // Navigate back to tasks menu
   const returnToMenu = () => {
